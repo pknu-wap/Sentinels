@@ -10,7 +10,11 @@ public class Sentinels : ModuleRules
 
 		PublicDependencyModuleNames.AddRange(new string[]
 		{ "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", 
-			"AIModule", "NavigationSystem" });
+			"AIModule", "NavigationSystem",
+            "OnlineSubsystem", "OnlineSubsystemUtils",
+			// NetCore
+			"SentinelsNetCore"	
+		});
 
         PrivateIncludePaths.Add("Sentinels");
     }
