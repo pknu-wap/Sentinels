@@ -4,10 +4,26 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "OnlineSessionSettings.h"
+#include "Interfaces/OnlineSessionDelegates.h"
 #include "STPlayerController.generated.h"
 
 class UInputAction;
 class USplineComponent;
+
+class FOnlineSessionSearch;
+class FOnlineSessionSearchResult;
+
+USTRUCT()
+struct FSessionInfo
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY()
+	FName SessionName;
+	FOnlineSessionSearchResult SearchResult;
+};
 
 UCLASS()
 class SENTINELS_API ASTPlayerController : public APlayerController
@@ -19,6 +35,8 @@ public:
 
 protected:
 	virtual void Tick(float DeltaTime) override;
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	/*
 		Input
@@ -53,4 +71,48 @@ private:
 	bool bAutoRun = false;
 	FVector CachedDestination;
 	float FollowTime; // For how long it has been pressed
+
+
+
+
+	/*
+		NetWork & Session
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Session")
+	void CreateSession_Local(FName SessionName);
+
+	UFUNCTION(Server, Reliable, BlueprintCallable, Category = "Session")
+	void CreateSession_Server(FName SessionName);
+
+	UFUNCTION()
+	void OnCreateSessionComplete(FName SessionName, bool bWasSuccessful);
+
+	UFUNCTION()
+	void OnRep_CreateSessionSuccecssful();
+
+	UPROPERTY(ReplicatedUsing = OnRep_CreateSessionSuccecssful)
+	bool bCreateSessionSuccecssful;
+
+	UFUNCTION(BlueprintCallable, Category = "Session")
+	void FindSessionInfos();
+
+	UFUNCTION()
+	void OnFindSessionsComplete(bool bWasSuccessful);
+
+	UFUNCTION()
+	void OnRep_SessionInfos();
+
+	UPROPERTY(ReplicatedUsing = OnRep_SessionInfos)
+	TArray<FSessionInfo> SessionInfos;
+
+	FOnCreateSessionCompleteDelegate Delegate_CreateSessionComplete;
+	FDelegateHandle Handle_CreateSessionComplete;
+
+	FOnFindSessionsCompleteDelegate Delegate_FindSessionComplete;
+	FDelegateHandle Handle_FindSessionComplete;
+
+
+	TSharedPtr<FOnlineSessionSettings> LastSessionSettings;
+	TSharedPtr<FOnlineSessionSearch> LastSessionSearch;
+	FOnlineSessionSearchResult SearchResult;
 };
