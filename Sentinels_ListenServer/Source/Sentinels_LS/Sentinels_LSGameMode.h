@@ -13,6 +13,9 @@ class ASentinels_LSGameMode : public AGameModeBase
 
 public:
 	ASentinels_LSGameMode();
+
+protected:
+	virtual void PostLogin(APlayerController* NewPlayer) override;
 };
 
 
