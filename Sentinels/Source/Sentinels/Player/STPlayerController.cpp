@@ -122,55 +122,7 @@ void ASTPlayerController::AutoRun()
 
 #pragma region Session
 
-void ASTPlayerController::CreateSession_Server_Implementation(FName SessionName)
-{
-	if (HasAuthority())
-	{
-		IOnlineSubsystem* OnlineSub = IOnlineSubsystem::Get();
-		if (OnlineSub)
-		{
-			IOnlineSessionPtr Sessions = OnlineSub->GetSessionInterface();
-			if (Sessions.IsValid())
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("IOnlineSubsystem : %s"), *OnlineSub->GetSubsystemName().ToString()));
-
-				TSharedPtr<FOnlineSessionSettings> SessionSettings = MakeShareable(new FOnlineSessionSettings());
-
-				/* Editor Version */ 
-				/*SessionSettings->bIsDedicated = false;
-				SessionSettings->bIsLANMatch = OnlineSub->GetSubsystemName() == "NULL" ? true : false;
-				SessionSettings->NumPublicConnections = 4;
-				SessionSettings->bShouldAdvertise = true;
-				SessionSettings->bUseLobbiesIfAvailable = true;
-				SessionSettings->bAllowJoinViaPresence = false;
-				SessionSettings->bAllowJoinInProgress = false;
-				SessionSettings->bUsesPresence = false;*/
-
-				/* Package Version */
-
-				SessionSettings->NumPublicConnections = 4;
-				SessionSettings->bIsDedicated = false;
-				SessionSettings->bAllowInvites = true;
-				SessionSettings->bAllowJoinViaPresence = true;
-				SessionSettings->bAllowJoinInProgress = true;
-				SessionSettings->bIsLANMatch = OnlineSub->GetSubsystemName() == "NULL" ? true : false;
-				SessionSettings->bShouldAdvertise = true;
-				SessionSettings->bUsesPresence = true;
-				SessionSettings->bUseLobbiesIfAvailable = true;
-				
-
-				// SessionSettings->Set(FName("SessionName"), SessionName.ToString());
-
-				Sessions->AddOnCreateSessionCompleteDelegate_Handle(Delegate_CreateSessionComplete);
-
-				ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
-				Sessions->CreateSession(*LocalPlayer->GetPreferredUniqueNetId(), SessionName, *SessionSettings);
-			}
-		}
-	}
-}
-
-void ASTPlayerController::CreateSession_Local(FName SessionName)
+void ASTPlayerController::CreateSession(FName SessionName)
 {
 	const IOnlineSessionPtr sessionInterface = Online::GetSessionInterface(GetWorld());
 	if (!sessionInterface.IsValid())
@@ -192,7 +144,13 @@ void ASTPlayerController::CreateSession_Local(FName SessionName)
 
 	Handle_CreateSessionComplete = sessionInterface->AddOnCreateSessionCompleteDelegate_Handle(Delegate_CreateSessionComplete);
 
-	const ULocalPlayer* localPlayer = GetWorld()->GetFirstLocalPlayerFromController();
+	ULocalPlayer* localPlayer = GetLocalPlayer();
+	if (!localPlayer)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("HostingPlayer is invalid."));
+		return;
+	}
+
 	if (!sessionInterface->CreateSession(*localPlayer->GetPreferredUniqueNetId(), NAME_GameSession, *LastSessionSettings))
 	{
 		sessionInterface->ClearOnCreateSessionCompleteDelegate_Handle(Handle_CreateSessionComplete);

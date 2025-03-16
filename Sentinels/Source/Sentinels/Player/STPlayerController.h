@@ -79,10 +79,7 @@ private:
 		NetWork & Session
 	*/
 	UFUNCTION(BlueprintCallable, Category = "Session")
-	void CreateSession_Local(FName SessionName);
-
-	UFUNCTION(Server, Reliable, BlueprintCallable, Category = "Session")
-	void CreateSession_Server(FName SessionName);
+	void CreateSession(FName SessionName);
 
 	UFUNCTION()
 	void OnCreateSessionComplete(FName SessionName, bool bWasSuccessful);
