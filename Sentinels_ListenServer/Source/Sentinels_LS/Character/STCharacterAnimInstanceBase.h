@@ -14,4 +14,23 @@ class SENTINELS_LS_API USTCharacterAnimInstanceBase : public UAnimInstance
 {
 	GENERATED_BODY()
 	
+public:
+	USTCharacterAnimInstanceBase();
+
+public:
+	virtual void NativeInitializeAnimation();
+	virtual void NativeUpdateAnimation(float DeltaSeconds);
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, category = "Movement")
+	float GroundSpeed = 0.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, category = "Movement")
+	float Angle = 0.f;
+
+	UPROPERTY(BlueprintReadOnly, category = "Movement")
+	class UCharacterMovementComponent* MovementComp;
+
+protected:
+	class ACharacter* Character;
 };

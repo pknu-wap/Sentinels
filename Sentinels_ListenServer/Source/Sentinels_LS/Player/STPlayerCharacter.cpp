@@ -71,7 +71,98 @@ void ASTPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) 
 	{
+		EnhancedInputComponent->BindAction(Skill_Q_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_Q_Pressed);
+		EnhancedInputComponent->BindAction(Skill_W_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_W_Pressed);
+		EnhancedInputComponent->BindAction(Skill_E_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_E_Pressed);
+		EnhancedInputComponent->BindAction(Skill_R_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_R_Pressed);
 
 	}
+}
+
+void ASTPlayerCharacter::Skill_Q_Pressed()
+{
+
+}
+
+void ASTPlayerCharacter::PlayMontage_Skill_Q()
+{
+	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+	if (AnimInst)
+	{
+		AnimInst->Montage_Play(Montage_Skill_Q);
+	}
+}
+
+void ASTPlayerCharacter::Skill_Q_Pressed_Server_Implementation()
+{
+}
+
+void ASTPlayerCharacter::Skill_Q_Pressed_Multicast_Implementation()
+{
+}
+
+void ASTPlayerCharacter::Skill_W_Pressed()
+{
+}
+
+void ASTPlayerCharacter::PlayMontage_Skill_W()
+{
+	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+	if (AnimInst)
+	{
+		AnimInst->Montage_Play(Montage_Skill_W);
+	}
+}
+
+void ASTPlayerCharacter::Skill_W_Pressed_Server_Implementation()
+{
+}
+
+void ASTPlayerCharacter::Skill_W_Pressed_Multicast_Implementation()
+{
+}
+
+void ASTPlayerCharacter::Skill_E_Pressed()
+{
+
+}
+
+void ASTPlayerCharacter::PlayMontage_Skill_E()
+{
+	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+	if (AnimInst)
+	{
+		AnimInst->Montage_Play(Montage_Skill_E);
+	}
+}
+
+void ASTPlayerCharacter::Skill_E_Pressed_Server_Implementation()
+{
+}
+
+void ASTPlayerCharacter::Skill_E_Pressed_Multicast_Implementation()
+{
+}
+
+void ASTPlayerCharacter::Skill_R_Pressed()
+{
+
+}
+
+void ASTPlayerCharacter::PlayMontage_Skill_R()
+{
+	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+	if (AnimInst)
+	{
+		AnimInst->Montage_Play(Montage_Skill_R);
+	}
+}
+
+void ASTPlayerCharacter::Skill_R_Pressed_Server_Implementation()
+{
+}
+
+void ASTPlayerCharacter::Skill_R_Pressed_Multicast_Implementation()
+{
 }
 
