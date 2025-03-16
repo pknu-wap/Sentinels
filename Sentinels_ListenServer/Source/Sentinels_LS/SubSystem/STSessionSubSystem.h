@@ -48,22 +48,31 @@ public:
 		NetWork & Session
 	*/
 	UFUNCTION(BlueprintCallable, Category = "Session")
+	void RegisterPlayer(FName SessionName);
+
+	UFUNCTION(BlueprintCallable, Category = "Session")
 	void CreateSession(FName SessionName);
 
 	UFUNCTION(BlueprintCallable, Category = "Session")
 	void StartSession(FName SessionName);
 
 	UFUNCTION(BlueprintCallable, Category = "Session")
+	void UpdateSession(FName SessionName);
+
+	UFUNCTION(BlueprintCallable, Category = "Session")
 	void FindSessionInfos();
 
+	// ! ! ! Should Register Player Before Join Session ! ! ! 
 	UFUNCTION(BlueprintCallable, Category = "Session")
 	void JoinGameSession(FName InSessionName);
 
 	UFUNCTION(BlueprintCallable, Category = "Session")
-	bool TryTravelToCurrentSession(FName SessionName);
+	void TryTravelToCurrentSession(FName SessionName);
 
+	void OnRegisterPlayerComplete(FName SessionName, const TArray<FUniqueNetIdRef>& players, bool bWasSuccessful);
 	void OnCreateSessionComplete(FName SessionName, bool bWasSuccessful);
 	void OnStartSessionCompleted(FName SessionName, bool Successful);
+	void OnUpdateSessionComplete(FName SessionName, bool bWasSuccessful);
 	void OnFindSessionsComplete(bool bWasSuccessful);
 	void OnJoinSessionCompleted(FName SessionName, EOnJoinSessionCompleteResult::Type Result);
 
@@ -86,11 +95,17 @@ protected:
 private:
 	TArray<FSessionInfo> SessionInfos;
 
+	FOnRegisterPlayersCompleteDelegate Delegate_RegisterPlayerComplete;
+	FDelegateHandle Handle_RegisterPlayerComplete;
+
 	FOnCreateSessionCompleteDelegate Delegate_CreateSessionComplete;
 	FDelegateHandle Handle_CreateSessionComplete;
 
 	FOnStartSessionCompleteDelegate Delegate_StartSessionComplete;
 	FDelegateHandle Handle_StartSessionComplete;
+
+	FOnUpdateSessionCompleteDelegate Delegate_UpdateSessionComplete;
+	FDelegateHandle Handle_UpdatetSessionComplete;
 
 	FOnFindSessionsCompleteDelegate Delegate_FindSessionComplete;
 	FDelegateHandle Handle_FindSessionComplete;

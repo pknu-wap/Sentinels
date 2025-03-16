@@ -10,6 +10,7 @@
 #include "Kismet/KismetStringLibrary.h"
 #include "OnlineSubsystemUtils.h"
 #include "Kismet/GameplayStatics.h"
+#include "System/STGameInstance.h"
 
 #pragma region Session
 
@@ -17,8 +18,55 @@ USTSessionSubSystem::USTSessionSubSystem()
 	: Delegate_FindSessionComplete(FOnFindSessionsCompleteDelegate::CreateUObject(this, &USTSessionSubSystem::OnFindSessionsComplete)),
 	Delegate_CreateSessionComplete(FOnCreateSessionCompleteDelegate::CreateUObject(this, &USTSessionSubSystem::OnCreateSessionComplete)),
 	Delegate_JoinSessionComplete(FOnJoinSessionCompleteDelegate::CreateUObject(this, &USTSessionSubSystem::OnJoinSessionCompleted)),
-	Delegate_StartSessionComplete(FOnStartSessionCompleteDelegate::CreateUObject(this, &USTSessionSubSystem::OnStartSessionCompleted))
+	Delegate_StartSessionComplete(FOnStartSessionCompleteDelegate::CreateUObject(this, &USTSessionSubSystem::OnStartSessionCompleted)),
+	Delegate_UpdateSessionComplete(FOnUpdateSessionCompleteDelegate::CreateUObject(this, &USTSessionSubSystem::OnUpdateSessionComplete)),
+	Delegate_RegisterPlayerComplete(FOnRegisterPlayersCompleteDelegate::CreateUObject(this, &USTSessionSubSystem::OnRegisterPlayerComplete))
 {
+}
+
+void USTSessionSubSystem::RegisterPlayer(FName SessionName)
+{
+	const IOnlineSessionPtr sessionInterface = Online::GetSessionInterface(GetWorld());
+	if (!sessionInterface.IsValid())
+		return;
+
+	ULocalPlayer* localPlayer = GetWorld()->GetFirstLocalPlayerFromController();
+	if (!localPlayer)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("localPlayer is invalid."));
+		return;
+	}
+	
+	Handle_RegisterPlayerComplete = sessionInterface->AddOnRegisterPlayersCompleteDelegate_Handle(Delegate_RegisterPlayerComplete);
+	
+	if (!sessionInterface->RegisterPlayer(SessionName, *localPlayer->GetPreferredUniqueNetId(), false))
+	{
+		sessionInterface->ClearOnRegisterPlayersCompleteDelegate_Handle(Handle_RegisterPlayerComplete);
+	}
+}
+
+void USTSessionSubSystem::OnRegisterPlayerComplete(FName SessionName, const TArray<FUniqueNetIdRef>& players, bool bWasSuccessful)
+{
+	const IOnlineSessionPtr sessionInterface = Online::GetSessionInterface(GetWorld());
+	if (!sessionInterface.IsValid()) return;
+
+	if (sessionInterface)
+	{
+		sessionInterface->ClearOnCreateSessionCompleteDelegate_Handle(Handle_CreateSessionComplete);
+	}
+
+	OnCreateSessionCompleteEvent.Broadcast(bWasSuccessful);
+
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (!PC || PC->HasAuthority())
+	{
+		return;
+	}
+
+	if (bWasSuccessful)
+	{
+		JoinGameSession(SessionName);
+	}
 }
 
 void USTSessionSubSystem::CreateSession(FName SessionName)
@@ -72,6 +120,7 @@ void USTSessionSubSystem::OnCreateSessionComplete(FName SessionName, bool bWasSu
 
 	if (bWasSuccessful)
 	{
+		RegisterPlayer(SessionName);
 		StartSession(SessionName);
 	}
 }
@@ -110,6 +159,45 @@ void USTSessionSubSystem::OnStartSessionCompleted(FName SessionName, bool bWasSu
 	if (bWasSuccessful)
 	{
 		UGameplayStatics::OpenLevel(GetWorld(), "LobbyMap", true, "listen");
+	}
+}
+
+void USTSessionSubSystem::UpdateSession(FName SessionName)
+{
+	const IOnlineSessionPtr sessionInterface = Online::GetSessionInterface(GetWorld());
+	if (!sessionInterface.IsValid())
+	{
+		OnUpdateSessionCompleteEvent.Broadcast(false);
+		return;
+	}
+
+	TSharedPtr<FOnlineSessionSettings> updatedSessionSettings;
+
+	updatedSessionSettings->Set(SETTING_MAPNAME, FString("Updated Level Name"), EOnlineDataAdvertisementType::ViaOnlineService);
+
+	Handle_UpdatetSessionComplete =
+		sessionInterface->AddOnUpdateSessionCompleteDelegate_Handle(Delegate_UpdateSessionComplete);
+
+	if (!sessionInterface->UpdateSession(SessionName, *updatedSessionSettings))
+	{
+		sessionInterface->ClearOnUpdateSessionCompleteDelegate_Handle(Handle_StartSessionComplete);
+		OnStartSessionCompleteEvent.Broadcast(false);
+	}
+}
+
+void USTSessionSubSystem::OnUpdateSessionComplete(FName SessionName, bool bWasSuccessful)
+{
+	const IOnlineSessionPtr sessionInterface = Online::GetSessionInterface(GetWorld());
+	if (sessionInterface)
+	{
+		sessionInterface->ClearOnUpdateSessionCompleteDelegate_Handle(Handle_StartSessionComplete);
+	}
+
+	OnUpdateSessionCompleteEvent.Broadcast(bWasSuccessful);
+
+	if (bWasSuccessful)
+	{
+
 	}
 }
 
@@ -168,11 +256,12 @@ void USTSessionSubSystem::OnFindSessionsComplete(bool bWasSuccessful)
 		// Session Name
 		FString sessionString;
 		result.Session.SessionSettings.Get(FName("SessionName"), sessionString);
-
+		
 		info.SessionName = UKismetStringLibrary::Conv_StringToName(sessionString);
 		info.NumOpenPublicConnections = result.Session.NumOpenPublicConnections;
 		info.NumPublicConnections = result.Session.SessionSettings.NumPublicConnections;
 		info.OwningUserName = result.Session.OwningUserName;
+		// result.Session.SessionInfo->
 
 		SessionInfos.Push(info);
 	}
@@ -198,6 +287,12 @@ void USTSessionSubSystem::JoinGameSession(FName InSessionName)
 		sessionInterface->AddOnJoinSessionCompleteDelegate_Handle(Delegate_JoinSessionComplete);
 
 	ULocalPlayer* localPlayer =  GetWorld()->GetFirstLocalPlayerFromController();
+
+	if (!LastSessionSearch.IsValid())
+	{
+		return;
+	}
+
 	for (auto& result : LastSessionSearch->SearchResults)
 	{
 		// Session Name
@@ -248,26 +343,32 @@ void USTSessionSubSystem::OnJoinSessionCompleted(FName SessionName, EOnJoinSessi
 		break;
 	}
 
+	USTGameInstance* GameInst = Cast<USTGameInstance>(GetGameInstance());
+	if (GameInst)
+	{
+		GameInst->CurrentSessionName = SessionName;
+	}
+	
 	TryTravelToCurrentSession(SessionName);
 }
 
-bool USTSessionSubSystem::TryTravelToCurrentSession(FName SessionName)
+void USTSessionSubSystem::TryTravelToCurrentSession(FName SessionName)
 {
 	const IOnlineSessionPtr sessionInterface = Online::GetSessionInterface(GetWorld());
 	if (!sessionInterface.IsValid())
 	{
-		return false;
+		return;
 	}
 
 	FString connectString;
 	if (!sessionInterface->GetResolvedConnectString(SessionName, connectString))
 	{
-		return false;
+		return;
 	}
 
 	APlayerController* playerController = GetWorld()->GetFirstPlayerController();
 	playerController->ClientTravel(connectString, TRAVEL_Absolute);
-	return true;
+	return;
 }
 
 #pragma endregion
