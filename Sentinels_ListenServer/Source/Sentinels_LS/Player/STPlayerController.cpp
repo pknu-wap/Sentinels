@@ -7,12 +7,15 @@
 #include "NavigationPath.h"
 #include "Components/SplineComponent.h"
 #include "DrawDebugHelpers.h"
-
+#include "Components/SkillComponent.h"
 
 ASTPlayerController::ASTPlayerController()
 {
 	Spline = CreateDefaultSubobject<USplineComponent>(TEXT("Spline"));
 	Spline->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+
+	SkillComponent = CreateDefaultSubobject<USkillComponent>(TEXT("SkillComp"));
+	SkillComponent->SetIsReplicated(true);
 }
 
 void ASTPlayerController::Tick(float DeltaTime)

@@ -11,6 +11,7 @@
 
 class UInputAction;
 class USplineComponent;
+class USkillComponent;
 
 class FOnlineSessionSearch;
 class FOnlineSessionSearchResult;
@@ -55,6 +56,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USplineComponent> Spline;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<USkillComponent> SkillComponent;
 
 private:
 	FTimerHandle Handle_AutoRun;
