@@ -52,10 +52,10 @@ void USTSessionSubSystem::OnRegisterPlayerComplete(FName SessionName, const TArr
 
 	if (sessionInterface)
 	{
-		sessionInterface->ClearOnCreateSessionCompleteDelegate_Handle(Handle_CreateSessionComplete);
+		sessionInterface->ClearOnRegisterPlayersCompleteDelegate_Handle(Handle_RegisterPlayerComplete);
 	}
 
-	OnCreateSessionCompleteEvent.Broadcast(bWasSuccessful);
+	OnRegisterPlayerCompleteEvent.Broadcast(bWasSuccessful);
 
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
 	if (!PC || PC->HasAuthority())
@@ -180,8 +180,8 @@ void USTSessionSubSystem::UpdateSession(FName SessionName)
 
 	if (!sessionInterface->UpdateSession(SessionName, *updatedSessionSettings))
 	{
-		sessionInterface->ClearOnUpdateSessionCompleteDelegate_Handle(Handle_StartSessionComplete);
-		OnStartSessionCompleteEvent.Broadcast(false);
+		sessionInterface->ClearOnUpdateSessionCompleteDelegate_Handle(Handle_UpdatetSessionComplete);
+		OnUpdateSessionCompleteEvent.Broadcast(false);
 	}
 }
 
@@ -190,7 +190,7 @@ void USTSessionSubSystem::OnUpdateSessionComplete(FName SessionName, bool bWasSu
 	const IOnlineSessionPtr sessionInterface = Online::GetSessionInterface(GetWorld());
 	if (sessionInterface)
 	{
-		sessionInterface->ClearOnUpdateSessionCompleteDelegate_Handle(Handle_StartSessionComplete);
+		sessionInterface->ClearOnUpdateSessionCompleteDelegate_Handle(Handle_UpdatetSessionComplete);
 	}
 
 	OnUpdateSessionCompleteEvent.Broadcast(bWasSuccessful);
