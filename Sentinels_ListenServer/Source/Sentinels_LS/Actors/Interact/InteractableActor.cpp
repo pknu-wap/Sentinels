@@ -24,3 +24,7 @@ void AInteractableActor::BeginPlay()
 void AInteractableActor::Interact()
 {
 }
+
+void AInteractableActor::ShowInteractiveUI()
+{
+}

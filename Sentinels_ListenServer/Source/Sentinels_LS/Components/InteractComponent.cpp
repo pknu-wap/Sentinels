@@ -69,7 +69,10 @@ void UInteractComponent::FindInteractiveActor()
 		InteractiveObject = Cast<IInteractiveInterface>(hitResult.GetActor());
 
 		// Show Interactable UI 
-
+		if (InteractiveObject)
+		{
+			InteractiveObject->ShowInteractiveUI();
+		}
 	}
 	else
 	{

@@ -25,7 +25,7 @@ protected:
 	*/
 protected:
 	virtual void Interact() override;
-	virtual void ShowInteractiveUI()
+	virtual void ShowInteractiveUI() override;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
