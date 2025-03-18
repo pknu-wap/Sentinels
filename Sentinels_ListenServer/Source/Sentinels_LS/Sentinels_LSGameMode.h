@@ -16,6 +16,7 @@ public:
 
 protected:
 	virtual void PostLogin(APlayerController* NewPlayer) override;
+	UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
 };
 
 

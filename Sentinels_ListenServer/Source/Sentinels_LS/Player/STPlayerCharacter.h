@@ -96,21 +96,6 @@ protected:
 	UInputAction* Skill_R_Action;
 
 	/*
-		Classes
-	*/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Class", meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<ASTPlayerCharacter> PawnClass_GreatSword;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Class", meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<ASTPlayerCharacter> PawnClass_Katana;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Class", meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<ASTPlayerCharacter> PawnClass_DualBlade;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Class", meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<ASTPlayerCharacter> PawnClass_Magician;
-
-	/*
 		Montages
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))

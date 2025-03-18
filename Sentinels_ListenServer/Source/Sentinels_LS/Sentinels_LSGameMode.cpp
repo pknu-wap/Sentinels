@@ -9,6 +9,8 @@
 #include "OnlineSubsystemTypes.h"
 #include "GameFramework/PlayerState.h"
 #include "System/STGameInstance.h"
+#include "Player/STPlayerController.h"
+#include "Kismet/GameplayStatics.h"
 
 ASentinels_LSGameMode::ASentinels_LSGameMode()
 {
@@ -29,4 +31,15 @@ void ASentinels_LSGameMode::PostLogin(APlayerController* NewPlayer)
 
     IOnlineSessionPtr SessionInterface = OnlineSub->GetSessionInterface();
     if (!SessionInterface.IsValid()) return;
+}
+
+UClass* ASentinels_LSGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)
+{
+	ASTPlayerController* STController = Cast<ASTPlayerController>(InController);
+	if (STController && STController->GetDefaultPlayerClass())
+	{
+		return STController->GetDefaultPlayerClass();
+	}
+
+	return DefaultPawnClass;
 }

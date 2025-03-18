@@ -12,6 +12,7 @@
 #include "GameFramework/PlayerController.h"
 #include "NavigationSystem.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
+#include "Components/SkillComponent.h"
 
 ASTPlayerCharacter::ASTPlayerCharacter()
 {
@@ -79,9 +80,18 @@ void ASTPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	}
 }
 
+#pragma region Region_Skills
+
 void ASTPlayerCharacter::Skill_Q_Pressed()
 {
+	USkillComponent* SkillComp = GetController()->GetComponentByClass<USkillComponent>();
+	if (SkillComp && SkillComp->CanActivateSkill(0))
+	{
+		SkillComp->ActivateSkill(0);
 
+		PlayMontage_Skill_Q();
+		Skill_Q_Pressed_Server();
+	}
 }
 
 void ASTPlayerCharacter::PlayMontage_Skill_Q()
@@ -95,14 +105,33 @@ void ASTPlayerCharacter::PlayMontage_Skill_Q()
 
 void ASTPlayerCharacter::Skill_Q_Pressed_Server_Implementation()
 {
+	Skill_Q_Pressed_Multicast();
 }
 
 void ASTPlayerCharacter::Skill_Q_Pressed_Multicast_Implementation()
 {
+	if (!IsLocallyControlled())
+	{
+		UE_LOG(LogTemp, Display, TEXT("ASTPlayerCharacter : Skill_Q_Pressed_Multicast Called!"));
+
+		UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+		if (AnimInst)
+		{
+			AnimInst->Montage_Play(Montage_Skill_Q);
+		}
+	}
 }
 
 void ASTPlayerCharacter::Skill_W_Pressed()
 {
+	USkillComponent* SkillComp = GetController()->GetComponentByClass<USkillComponent>();
+	if (SkillComp && SkillComp->CanActivateSkill(1))
+	{
+		SkillComp->ActivateSkill(1);
+
+		PlayMontage_Skill_W();
+		Skill_W_Pressed_Server();
+	}
 }
 
 void ASTPlayerCharacter::PlayMontage_Skill_W()
@@ -116,15 +145,33 @@ void ASTPlayerCharacter::PlayMontage_Skill_W()
 
 void ASTPlayerCharacter::Skill_W_Pressed_Server_Implementation()
 {
+	Skill_W_Pressed_Multicast();
 }
 
 void ASTPlayerCharacter::Skill_W_Pressed_Multicast_Implementation()
 {
+	if (!IsLocallyControlled())
+	{
+		UE_LOG(LogTemp, Display, TEXT("ASTPlayerCharacter : Skill_W_Pressed_Multicast Called!"));
+
+		UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+		if (AnimInst)
+		{
+			AnimInst->Montage_Play(Montage_Skill_W);
+		}
+	}
 }
 
 void ASTPlayerCharacter::Skill_E_Pressed()
 {
+	USkillComponent* SkillComp = GetController()->GetComponentByClass<USkillComponent>();
+	if (SkillComp && SkillComp->CanActivateSkill(2))
+	{
+		SkillComp->ActivateSkill(2);
 
+		PlayMontage_Skill_E();
+		Skill_E_Pressed_Server();
+	}
 }
 
 void ASTPlayerCharacter::PlayMontage_Skill_E()
@@ -138,15 +185,33 @@ void ASTPlayerCharacter::PlayMontage_Skill_E()
 
 void ASTPlayerCharacter::Skill_E_Pressed_Server_Implementation()
 {
+	Skill_E_Pressed_Multicast();
 }
 
 void ASTPlayerCharacter::Skill_E_Pressed_Multicast_Implementation()
 {
+	if (!IsLocallyControlled())
+	{
+		UE_LOG(LogTemp, Display, TEXT("ASTPlayerCharacter : Skill_E_Pressed_Multicast Called!"));
+
+		UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+		if (AnimInst)
+		{
+			AnimInst->Montage_Play(Montage_Skill_E);
+		}
+	}
 }
 
 void ASTPlayerCharacter::Skill_R_Pressed()
 {
+	USkillComponent* SkillComp = GetController()->GetComponentByClass<USkillComponent>();
+	if (SkillComp && SkillComp->CanActivateSkill(3))
+	{
+		SkillComp->ActivateSkill(3);
 
+		PlayMontage_Skill_R();
+		Skill_R_Pressed_Server();
+	}
 }
 
 void ASTPlayerCharacter::PlayMontage_Skill_R()
@@ -160,9 +225,21 @@ void ASTPlayerCharacter::PlayMontage_Skill_R()
 
 void ASTPlayerCharacter::Skill_R_Pressed_Server_Implementation()
 {
+	Skill_R_Pressed_Multicast();
 }
 
 void ASTPlayerCharacter::Skill_R_Pressed_Multicast_Implementation()
 {
+	if (!IsLocallyControlled())
+	{
+		UE_LOG(LogTemp, Display, TEXT("ASTPlayerCharacter : Skill_R_Pressed_Multicast Called!"));
+
+		UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+		if (AnimInst)
+		{
+			AnimInst->Montage_Play(Montage_Skill_R);
+		}
+	}
 }
 
+#pragma endregion

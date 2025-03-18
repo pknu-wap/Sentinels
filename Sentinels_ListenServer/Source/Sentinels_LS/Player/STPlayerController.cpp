@@ -8,6 +8,8 @@
 #include "Components/SplineComponent.h"
 #include "DrawDebugHelpers.h"
 #include "Components/SkillComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sentinels_LSGameMode.h"
 
 ASTPlayerController::ASTPlayerController()
 {
@@ -38,6 +40,36 @@ void ASTPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(MoveClickAction, ETriggerEvent::Completed, this, &ASTPlayerController::MoveClick_Released);
 		EnhancedInputComponent->BindAction(MoveClickAction, ETriggerEvent::Canceled, this, &ASTPlayerController::MoveClick_Released);
 	}
+}
+
+void ASTPlayerController::UpdatePlayerClass_Implementation(ESTClassType InClass)
+{
+	GetPawn()->Destroy();
+
+	AGameModeBase* GameMode = UGameplayStatics::GetGameMode(this);
+	if (!GameMode) return;
+	 
+	switch (InClass)
+	{
+	case ESTClassType::GreatSword:
+		DefaultPlayerClass = PawnClass_GreatSword;
+		break;
+	case ESTClassType::Katana:
+		DefaultPlayerClass = PawnClass_Katana;
+		break;
+	case ESTClassType::DualBlade:
+		DefaultPlayerClass = PawnClass_DualBlade;
+		break;
+	case ESTClassType::Magician:
+		DefaultPlayerClass = PawnClass_Magician;
+		break;
+	default:
+		break;
+	}
+
+	AController* PC = this;
+	GetWorldTimerManager().SetTimerForNextTick([GameMode, PC]() { GameMode->RestartPlayer(PC); });
+	// GameMode->RestartPlayer(this);
 }
 
 void ASTPlayerController::MoveClick_Started()
