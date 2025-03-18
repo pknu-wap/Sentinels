@@ -13,7 +13,9 @@
 class ASTPlayerCharacter;
 class UInputAction;
 class USplineComponent;
+class UInventoryComponent;
 class USkillComponent;
+class UInteractComponent;
 
 class FOnlineSessionSearch;
 class FOnlineSessionSearchResult;
@@ -28,7 +30,6 @@ public:
 
 protected:
 	virtual void Tick(float DeltaTime) override;
-
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	/*
@@ -52,6 +53,11 @@ public:
 	void MoveClick_Triggered();
 	void MoveClick_Released();
 	void AutoRun();
+
+	/*
+		Interact
+	*/
+	void Interact();
 	
 protected:
 	/*
@@ -59,6 +65,9 @@ protected:
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* MoveClickAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* InteractAction;
 
 	/*
 		Movement
@@ -71,6 +80,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USplineComponent> Spline;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<UInteractComponent> InteractComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<USkillComponent> SkillComponent;

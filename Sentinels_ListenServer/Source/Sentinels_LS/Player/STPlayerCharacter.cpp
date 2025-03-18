@@ -13,6 +13,8 @@
 #include "NavigationSystem.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Components/SkillComponent.h"
+#include "Components/InventoryComponent.h"
+#include "Net/UnrealNetwork.h"
 
 ASTPlayerCharacter::ASTPlayerCharacter()
 {
@@ -51,6 +53,9 @@ ASTPlayerCharacter::ASTPlayerCharacter()
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 
+	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComp"));
+	InventoryComponent->SetIsReplicated(true);
+
 }
 
 void ASTPlayerCharacter::BeginPlay()
@@ -79,6 +84,13 @@ void ASTPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 	}
 }
+
+void ASTPlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ASTPlayerCharacter, InventoryComponent);
+}
+
 
 #pragma region Region_Skills
 

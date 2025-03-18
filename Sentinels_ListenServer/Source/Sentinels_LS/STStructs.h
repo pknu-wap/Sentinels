@@ -36,3 +36,30 @@ struct SENTINELS_LS_API FSkillStruct : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float SkillCoolTime = 5.f;
 };
+
+USTRUCT(BlueprintType)
+struct SENTINELS_LS_API FInvSlotStruct : public FTableRowBase
+{
+	GENERATED_BODY()
+	FInvSlotStruct() {};
+	FInvSlotStruct(int InItemID, int InQuantity) : ItemID(InItemID), Quantity(InQuantity)
+	{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int ItemID = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int Quantity = 0;
+};
+
+USTRUCT(BlueprintType)
+struct SENTINELS_LS_API FItemStruct : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	FItemStruct() {};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int ItemID = 0;
+
+};

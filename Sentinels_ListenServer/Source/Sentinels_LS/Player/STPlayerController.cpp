@@ -2,12 +2,14 @@
 
 
 #include "Player/STPlayerController.h"
+#include "Components/SkillComponent.h"
+#include "Components/InventoryComponent.h"
+#include "Components/InteractComponent.h"
+#include "Components/SplineComponent.h"
 #include "EnhancedInputComponent.h"
 #include "NavigationSystem.h"
 #include "NavigationPath.h"
-#include "Components/SplineComponent.h"
 #include "DrawDebugHelpers.h"
-#include "Components/SkillComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sentinels_LSGameMode.h"
 
@@ -18,6 +20,9 @@ ASTPlayerController::ASTPlayerController()
 
 	SkillComponent = CreateDefaultSubobject<USkillComponent>(TEXT("SkillComp"));
 	SkillComponent->SetIsReplicated(true);
+
+	InteractComponent = CreateDefaultSubobject<UInteractComponent>(TEXT("InteractComp"));
+	InteractComponent->SetIsReplicated(true);
 }
 
 void ASTPlayerController::Tick(float DeltaTime)
@@ -27,6 +32,7 @@ void ASTPlayerController::Tick(float DeltaTime)
 
 void ASTPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 }
 
 void ASTPlayerController::SetupInputComponent()
@@ -39,6 +45,8 @@ void ASTPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(MoveClickAction, ETriggerEvent::Triggered, this, &ASTPlayerController::MoveClick_Triggered);
 		EnhancedInputComponent->BindAction(MoveClickAction, ETriggerEvent::Completed, this, &ASTPlayerController::MoveClick_Released);
 		EnhancedInputComponent->BindAction(MoveClickAction, ETriggerEvent::Canceled, this, &ASTPlayerController::MoveClick_Released);
+
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &ASTPlayerController::Interact);
 	}
 }
 
@@ -142,5 +150,11 @@ void ASTPlayerController::AutoRun()
 			GetWorldTimerManager().ClearTimer(Handle_AutoRun);
 		}
 	}
+}
+
+void ASTPlayerController::Interact()
+{
+	if(InteractComponent)
+		InteractComponent->Interact();
 }
 

@@ -11,6 +11,7 @@ class UInputMappingContext;
 class USpringArmComponent;
 class UCameraComponent;
 class ASTPlayerCharacter;
+class UInventoryComponent;
 
 UCLASS()
 class SENTINELS_LS_API ASTPlayerCharacter : public ASTCharacterBase
@@ -24,6 +25,7 @@ protected:
 	// APawn interface
 	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	/*
 		Skills
@@ -73,6 +75,12 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
+
+	/*
+		Inventory
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated)
+	TObjectPtr<UInventoryComponent> InventoryComponent;
 
 	/* 
 		Input 
