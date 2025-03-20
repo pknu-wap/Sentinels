@@ -42,6 +42,17 @@ protected:
 
 	void AutoRun();
 	
+public:
+	/*
+		Session
+	*/
+	void RegisterSelfToSession(FName SessionName);
+
+	UFUNCTION(Server, Reliable)
+	void RegisterSelfToSession_Server(FName SessionName);
+
+	FName CurrentSession;
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* MoveClickAction;
