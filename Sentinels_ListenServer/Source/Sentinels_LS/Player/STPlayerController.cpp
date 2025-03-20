@@ -2,11 +2,16 @@
 
 
 #include "Player/STPlayerController.h"
+#include "Components/SkillComponent.h"
+#include "Components/InventoryComponent.h"
+#include "Components/InteractComponent.h"
+#include "Components/SplineComponent.h"
 #include "EnhancedInputComponent.h"
 #include "NavigationSystem.h"
 #include "NavigationPath.h"
-#include "Components/SplineComponent.h"
 #include "DrawDebugHelpers.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sentinels_LSGameMode.h"
 #include "Interfaces/OnlineSessionInterface.h"
 #include "OnlineSubsystem.h"
 #include "Online/OnlineSessionNames.h"
@@ -19,6 +24,12 @@ ASTPlayerController::ASTPlayerController()
 {
 	Spline = CreateDefaultSubobject<USplineComponent>(TEXT("Spline"));
 	Spline->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+
+	SkillComponent = CreateDefaultSubobject<USkillComponent>(TEXT("SkillComp"));
+	SkillComponent->SetIsReplicated(true);
+
+	InteractComponent = CreateDefaultSubobject<UInteractComponent>(TEXT("InteractComp"));
+	InteractComponent->SetIsReplicated(true);
 }
 
 void ASTPlayerController::Tick(float DeltaTime)
@@ -28,6 +39,7 @@ void ASTPlayerController::Tick(float DeltaTime)
 
 void ASTPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 }
 
 void ASTPlayerController::SetupInputComponent()
@@ -40,7 +52,39 @@ void ASTPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(MoveClickAction, ETriggerEvent::Triggered, this, &ASTPlayerController::MoveClick_Triggered);
 		EnhancedInputComponent->BindAction(MoveClickAction, ETriggerEvent::Completed, this, &ASTPlayerController::MoveClick_Released);
 		EnhancedInputComponent->BindAction(MoveClickAction, ETriggerEvent::Canceled, this, &ASTPlayerController::MoveClick_Released);
+
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &ASTPlayerController::Interact);
 	}
+}
+
+void ASTPlayerController::UpdatePlayerClass_Implementation(ESTClassType InClass)
+{
+	GetPawn()->Destroy();
+
+	AGameModeBase* GameMode = UGameplayStatics::GetGameMode(this);
+	if (!GameMode) return;
+	 
+	switch (InClass)
+	{
+	case ESTClassType::GreatSword:
+		DefaultPlayerClass = PawnClass_GreatSword;
+		break;
+	case ESTClassType::Katana:
+		DefaultPlayerClass = PawnClass_Katana;
+		break;
+	case ESTClassType::DualBlade:
+		DefaultPlayerClass = PawnClass_DualBlade;
+		break;
+	case ESTClassType::Magician:
+		DefaultPlayerClass = PawnClass_Magician;
+		break;
+	default:
+		break;
+	}
+
+	AController* PC = this;
+	GetWorldTimerManager().SetTimerForNextTick([GameMode, PC]() { GameMode->RestartPlayer(PC); });
+	// GameMode->RestartPlayer(this);
 }
 
 void ASTPlayerController::MoveClick_Started()
@@ -113,6 +157,12 @@ void ASTPlayerController::AutoRun()
 			GetWorldTimerManager().ClearTimer(Handle_AutoRun);
 		}
 	}
+}
+
+void ASTPlayerController::Interact()
+{
+	if(InteractComponent)
+		InteractComponent->Interact();
 }
 
 void ASTPlayerController::RegisterSelfToSession(FName SessionName)

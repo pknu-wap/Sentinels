@@ -7,10 +7,15 @@
 #include "OnlineSessionSettings.h"
 #include "Interfaces/OnlineSessionDelegates.h"
 #include "Interfaces/OnlineSessionInterface.h"
+#include "STEnums.h"
 #include "STPlayerController.generated.h"
 
+class ASTPlayerCharacter;
 class UInputAction;
 class USplineComponent;
+class UInventoryComponent;
+class USkillComponent;
+class UInteractComponent;
 
 class FOnlineSessionSearch;
 class FOnlineSessionSearchResult;
@@ -25,7 +30,6 @@ public:
 
 protected:
 	virtual void Tick(float DeltaTime) override;
-
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	/*
@@ -33,14 +37,27 @@ protected:
 	*/
 	virtual void SetupInputComponent() override;
 
+public:
+	/*
+		Update Player
+	*/
+	TSubclassOf<APawn> GetDefaultPlayerClass() { return DefaultPlayerClass; }
+
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void UpdatePlayerClass(ESTClassType InClass);
+
 	/*
 		Move
 	*/
 	void MoveClick_Started();
 	void MoveClick_Triggered();
 	void MoveClick_Released();
-
 	void AutoRun();
+
+	/*
+		Interact
+	*/
+	void Interact();
 	
 public:
 	/*
@@ -54,10 +71,18 @@ public:
 	FName CurrentSession;
 
 protected:
+	/*
+		Input
+	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* MoveClickAction;
 
-	/** Time Threshold to know if it was a short press */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* InteractAction;
+
+	/*
+		Movement
+	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	float ShortPressThreshold;
 
@@ -66,6 +91,30 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USplineComponent> Spline;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<UInteractComponent> InteractComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<USkillComponent> SkillComponent;
+
+	/*
+		Classes
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Class", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<APawn> PawnClass_GreatSword;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Class", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<APawn> PawnClass_Katana;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Class", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<APawn> PawnClass_DualBlade;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Class", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<APawn> PawnClass_Magician;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Class", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<APawn> DefaultPlayerClass;
 
 private:
 	FTimerHandle Handle_AutoRun;

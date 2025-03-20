@@ -18,6 +18,7 @@ public:
 
 protected:
 	virtual void PostLogin(APlayerController* NewPlayer) override;
+	UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
 
 	void OnRegisterPlayerComplete(FName SessionName, const TArray<FUniqueNetIdRef>& players, bool bWasSuccessful);
 

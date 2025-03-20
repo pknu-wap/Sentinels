@@ -18,7 +18,7 @@ class SENTINELS_LS_API ASTCharacterBase : public ACharacter
 
 public:
 	// Sets default values for this character's properties
-	ASTCharacterBase();
+	ASTCharacterBase(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 protected:
 	// Called when the game starts or when spawned
