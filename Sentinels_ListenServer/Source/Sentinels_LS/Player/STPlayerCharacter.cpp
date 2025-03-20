@@ -12,8 +12,13 @@
 #include "GameFramework/PlayerController.h"
 #include "NavigationSystem.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
+#include "Components/SkillComponent.h"
+#include "Components/InventoryComponent.h"
+#include "Components/STCharacterMovementComponent.h"
+#include "Net/UnrealNetwork.h"
 
-ASTPlayerCharacter::ASTPlayerCharacter()
+ASTPlayerCharacter::ASTPlayerCharacter(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer.SetDefaultSubobjectClass<USTCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -50,6 +55,9 @@ ASTPlayerCharacter::ASTPlayerCharacter()
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 
+	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComp"));
+	InventoryComponent->SetIsReplicated(true);
+
 }
 
 void ASTPlayerCharacter::BeginPlay()
@@ -71,7 +79,181 @@ void ASTPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) 
 	{
+		EnhancedInputComponent->BindAction(Skill_Q_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_Q_Pressed);
+		EnhancedInputComponent->BindAction(Skill_W_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_W_Pressed);
+		EnhancedInputComponent->BindAction(Skill_E_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_E_Pressed);
+		EnhancedInputComponent->BindAction(Skill_R_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_R_Pressed);
 
 	}
 }
 
+void ASTPlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ASTPlayerCharacter, InventoryComponent);
+}
+
+
+#pragma region Region_Skills
+
+void ASTPlayerCharacter::Skill_Q_Pressed()
+{
+	USkillComponent* SkillComp = GetController()->GetComponentByClass<USkillComponent>();
+	if (SkillComp && SkillComp->CanActivateSkill(0))
+	{
+		SkillComp->ActivateSkill(0);
+
+		PlayMontage_Skill_Q();
+		Skill_Q_Pressed_Server();
+	}
+}
+
+void ASTPlayerCharacter::PlayMontage_Skill_Q()
+{
+	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+	if (AnimInst)
+	{
+		AnimInst->Montage_Play(Montage_Skill_Q);
+	}
+}
+
+void ASTPlayerCharacter::Skill_Q_Pressed_Server_Implementation()
+{
+	Skill_Q_Pressed_Multicast();
+}
+
+void ASTPlayerCharacter::Skill_Q_Pressed_Multicast_Implementation()
+{
+	if (!IsLocallyControlled())
+	{
+		UE_LOG(LogTemp, Display, TEXT("ASTPlayerCharacter : Skill_Q_Pressed_Multicast Called!"));
+
+		UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+		if (AnimInst)
+		{
+			AnimInst->Montage_Play(Montage_Skill_Q);
+		}
+	}
+}
+
+void ASTPlayerCharacter::Skill_W_Pressed()
+{
+	USkillComponent* SkillComp = GetController()->GetComponentByClass<USkillComponent>();
+	if (SkillComp && SkillComp->CanActivateSkill(1))
+	{
+		SkillComp->ActivateSkill(1);
+
+		PlayMontage_Skill_W();
+		Skill_W_Pressed_Server();
+	}
+}
+
+void ASTPlayerCharacter::PlayMontage_Skill_W()
+{
+	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+	if (AnimInst)
+	{
+		AnimInst->Montage_Play(Montage_Skill_W);
+	}
+}
+
+void ASTPlayerCharacter::Skill_W_Pressed_Server_Implementation()
+{
+	Skill_W_Pressed_Multicast();
+}
+
+void ASTPlayerCharacter::Skill_W_Pressed_Multicast_Implementation()
+{
+	if (!IsLocallyControlled())
+	{
+		UE_LOG(LogTemp, Display, TEXT("ASTPlayerCharacter : Skill_W_Pressed_Multicast Called!"));
+
+		UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+		if (AnimInst)
+		{
+			AnimInst->Montage_Play(Montage_Skill_W);
+		}
+	}
+}
+
+void ASTPlayerCharacter::Skill_E_Pressed()
+{
+	USkillComponent* SkillComp = GetController()->GetComponentByClass<USkillComponent>();
+	if (SkillComp && SkillComp->CanActivateSkill(2))
+	{
+		SkillComp->ActivateSkill(2);
+
+		PlayMontage_Skill_E();
+		Skill_E_Pressed_Server();
+	}
+}
+
+void ASTPlayerCharacter::PlayMontage_Skill_E()
+{
+	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+	if (AnimInst)
+	{
+		AnimInst->Montage_Play(Montage_Skill_E);
+	}
+}
+
+void ASTPlayerCharacter::Skill_E_Pressed_Server_Implementation()
+{
+	Skill_E_Pressed_Multicast();
+}
+
+void ASTPlayerCharacter::Skill_E_Pressed_Multicast_Implementation()
+{
+	if (!IsLocallyControlled())
+	{
+		UE_LOG(LogTemp, Display, TEXT("ASTPlayerCharacter : Skill_E_Pressed_Multicast Called!"));
+
+		UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+		if (AnimInst)
+		{
+			AnimInst->Montage_Play(Montage_Skill_E);
+		}
+	}
+}
+
+void ASTPlayerCharacter::Skill_R_Pressed()
+{
+	USkillComponent* SkillComp = GetController()->GetComponentByClass<USkillComponent>();
+	if (SkillComp && SkillComp->CanActivateSkill(3))
+	{
+		SkillComp->ActivateSkill(3);
+
+		PlayMontage_Skill_R();
+		Skill_R_Pressed_Server();
+	}
+}
+
+void ASTPlayerCharacter::PlayMontage_Skill_R()
+{
+	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+	if (AnimInst)
+	{
+		AnimInst->Montage_Play(Montage_Skill_R);
+	}
+}
+
+void ASTPlayerCharacter::Skill_R_Pressed_Server_Implementation()
+{
+	Skill_R_Pressed_Multicast();
+}
+
+void ASTPlayerCharacter::Skill_R_Pressed_Multicast_Implementation()
+{
+	if (!IsLocallyControlled())
+	{
+		UE_LOG(LogTemp, Display, TEXT("ASTPlayerCharacter : Skill_R_Pressed_Multicast Called!"));
+
+		UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+		if (AnimInst)
+		{
+			AnimInst->Montage_Play(Montage_Skill_R);
+		}
+	}
+}
+
+#pragma endregion

@@ -3,3 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
+UENUM(BlueprintType)
+enum class ESTClassType : uint8
+{
+	GreatSword,
+	Katana,
+	DualBlade,
+	Magician	
+};

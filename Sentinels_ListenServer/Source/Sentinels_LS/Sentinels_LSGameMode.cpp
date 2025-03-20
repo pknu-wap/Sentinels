@@ -9,6 +9,8 @@
 #include "OnlineSubsystemTypes.h"
 #include "GameFramework/PlayerState.h"
 #include "System/STGameInstance.h"
+#include "Player/STPlayerController.h"
+#include "Kismet/GameplayStatics.h"
 
 ASentinels_LSGameMode::ASentinels_LSGameMode()
 	: Delegate_RegisterPlayerComplete(FOnRegisterPlayersCompleteDelegate::CreateUObject(this, &ASentinels_LSGameMode::OnRegisterPlayerComplete))
@@ -54,4 +56,15 @@ void ASentinels_LSGameMode::OnRegisterPlayerComplete(FName SessionName, const TA
 	if (!SessionInterface.IsValid()) return;
 
 	SessionInterface->ClearOnRegisterPlayersCompleteDelegate_Handle(Handle_RegisterPlayerComplete);
+}
+
+UClass* ASentinels_LSGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)
+{
+	ASTPlayerController* STController = Cast<ASTPlayerController>(InController);
+	if (STController && STController->GetDefaultPlayerClass())
+	{
+		return STController->GetDefaultPlayerClass();
+	}
+
+	return DefaultPawnClass;
 }
