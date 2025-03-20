@@ -28,6 +28,7 @@ public:
 	int NumOpenPublicConnections;
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSTOnRegisterPlayerComplete, bool, Successful);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSTOnCreateSessionComplete, bool, Successful);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSTOnUpdateSessionComplete, bool, Successful);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSTOnStartSessionComplete, bool, Successful);
@@ -77,6 +78,8 @@ public:
 	void OnJoinSessionCompleted(FName SessionName, EOnJoinSessionCompleteResult::Type Result);
 
 protected:
+	UPROPERTY(BlueprintAssignable)
+	FSTOnRegisterPlayerComplete OnRegisterPlayerCompleteEvent;
 	UPROPERTY(BlueprintAssignable)
 	FSTOnCreateSessionComplete OnCreateSessionCompleteEvent;
 	UPROPERTY(BlueprintAssignable)
