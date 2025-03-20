@@ -37,39 +37,3 @@ void ASTPlayerCharacter_GreatSword::Skill_Q_Pressed_Multicast_Implementation()
 		}
 	}
 }
-
-void ASTPlayerCharacter_GreatSword::Skill_W_Pressed()
-{
-}
-
-void ASTPlayerCharacter_GreatSword::Skill_W_Pressed_Server_Implementation()
-{
-}
-
-void ASTPlayerCharacter_GreatSword::Skill_W_Pressed_Multicast_Implementation()
-{
-}
-
-void ASTPlayerCharacter_GreatSword::Skill_E_Pressed()
-{
-}
-
-void ASTPlayerCharacter_GreatSword::Skill_E_Pressed_Server_Implementation()
-{
-}
-
-void ASTPlayerCharacter_GreatSword::Skill_E_Pressed_Multicast_Implementation()
-{
-}
-
-void ASTPlayerCharacter_GreatSword::Skill_R_Pressed()
-{
-}
-
-void ASTPlayerCharacter_GreatSword::Skill_R_Pressed_Server_Implementation()
-{
-}
-
-void ASTPlayerCharacter_GreatSword::Skill_R_Pressed_Multicast_Implementation()
-{
-}

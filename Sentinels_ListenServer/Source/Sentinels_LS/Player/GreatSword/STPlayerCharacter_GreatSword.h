@@ -20,7 +20,7 @@ protected:
 	virtual void Skill_Q_Pressed_Server_Implementation() override;
 	virtual void Skill_Q_Pressed_Multicast_Implementation() override;
 
-	virtual void Skill_W_Pressed() override;
+	/*virtual void Skill_W_Pressed() override;
 	virtual void Skill_W_Pressed_Server_Implementation() override;
 	virtual void Skill_W_Pressed_Multicast_Implementation() override;
 
@@ -30,5 +30,5 @@ protected:
 
 	virtual void Skill_R_Pressed() override;
 	virtual void Skill_R_Pressed_Server_Implementation() override;
-	virtual void Skill_R_Pressed_Multicast_Implementation() override;
+	virtual void Skill_R_Pressed_Multicast_Implementation() override;*/
 };

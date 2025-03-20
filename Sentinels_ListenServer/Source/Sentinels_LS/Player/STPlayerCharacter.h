@@ -19,7 +19,7 @@ class SENTINELS_LS_API ASTPlayerCharacter : public ASTCharacterBase
 	GENERATED_BODY()
 
 public:
-	ASTPlayerCharacter();
+	ASTPlayerCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 protected:
 	// APawn interface

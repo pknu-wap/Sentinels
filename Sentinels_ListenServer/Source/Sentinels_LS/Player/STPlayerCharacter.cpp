@@ -14,9 +14,11 @@
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Components/SkillComponent.h"
 #include "Components/InventoryComponent.h"
+#include "Components/STCharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 
-ASTPlayerCharacter::ASTPlayerCharacter()
+ASTPlayerCharacter::ASTPlayerCharacter(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer.SetDefaultSubobjectClass<USTCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
