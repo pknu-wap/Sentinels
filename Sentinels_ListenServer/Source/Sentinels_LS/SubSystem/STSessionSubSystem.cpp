@@ -11,6 +11,8 @@
 #include "OnlineSubsystemUtils.h"
 #include "Kismet/GameplayStatics.h"
 #include "System/STGameInstance.h"
+#include "Sentinels_LSGameMode.h"
+#include "Player/STPlayerController.h"
 
 #pragma region Session
 
@@ -56,17 +58,6 @@ void USTSessionSubSystem::OnRegisterPlayerComplete(FName SessionName, const TArr
 	}
 
 	OnRegisterPlayerCompleteEvent.Broadcast(bWasSuccessful);
-
-	APlayerController* PC = GetWorld()->GetFirstPlayerController();
-	if (!PC || PC->HasAuthority())
-	{
-		return;
-	}
-
-	if (bWasSuccessful)
-	{
-		JoinGameSession(SessionName);
-	}
 }
 
 void USTSessionSubSystem::CreateSession(FName SessionName)
@@ -117,6 +108,18 @@ void USTSessionSubSystem::OnCreateSessionComplete(FName SessionName, bool bWasSu
 	}
 
 	OnCreateSessionCompleteEvent.Broadcast(bWasSuccessful);
+
+	USTGameInstance* GameInst = Cast<USTGameInstance>(GetGameInstance());
+	if (GameInst)
+	{
+		GameInst->CurrentSessionName = SessionName;
+	}
+
+	ASentinels_LSGameMode* GameMode = Cast<ASentinels_LSGameMode>(UGameplayStatics::GetGameMode(GameInst));
+	if (GameMode)
+	{
+		GameMode->CurrentSessionName = SessionName;
+	}
 
 	if (bWasSuccessful)
 	{
@@ -348,7 +351,23 @@ void USTSessionSubSystem::OnJoinSessionCompleted(FName SessionName, EOnJoinSessi
 	{
 		GameInst->CurrentSessionName = SessionName;
 	}
-	
+
+	ASentinels_LSGameMode* GameMode = Cast<ASentinels_LSGameMode>(UGameplayStatics::GetGameMode(GameInst));
+	if (GameMode)
+	{
+		GameMode->CurrentSessionName = SessionName;
+	}
+
+	FTimerHandle handle;
+	GetWorld()->GetTimerManager().SetTimer(handle, [this, SessionName]() 
+		{
+			ASTPlayerController* PC = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+			if (PC)
+			{
+				PC->RegisterSelfToSession(SessionName);
+			}
+		}, 3, false);
+
 	TryTravelToCurrentSession(SessionName);
 }
 
