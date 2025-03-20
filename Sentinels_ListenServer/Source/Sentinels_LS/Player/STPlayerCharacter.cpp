@@ -93,6 +93,18 @@ void ASTPlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	DOREPLIFETIME(ASTPlayerCharacter, InventoryComponent);
 }
 
+void ASTPlayerCharacter::SetFlyModeUntilMontageEnd()
+{
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+	GetMesh()->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &ASTPlayerCharacter::SetMovementMode_Walk);
+}
+
+void ASTPlayerCharacter::SetMovementMode_Walk(UAnimMontage* Montage, bool bInterrupted)
+{
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+	GetMesh()->GetAnimInstance()->OnMontageEnded.RemoveDynamic(this, &ASTPlayerCharacter::SetMovementMode_Walk);
+}
+
 
 #pragma region Region_Skills
 
@@ -113,6 +125,7 @@ void ASTPlayerCharacter::PlayMontage_Skill_Q()
 	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
 	if (AnimInst)
 	{
+		SetFlyModeUntilMontageEnd();
 		AnimInst->Montage_Play(Montage_Skill_Q);
 	}
 }
@@ -153,6 +166,7 @@ void ASTPlayerCharacter::PlayMontage_Skill_W()
 	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
 	if (AnimInst)
 	{
+		SetFlyModeUntilMontageEnd();
 		AnimInst->Montage_Play(Montage_Skill_W);
 	}
 }
@@ -193,6 +207,7 @@ void ASTPlayerCharacter::PlayMontage_Skill_E()
 	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
 	if (AnimInst)
 	{
+		SetFlyModeUntilMontageEnd();
 		AnimInst->Montage_Play(Montage_Skill_E);
 	}
 }
@@ -233,6 +248,7 @@ void ASTPlayerCharacter::PlayMontage_Skill_R()
 	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
 	if (AnimInst)
 	{
+		SetFlyModeUntilMontageEnd();
 		AnimInst->Montage_Play(Montage_Skill_R);
 	}
 }

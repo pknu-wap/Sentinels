@@ -27,6 +27,12 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+protected:
+
+	void SetFlyModeUntilMontageEnd();
+	UFUNCTION()
+	void SetMovementMode_Walk(UAnimMontage* Montage, bool bInterrupted);
+
 	/*
 		Skills
 	*/
