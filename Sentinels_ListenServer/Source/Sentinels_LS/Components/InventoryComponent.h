@@ -27,6 +27,8 @@ public:
 	UFUNCTION(Server, Reliable)
 	void AddItem_Server(int InItemID);
 
+	const TArray<FInvSlotStruct>& GetInventory() const { return Inventory; }
+
 public:
 	UFUNCTION(BlueprintCallable)
 	void LogInventory();

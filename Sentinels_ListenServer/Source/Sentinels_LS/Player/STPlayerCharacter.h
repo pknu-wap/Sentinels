@@ -12,6 +12,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class ASTPlayerCharacter;
 class UInventoryComponent;
+class USTPlayerStatusComponent;
 
 UCLASS()
 class SENTINELS_LS_API ASTPlayerCharacter : public ASTCharacterBase
@@ -87,6 +88,12 @@ protected:
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated)
 	TObjectPtr<UInventoryComponent> InventoryComponent;
+
+	/*
+		Status
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated)
+	TObjectPtr<USTPlayerStatusComponent> StatusComponent;
 
 	/* 
 		Input 

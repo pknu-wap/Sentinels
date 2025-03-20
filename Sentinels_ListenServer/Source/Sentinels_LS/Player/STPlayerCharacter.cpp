@@ -15,6 +15,7 @@
 #include "Components/SkillComponent.h"
 #include "Components/InventoryComponent.h"
 #include "Components/STCharacterMovementComponent.h"
+#include "Components/STPlayerStatusComponent.h"
 #include "Net/UnrealNetwork.h"
 
 ASTPlayerCharacter::ASTPlayerCharacter(const FObjectInitializer& ObjectInitializer)
@@ -58,6 +59,9 @@ ASTPlayerCharacter::ASTPlayerCharacter(const FObjectInitializer& ObjectInitializ
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComp"));
 	InventoryComponent->SetIsReplicated(true);
 
+	StatusComponent = CreateDefaultSubobject<USTPlayerStatusComponent>(TEXT("StatusComp"));
+	StatusComponent->SetIsReplicated(true);
+
 }
 
 void ASTPlayerCharacter::BeginPlay()
@@ -91,6 +95,7 @@ void ASTPlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ASTPlayerCharacter, InventoryComponent);
+	DOREPLIFETIME(ASTPlayerCharacter, StatusComponent);
 }
 
 void ASTPlayerCharacter::SetFlyModeUntilMontageEnd()
