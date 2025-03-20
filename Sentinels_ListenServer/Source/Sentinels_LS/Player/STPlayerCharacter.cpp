@@ -96,6 +96,7 @@ void ASTPlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 void ASTPlayerCharacter::SetFlyModeUntilMontageEnd()
 {
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+	GetMesh()->GetAnimInstance()->OnMontageEnded.RemoveDynamic(this, &ASTPlayerCharacter::SetMovementMode_Walk);
 	GetMesh()->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &ASTPlayerCharacter::SetMovementMode_Walk);
 }
 
