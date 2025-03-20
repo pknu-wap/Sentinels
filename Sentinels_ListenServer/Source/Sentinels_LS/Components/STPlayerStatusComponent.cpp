@@ -82,6 +82,7 @@ void USTPlayerStatusComponent::CalculateStatus()
 
 void USTPlayerStatusComponent::OnRep_HPUpdated()
 {
+	UE_LOG(LogTemp, Display, TEXT("USTPlayerStatusComponent::OnRep_HPUpdated Called!"));
 	// Update UI
 
 	// Check Died
