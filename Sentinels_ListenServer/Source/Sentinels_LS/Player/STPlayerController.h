@@ -59,6 +59,17 @@ public:
 	*/
 	void Interact();
 	
+public:
+	/*
+		Session
+	*/
+	void RegisterSelfToSession(FName SessionName);
+
+	UFUNCTION(Server, Reliable)
+	void RegisterSelfToSession_Server(FName SessionName);
+
+	FName CurrentSession;
+
 protected:
 	/*
 		Input

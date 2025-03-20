@@ -12,6 +12,13 @@
 #include "DrawDebugHelpers.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sentinels_LSGameMode.h"
+#include "Interfaces/OnlineSessionInterface.h"
+#include "OnlineSubsystem.h"
+#include "Online/OnlineSessionNames.h"
+#include "OnlineSubsystemTypes.h"
+#include "OnlineSubsystemUtils.h"
+#include "GameFramework/PlayerState.h"
+
 
 ASTPlayerController::ASTPlayerController()
 {
@@ -156,5 +163,53 @@ void ASTPlayerController::Interact()
 {
 	if(InteractComponent)
 		InteractComponent->Interact();
+}
+
+void ASTPlayerController::RegisterSelfToSession(FName SessionName)
+{
+	const IOnlineSessionPtr sessionInterface = Online::GetSessionInterface(GetWorld());
+	if (sessionInterface)
+	{
+		ULocalPlayer* localPlayer = GetLocalPlayer();
+		if (localPlayer)
+		{
+			if (!sessionInterface->RegisterPlayer(SessionName, *localPlayer->GetPreferredUniqueNetId(), false))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("ASTPlayerController Failed To Register Player To Session."));
+			}
+		}
+		else if (PlayerState)
+		{
+			if (!sessionInterface->RegisterPlayer(SessionName, *PlayerState->GetUniqueId(), false))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("ASTPlayerController Failed To Register Player To Session."));
+			}
+		}
+	}
+
+	RegisterSelfToSession_Server(SessionName);
+}
+
+void ASTPlayerController::RegisterSelfToSession_Server_Implementation(FName SessionName)
+{
+	const IOnlineSessionPtr sessionInterface = Online::GetSessionInterface(GetWorld());
+	if (sessionInterface)
+	{
+		ULocalPlayer* localPlayer = GetLocalPlayer();
+		if (localPlayer)
+		{
+			if (!sessionInterface->RegisterPlayer(SessionName, *localPlayer->GetPreferredUniqueNetId(), false))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("ASTPlayerController Failed To Register Player To Session."));
+			}
+		}
+		else if (PlayerState)
+		{
+			if (!sessionInterface->RegisterPlayer(SessionName, *PlayerState->GetUniqueId(), false))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("ASTPlayerController Failed To Register Player To Session."));
+			}
+		}
+	}
 }
 
