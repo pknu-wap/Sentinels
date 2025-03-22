@@ -16,6 +16,7 @@ class USplineComponent;
 class UInventoryComponent;
 class USkillComponent;
 class UInteractComponent;
+class USTPlayerUIComponent;
 
 class FOnlineSessionSearch;
 class FOnlineSessionSearchResult;
@@ -115,6 +116,12 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Class", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<APawn> DefaultPlayerClass;
+
+	/*
+		UI
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<USTPlayerUIComponent> UIComponent;
 
 private:
 	FTimerHandle Handle_AutoRun;

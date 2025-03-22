@@ -6,6 +6,7 @@
 #include "Components/InventoryComponent.h"
 #include "Components/InteractComponent.h"
 #include "Components/SplineComponent.h"
+#include "Components/UI/STPlayerUIComponent.h"
 #include "EnhancedInputComponent.h"
 #include "NavigationSystem.h"
 #include "NavigationPath.h"
@@ -18,6 +19,7 @@
 #include "OnlineSubsystemTypes.h"
 #include "OnlineSubsystemUtils.h"
 #include "GameFramework/PlayerState.h"
+#include "EngineUtils.h"
 
 
 ASTPlayerController::ASTPlayerController()
@@ -30,6 +32,9 @@ ASTPlayerController::ASTPlayerController()
 
 	InteractComponent = CreateDefaultSubobject<UInteractComponent>(TEXT("InteractComp"));
 	InteractComponent->SetIsReplicated(true);
+
+	UIComponent = CreateDefaultSubobject<USTPlayerUIComponent>(TEXT("UIComp"));
+	UIComponent->SetIsReplicated(true);
 }
 
 void ASTPlayerController::Tick(float DeltaTime)
