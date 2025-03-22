@@ -16,9 +16,9 @@ class SENTINELS_LS_API ASTPlayerCharacter_GreatSword : public ASTPlayerCharacter
 	
 
 protected:
-	virtual void Skill_Q_Pressed() override;
+	/*virtual void Skill_Q_Pressed() override;
 	virtual void Skill_Q_Pressed_Server_Implementation() override;
-	virtual void Skill_Q_Pressed_Multicast_Implementation() override;
+	virtual void Skill_Q_Pressed_Multicast_Implementation() override;*/
 
 	/*virtual void Skill_W_Pressed() override;
 	virtual void Skill_W_Pressed_Server_Implementation() override;
