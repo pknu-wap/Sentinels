@@ -11,6 +11,7 @@ public class Sentinels_LS : ModuleRules
         PublicDependencyModuleNames.AddRange(new string[]
          { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput",
             "AIModule", "NavigationSystem",
+            "GameplayTags",
             "OnlineSubsystem", "OnlineSubsystemUtils",
          });
 

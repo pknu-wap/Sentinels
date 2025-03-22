@@ -2,6 +2,7 @@
 
 
 #include "STGameplayTags.h"
+#include "GameplayTagsManager.h"
 
 FSTGameplayTags FSTGameplayTags::GameplayTags;
 
