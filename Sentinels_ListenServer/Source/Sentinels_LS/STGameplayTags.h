@@ -19,7 +19,14 @@ public:
 	//////////  Widget   /////////
 
 	//////////  Mission  /////////
-
+	FGameplayTag Mission_Domination;
+	FGameplayTag Mission_Eliminate_EliteMonster;
+	FGameplayTag Mission_RescueHostage;
+	FGameplayTag Mission_EscortObject;
+	FGameplayTag Mission_DestroyObjects;
+	FGameplayTag Mission_Collect_QuestItems;
+	FGameplayTag Mission_RepairRift;
+	FGameplayTag Mission_FinalDefense;
 
 
 private:
