@@ -1,18 +1,18 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "System/Mission/RescueHostage/STMission_RescueHostage.h"
+#include "System/Mission/RepairRift/STMission_RepairRift.h"
 #include "Net/UnrealNetwork.h"
 #include "STGameplayTags.h"
 #include "Kismet/GameplayStatics.h"
-#include "Actors/Interact/NPC/InteractableNPC.h"
-#include "Actors/SpawnPoint/SpawnPoint_NPC.h"
+#include "Actors/Interact/Rift/InteractableRift.h"
+#include "Actors/SpawnPoint/SpawnPoint_Rift.h"
 
-USTMission_RescueHostage::USTMission_RescueHostage()
+USTMission_RepairRift::USTMission_RepairRift()
 {
 }
 
-void USTMission_RescueHostage::Tick(float DeltaTime)
+void USTMission_RepairRift::Tick(float DeltaTime)
 {
 	if (bIsMisionActivated)
 	{
@@ -28,15 +28,15 @@ void USTMission_RescueHostage::Tick(float DeltaTime)
 	}
 }
 
-void USTMission_RescueHostage::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void USTMission_RepairRift::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(USTMission_RescueHostage, MaxMissionTime);
-	DOREPLIFETIME(USTMission_RescueHostage, RescuedNPCInfos);
+	DOREPLIFETIME(USTMission_RepairRift, MaxMissionTime);
+	DOREPLIFETIME(USTMission_RepairRift, RepairedRiftInfos);
 }
 
-void USTMission_RescueHostage::ActivateMission()
+void USTMission_RepairRift::ActivateMission()
 {
 	Super::ActivateMission();
 
@@ -54,16 +54,16 @@ void USTMission_RescueHostage::ActivateMission()
 	TArray<AActor*> SpawnPoints;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), SubClassOfSpawnPoint, SpawnPoints);
 
-	for (int i = 0; i < RescuedNPCInfos.Num(); i++)
+	for (int i = 0; i < RepairedRiftInfos.Num(); i++)
 	{
 		// Set Random Point From SpawnPoints
-		
+
 		// SpawnLocation = 
 		// SpawnRotation =
 
-		if (RescuedNPCInfos[i].SubClassOfNPC)
+		if (RepairedRiftInfos[i].SubClassOfRift)
 		{
-			GetWorld()->SpawnActor<AActor>(RescuedNPCInfos[i].SubClassOfNPC, SpawnLocation, SpawnRotation);
+			GetWorld()->SpawnActor<AActor>(RepairedRiftInfos[i].SubClassOfRift, SpawnLocation, SpawnRotation);
 		}
 	}
 
@@ -73,7 +73,7 @@ void USTMission_RescueHostage::ActivateMission()
 	*/
 }
 
-void USTMission_RescueHostage::DeactivateMission(bool IsCleared)
+void USTMission_RepairRift::DeactivateMission(bool IsCleared)
 {
 	Super::DeactivateMission(IsCleared);
 
@@ -93,11 +93,11 @@ void USTMission_RescueHostage::DeactivateMission(bool IsCleared)
 	Delegate_MissionEnded.Broadcast(FSTGameplayTags::Get().Mission_RescueHostage, IsCleared);
 }
 
-bool USTMission_RescueHostage::IsMissionCleared()
+bool USTMission_RepairRift::IsMissionCleared()
 {
-	for (int i = 0; i < RescuedNPCInfos.Num(); i++)
+	for (int i = 0; i < RepairedRiftInfos.Num(); i++)
 	{
-		if (RescuedNPCInfos[i].bIsRescued == false)
+		if (RepairedRiftInfos[i].bIsRepaired == false)
 		{
 			return false;
 		}
@@ -106,13 +106,13 @@ bool USTMission_RescueHostage::IsMissionCleared()
 	return true;
 }
 
-void USTMission_RescueHostage::UpdateRescueHostageInfo(int NPCID)
+void USTMission_RepairRift::UpdateRepairRiftInfo(int RiftID)
 {
-	for (int i = 0; i < RescuedNPCInfos.Num(); i++)
+	for (int i = 0; i < RepairedRiftInfos.Num(); i++)
 	{
-		if (RescuedNPCInfos[i].NPCID == NPCID)
+		if (RepairedRiftInfos[i].RiftID == RiftID)
 		{
-			RescuedNPCInfos[i].bIsRescued = true;
+			RepairedRiftInfos[i].bIsRepaired = true;
 		}
 	}
 
@@ -122,7 +122,7 @@ void USTMission_RescueHostage::UpdateRescueHostageInfo(int NPCID)
 	}
 }
 
-void USTMission_RescueHostage::OnRep_RescuedNPCInfos()
+void USTMission_RepairRift::OnRep_RepairedRiftInfos()
 {
 	// Update UI
 }

@@ -4,33 +4,33 @@
 
 #include "CoreMinimal.h"
 #include "System/Mission/STMissionBase.h"
-#include "STMission_RescueHostage.generated.h"
+#include "STMission_RepairRift.generated.h"
 
-class AInteractableNPC;
-class ASpawnPoint_NPC;
+class AInteractableRift;
+class ASpawnPoint_Rift;
 
 USTRUCT(BlueprintType)
-struct FRescuedNPCInfo
+struct FRepairRiftInfo
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int NPCID = 0;
+	int RiftID = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<AInteractableNPC> SubClassOfNPC;
+	TSubclassOf<AInteractableRift> SubClassOfRift;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool bIsRescued = false;
+	bool bIsRepaired = false;
 };
 
 UCLASS()
-class SENTINELS_LS_API USTMission_RescueHostage : public USTMissionBase
+class SENTINELS_LS_API USTMission_RepairRift : public USTMissionBase
 {
 	GENERATED_BODY()
 	
 public:
-	USTMission_RescueHostage();
+	USTMission_RepairRift();
 
 	/*
 		Tickable Interface
@@ -53,10 +53,10 @@ public:
 	virtual bool IsMissionCleared() override;
 
 public:
-	virtual void UpdateRescueHostageInfo(int NPCID) override;
+	virtual void UpdateRepairRiftInfo(int RiftID) override;
 
 	UFUNCTION()
-	void OnRep_RescuedNPCInfos();
+	void OnRep_RepairedRiftInfos();
 
 protected:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
@@ -65,8 +65,8 @@ protected:
 	float CurrentMissionTime;
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<ASpawnPoint_NPC> SubClassOfSpawnPoint;
+	TSubclassOf<ASpawnPoint_Rift> SubClassOfSpawnPoint;
 
-	UPROPERTY(ReplicatedUsing = OnRep_RescuedNPCInfos, EditAnywhere, BlueprintReadOnly)
-	TArray<FRescuedNPCInfo> RescuedNPCInfos;
+	UPROPERTY(ReplicatedUsing = OnRep_RepairedRiftInfos, EditAnywhere, BlueprintReadOnly)
+	TArray<FRepairRiftInfo> RepairedRiftInfos;
 };
