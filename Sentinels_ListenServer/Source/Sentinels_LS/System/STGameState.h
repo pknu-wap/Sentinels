@@ -7,7 +7,7 @@
 #include "STGameplayTags.h"
 #include "STGameState.generated.h"
 
-class ISTMissionBase;
+class USTMissionBase;
 
 USTRUCT()
 struct FMissionInfo
@@ -15,7 +15,7 @@ struct FMissionInfo
 	GENERATED_BODY()
 
 	FGameplayTag MissionTag;
-	TObjectPtr<ISTMissionBase> Mission;
+	TObjectPtr<USTMissionBase> Mission;
 };
 
 UCLASS()
@@ -23,19 +23,39 @@ class SENTINELS_LS_API ASTGameState : public AGameStateBase
 {
 	GENERATED_BODY()
 
+public:
+	ASTGameState();
+
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
 	
 public:
+	UFUNCTION(BlueprintCallable)
 	void ActivateMission(FGameplayTag InMissionTag);
-	void DeactivateMission(FGameplayTag InMissionTag);
+	UFUNCTION(BlueprintCallable)
 	bool IsMissionCleared(FGameplayTag InMissionTag);
 
+public:
+	UFUNCTION(BlueprintCallable)
+	void RegisterMission(FGameplayTag InMissionTag, TSubclassOf<USTMissionBase> MissionSubClass);
+
+	UFUNCTION(BlueprintCallable)
+	void UnRegisterMission(FGameplayTag InMissionTag);
+
+	UFUNCTION()
+	void OnMissionEnded(FGameplayTag InMissionTag, bool IsCleared);
+
+public:
+	void UpdateEliminatedMonsterInfo(int MonsterID);
+	void UpdateObjectDestroyedInfo(int ObjectID);
+	void UpdateAcquiredQuestItemInfo(int ItemID);
+	void UpdateRescueHostageInfo(int NPCID);
+	void UpdateRepairRiftInfo(int RiftID);
+	
 protected:
-	ISTMissionBase* GetMission(FGameplayTag InMissionTag);
+	USTMissionBase* GetMission(FGameplayTag InMissionTag);
 
 private:
 	UPROPERTY(Replicated)
 	TArray<FMissionInfo> Missions;
-
 };

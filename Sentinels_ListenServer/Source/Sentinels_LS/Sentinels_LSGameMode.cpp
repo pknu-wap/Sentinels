@@ -11,6 +11,7 @@
 #include "System/STGameInstance.h"
 #include "Player/STPlayerController.h"
 #include "Kismet/GameplayStatics.h"
+#include "System/STGameState.h"
 
 ASentinels_LSGameMode::ASentinels_LSGameMode()
 	: Delegate_RegisterPlayerComplete(FOnRegisterPlayersCompleteDelegate::CreateUObject(this, &ASentinels_LSGameMode::OnRegisterPlayerComplete))
@@ -21,6 +22,8 @@ ASentinels_LSGameMode::ASentinels_LSGameMode()
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
+
+	GameStateClass = ASTGameState::StaticClass();
 }
 
 void ASentinels_LSGameMode::PostLogin(APlayerController* NewPlayer)
