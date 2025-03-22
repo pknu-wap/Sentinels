@@ -52,3 +52,23 @@ void ASTEnemyBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 
 	DOREPLIFETIME(ASTEnemyBase, StatusComponent);
 }
+
+void ASTEnemyBase::ActivateNormalAttack_Server_Implementation()
+{
+	ActivateNormalAttack_Multicast();
+	PlayNormalAttackMontage();
+}
+
+void ASTEnemyBase::ActivateNormalAttack_Multicast_Implementation()
+{
+	PlayNormalAttackMontage();
+}
+
+void ASTEnemyBase::PlayNormalAttackMontage()
+{
+	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+	if (AnimInst)
+	{
+		AnimInst->Montage_Play(Montage_NormalAttack);
+	}
+}

@@ -20,7 +20,20 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+public:
+	// Attack
+	UFUNCTION(Server, Reliable)
+	void ActivateNormalAttack_Server();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void ActivateNormalAttack_Multicast();
+
+	void PlayNormalAttackMontage();
+
 protected:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<USTEnemyStatusComponent> StatusComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
+	UAnimMontage* Montage_NormalAttack;
 };
