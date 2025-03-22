@@ -4,6 +4,7 @@
 #include "Components/InventoryComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/STPlayerStatusComponent.h"
 
 // Sets default values for this component's properties
 UInventoryComponent::UInventoryComponent()
@@ -34,16 +35,24 @@ void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 
 void UInventoryComponent::AddItem_Server_Implementation(int InItemID)
 {
+	USTPlayerStatusComponent* StatusComp = GetOwner()->GetComponentByClass<USTPlayerStatusComponent>();
+
 	for (auto& slot : Inventory)
 	{
 		if (slot.ItemID == InItemID)
 		{
 			slot.Quantity++;
+
+			if (StatusComp)
+				StatusComp->CalculateStatus();
+
 			return;
 		}
 	}
 
 	Inventory.Add(FInvSlotStruct(InItemID, 1));
+	if (StatusComp)
+		StatusComp->CalculateStatus();
 }
 
 void UInventoryComponent::LogInventory()

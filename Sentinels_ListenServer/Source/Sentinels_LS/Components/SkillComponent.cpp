@@ -2,6 +2,7 @@
 
 
 #include "Components/SkillComponent.h"
+#include "GameFramework/Character.h"
 
 // Sets default values for this component's properties
 USkillComponent::USkillComponent()
@@ -47,6 +48,18 @@ void USkillComponent::ActivateSkill(int SkillIdx)
 
 bool USkillComponent::CanActivateSkill(int SkillIdx)
 {
+	// Owner Is Player Controller
+	APlayerController* PC = Cast<APlayerController>(GetOwner());
+	if (!PC) return false;
+
+	ACharacter* Player = PC->GetCharacter();
+	if (!Player) return false;
+
+	// If Already Playing Another Animation, return false;
+	UAnimInstance* AnimInst = Player->GetMesh()->GetAnimInstance();
+	if (AnimInst && AnimInst->GetCurrentActiveMontage())
+		return false;
+
 	if (Skill_CoolDowns.IsValidIndex(SkillIdx) && Skill_CoolDowns[SkillIdx] == 0)
 		return true;
 
