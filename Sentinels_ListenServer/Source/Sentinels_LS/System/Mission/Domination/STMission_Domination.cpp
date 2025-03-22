@@ -94,3 +94,8 @@ void USTMission_Domination::UpdateEliminatedMonsterInfo(int MonsterID)
 		DeactivateMission(true);
 	}
 }
+
+void USTMission_Domination::OnRep_MonsterInfos()
+{
+	// Update UI
+}

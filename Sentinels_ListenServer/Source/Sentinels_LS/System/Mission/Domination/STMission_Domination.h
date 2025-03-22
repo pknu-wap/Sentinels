@@ -54,6 +54,9 @@ public:
 public:
 	virtual void UpdateEliminatedMonsterInfo(int MonsterID) override;
 
+	UFUNCTION()
+	void OnRep_MonsterInfos();
+
 protected:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 	int MaxMissionTime = 30.f;
@@ -63,6 +66,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<TSubclassOf<AActor>> SpawnerInfos;
 
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(ReplicatedUsing = OnRep_MonsterInfos, EditAnywhere, BlueprintReadOnly)
 	TArray<FEliminatedMonsterInfo> MonsterInfos;
 };
