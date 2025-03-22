@@ -16,7 +16,11 @@ void USTMission_Domination::Tick(float DeltaTime)
 		CurrentMissionTime += DeltaTime;
 		if (CurrentMissionTime > MaxMissionTime)
 		{
-			DeactivateMission(false);
+			AActor* owner = GetTypedOuter<AActor>();
+			if (owner->HasAuthority())
+			{
+				DeactivateMission(false);
+			}
 		}
 	}
 }
