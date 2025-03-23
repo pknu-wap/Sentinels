@@ -38,3 +38,7 @@ void AInteractableItem::Interact()
 		}
 	}
 }
+
+void AInteractableItem::ShowInteractiveUI()
+{
+}

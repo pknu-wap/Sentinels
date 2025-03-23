@@ -1,0 +1,160 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "System/STGameState.h"
+#include "System/Mission/STMissionBase.h"
+#include "Net/UnrealNetwork.h"
+
+ASTGameState::ASTGameState()
+{
+    bReplicates = true;
+    bReplicateUsingRegisteredSubObjectList = true;
+}
+
+void ASTGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME(ASTGameState, Missions);
+}
+
+void ASTGameState::ActivateMission(FGameplayTag InMissionTag)
+{
+    USTMissionBase* mission = GetMission(InMissionTag);
+    if (mission)
+    {
+        mission->ActivateMission();
+    }
+}
+
+bool ASTGameState::IsMissionCleared(FGameplayTag InMissionTag)
+{
+    USTMissionBase* mission = GetMission(InMissionTag);
+    if (mission)
+    {
+        return mission->IsMissionCleared();
+    }
+
+    return false;
+}
+
+void ASTGameState::RegisterMission(FGameplayTag InMissionTag, TSubclassOf<USTMissionBase> MissionSubClass)
+{
+    USTMissionBase* mission = GetMission(InMissionTag);
+    if (mission)
+    {
+        UnRegisterMission(InMissionTag);
+    }
+
+    USTMissionBase* NewMission = NewObject<USTMissionBase>(this, MissionSubClass);
+    if (NewMission)
+    {
+        NewMission->Delegate_MissionEnded.AddDynamic(this, &ASTGameState::OnMissionEnded);
+
+        AddReplicatedSubObject(NewMission);
+        Missions.Push(FMissionInfo(InMissionTag, NewMission));
+    }
+}
+
+void ASTGameState::UnRegisterMission(FGameplayTag InMissionTag)
+{
+    for (int i = 0; i < Missions.Num(); i++)
+    {
+        if (Missions[i].MissionTag == InMissionTag)
+        {
+            if (Missions[i].Mission)
+            {
+                RemoveReplicatedSubObject(Missions[i].Mission);
+
+                // Should Destory Mission?
+            }
+
+            Missions.RemoveAt(i);
+            return;
+        }
+    }
+}
+
+void ASTGameState::OnMissionEnded(FGameplayTag InMissionTag, bool IsCleared)
+{
+    // Mission Clear On Client
+
+    // Start Next Mission 
+
+    if (IsCleared)
+    {
+        UE_LOG(LogTemp, Display, TEXT("ASTGameState : %s Mission Cleared!"), *InMissionTag.GetTagName().ToString());
+    }
+    else
+    {
+        UE_LOG(LogTemp, Display, TEXT("ASTGameState : %s Mission Failed!"), *InMissionTag.GetTagName().ToString());
+    }
+}
+
+USTMissionBase* ASTGameState::GetMission(FGameplayTag InMissionTag)
+{
+    for (int i = 0; i < Missions.Num(); i++)
+    {
+        if (Missions[i].MissionTag == InMissionTag)
+        {
+            return Missions[i].Mission;
+        }
+    }
+
+    return nullptr;
+}
+
+
+void ASTGameState::UpdateEliminatedMonsterInfo(int MonsterID)
+{
+    for (int i = 0; i < Missions.Num(); i++)
+    {
+        if (Missions[i].Mission)
+        {
+            Missions[i].Mission->UpdateEliminatedMonsterInfo(MonsterID);
+        }
+    }
+}
+
+void ASTGameState::UpdateObjectDestroyedInfo(int ObjectID)
+{
+    for (int i = 0; i < Missions.Num(); i++)
+    {
+        if (Missions[i].Mission)
+        {
+            Missions[i].Mission->UpdateObjectDestroyedInfo(ObjectID);
+        }
+    }
+}
+
+void ASTGameState::UpdateAcquiredQuestItemInfo(int ItemID)
+{
+    for (int i = 0; i < Missions.Num(); i++)
+    {
+        if (Missions[i].Mission)
+        {
+            Missions[i].Mission->UpdateAcquiredQuestItemInfo(ItemID);
+        }
+    }
+}
+
+void ASTGameState::UpdateRescueHostageInfo(int NPCID)
+{
+    for (int i = 0; i < Missions.Num(); i++)
+    {
+        if (Missions[i].Mission)
+        {
+            Missions[i].Mission->UpdateRescueHostageInfo(NPCID);
+        }
+    }
+}
+
+void ASTGameState::UpdateRepairRiftInfo(int RiftID)
+{
+    for (int i = 0; i < Missions.Num(); i++)
+    {
+        if (Missions[i].Mission)
+        {
+            Missions[i].Mission->UpdateRepairRiftInfo(RiftID);
+        }
+    }
+}
