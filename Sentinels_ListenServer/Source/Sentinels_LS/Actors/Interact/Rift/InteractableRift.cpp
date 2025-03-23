@@ -2,11 +2,22 @@
 
 
 #include "Actors/Interact/Rift/InteractableRift.h"
+#include "Kismet/GameplayStatics.h"
+#include "System/STGameState.h"
+#include "STGameplayTags.h"
+#include "System/Mission/STMissionBase.h"
 
 void AInteractableRift::Interact()
 {
-}
+	ASTGameState* GameState = Cast<ASTGameState>(UGameplayStatics::GetGameState(this));
+	if (GameState)
+	{
+		USTMissionBase* mission = GameState->GetMission(FSTGameplayTags::Get().Mission_RepairRift);
+		if (mission)
+		{
+			mission->UpdateRepairRiftInfo_Server(RiftID);
+		}
 
-void AInteractableRift::ShowInteractiveUI()
-{
+		// GameState->UpdateRepairRiftInfo_Server(RiftID);
+	}
 }

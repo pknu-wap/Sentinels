@@ -7,6 +7,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Actors/Interact/NPC/InteractableNPC.h"
 #include "Actors/SpawnPoint/SpawnPoint_NPC.h"
+#include "Actors/Interact/NPC/InteractableNPC.h"
+#include "Kismet/KismetMathLibrary.h"
 
 USTMission_RescueHostage::USTMission_RescueHostage()
 {
@@ -53,17 +55,44 @@ void USTMission_RescueHostage::ActivateMission()
 
 	TArray<AActor*> SpawnPoints;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), SubClassOfSpawnPoint, SpawnPoints);
+	if (SpawnPoints.IsEmpty())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("USTMission_RescueHostage::ActivateMission Failed to get SpawnPoints of NPC!"));
+		return;
+	}
 
+	if (SpawnPoints.Num() < RescuedNPCInfos.Num())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("USTMission_RescueHostage::ActivateMission SpawnPoints Num is Smaller than Rescue NPC Num."));
+		return;
+	}
+
+	TSet<int> UsedSpawnPoints;
 	for (int i = 0; i < RescuedNPCInfos.Num(); i++)
 	{
 		// Set Random Point From SpawnPoints
-		
-		// SpawnLocation = 
-		// SpawnRotation =
+		int Rand = -1;
+		while (true)
+		{
+			Rand = UKismetMathLibrary::RandomIntegerInRange(0, SpawnPoints.Num() - 1);
+			if (!UsedSpawnPoints.Contains(Rand))
+			{
+				UsedSpawnPoints.Add(Rand);
+				break;
+			}
+		}
+
+		if (!SpawnPoints.IsValidIndex(Rand))
+		{
+			continue;
+		}
+
+		SpawnLocation = SpawnPoints[Rand]->GetActorLocation();
+		SpawnRotation = SpawnPoints[Rand]->GetActorRotation();
 
 		if (RescuedNPCInfos[i].SubClassOfNPC)
 		{
-			GetWorld()->SpawnActor<AActor>(RescuedNPCInfos[i].SubClassOfNPC, SpawnLocation, SpawnRotation);
+			 GetWorld()->SpawnActor<AActor>(RescuedNPCInfos[i].SubClassOfNPC, SpawnLocation, SpawnRotation);
 		}
 	}
 
@@ -106,7 +135,7 @@ bool USTMission_RescueHostage::IsMissionCleared()
 	return true;
 }
 
-void USTMission_RescueHostage::UpdateRescueHostageInfo(int NPCID)
+void USTMission_RescueHostage::UpdateRescueHostageInfo_Server_Implementation(int NPCID)
 {
 	for (int i = 0; i < RescuedNPCInfos.Num(); i++)
 	{

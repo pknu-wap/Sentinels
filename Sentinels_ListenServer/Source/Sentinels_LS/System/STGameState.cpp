@@ -64,6 +64,7 @@ void ASTGameState::UnRegisterMission(FGameplayTag InMissionTag)
             if (Missions[i].Mission)
             {
                 RemoveReplicatedSubObject(Missions[i].Mission);
+                Missions[i].Mission = nullptr;
 
                 // Should Destory Mission?
             }
@@ -77,6 +78,7 @@ void ASTGameState::UnRegisterMission(FGameplayTag InMissionTag)
 void ASTGameState::OnMissionEnded(FGameplayTag InMissionTag, bool IsCleared)
 {
     // Mission Clear On Client
+    OnMissionEnded_Multicast(InMissionTag, IsCleared);
 
     // Start Next Mission 
 
@@ -87,6 +89,21 @@ void ASTGameState::OnMissionEnded(FGameplayTag InMissionTag, bool IsCleared)
     else
     {
         UE_LOG(LogTemp, Display, TEXT("ASTGameState : %s Mission Failed!"), *InMissionTag.GetTagName().ToString());
+    }
+
+    // UnRegister Mission On Server
+    UnRegisterMission(InMissionTag);
+}
+
+void ASTGameState::OnMissionEnded_Multicast_Implementation(FGameplayTag InMissionTag, bool IsCleared)
+{
+    if (IsCleared)
+    {
+        UE_LOG(LogTemp, Display, TEXT("ASTGameState_Client : %s Mission Cleared!"), *InMissionTag.GetTagName().ToString());
+    }
+    else
+    {
+        UE_LOG(LogTemp, Display, TEXT("ASTGameState_Client : %s Mission Failed!"), *InMissionTag.GetTagName().ToString());
     }
 }
 
@@ -101,60 +118,4 @@ USTMissionBase* ASTGameState::GetMission(FGameplayTag InMissionTag)
     }
 
     return nullptr;
-}
-
-
-void ASTGameState::UpdateEliminatedMonsterInfo(int MonsterID)
-{
-    for (int i = 0; i < Missions.Num(); i++)
-    {
-        if (Missions[i].Mission)
-        {
-            Missions[i].Mission->UpdateEliminatedMonsterInfo(MonsterID);
-        }
-    }
-}
-
-void ASTGameState::UpdateObjectDestroyedInfo(int ObjectID)
-{
-    for (int i = 0; i < Missions.Num(); i++)
-    {
-        if (Missions[i].Mission)
-        {
-            Missions[i].Mission->UpdateObjectDestroyedInfo(ObjectID);
-        }
-    }
-}
-
-void ASTGameState::UpdateAcquiredQuestItemInfo(int ItemID)
-{
-    for (int i = 0; i < Missions.Num(); i++)
-    {
-        if (Missions[i].Mission)
-        {
-            Missions[i].Mission->UpdateAcquiredQuestItemInfo(ItemID);
-        }
-    }
-}
-
-void ASTGameState::UpdateRescueHostageInfo(int NPCID)
-{
-    for (int i = 0; i < Missions.Num(); i++)
-    {
-        if (Missions[i].Mission)
-        {
-            Missions[i].Mission->UpdateRescueHostageInfo(NPCID);
-        }
-    }
-}
-
-void ASTGameState::UpdateRepairRiftInfo(int RiftID)
-{
-    for (int i = 0; i < Missions.Num(); i++)
-    {
-        if (Missions[i].Mission)
-        {
-            Missions[i].Mission->UpdateRepairRiftInfo(RiftID);
-        }
-    }
 }

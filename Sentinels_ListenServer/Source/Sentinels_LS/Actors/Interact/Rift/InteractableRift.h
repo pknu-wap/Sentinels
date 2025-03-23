@@ -16,5 +16,8 @@ class SENTINELS_LS_API AInteractableRift : public AInteractableActor
 	
 public:
 	virtual void Interact() override;
-	virtual void ShowInteractiveUI() override;
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int RiftID = 0;
 };

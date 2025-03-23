@@ -35,19 +35,24 @@ public:
 	*/
 public:
 	// Domination || Eliminate EliteMonster || Final Defense
-	virtual void UpdateEliminatedMonsterInfo(int MonsterID) {};
+	UFUNCTION(Server, Reliable)
+	virtual void UpdateEliminatedMonsterInfo_Server(int MonsterID);
 
 	// Destroy Object 
-	virtual void UpdateObjectDestroyedInfo(int ObjectID) {};
+	UFUNCTION(Server, Reliable)
+	virtual void UpdateObjectDestroyedInfo_Server(int ObjectID);
 
 	// Collect QuestItems
-	virtual void UpdateAcquiredQuestItemInfo(int ItemID) {};
+	UFUNCTION(Server, Reliable)
+	virtual void UpdateAcquiredQuestItemInfo_Server(int ItemID);
 
 	// Resque Hostage
-	virtual void UpdateRescueHostageInfo(int NPCID) {};
+	UFUNCTION(Server, Reliable)
+	virtual void UpdateRescueHostageInfo_Server(int NPCID);
 
 	// Repair Rift
-	virtual void UpdateRepairRiftInfo(int RiftID) {};
+	UFUNCTION(Server, Reliable)
+	virtual void UpdateRepairRiftInfo_Server(int RiftID);
 	
 
 	/*

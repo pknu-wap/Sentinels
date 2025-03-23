@@ -79,7 +79,7 @@ bool USTMission_Domination::IsMissionCleared()
 	return true;
 }
 
-void USTMission_Domination::UpdateEliminatedMonsterInfo(int MonsterID)
+void USTMission_Domination::UpdateEliminatedMonsterInfo_Server_Implementation(int MonsterID)
 {
 	for (int i = 0; i < MonsterInfos.Num(); i++)
 	{

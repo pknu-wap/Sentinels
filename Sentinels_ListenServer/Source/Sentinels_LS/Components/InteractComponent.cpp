@@ -32,11 +32,39 @@ void UInteractComponent::BeginPlay()
 	}
 }
 
-void UInteractComponent::Interact()
+void UInteractComponent::Interact_Server_Implementation()
 {
-	if (InteractiveObject)
+	AController* controller = Cast<AController>(GetOwner());
+	if (!controller) return;
+
+	APawn* pawn = controller->GetPawn();
+	if (!pawn) return;
+
+	TArray<AActor*> IgnoreActors;
+	IgnoreActors.Add(pawn);
+
+	FVector start = pawn->GetActorLocation();
+	FRotator ControllerRot = controller->GetControlRotation();
+	FVector ControllerForwardVec = UKismetMathLibrary::GetForwardVector(ControllerRot);
+	// FVector end = start + Interact_Range * ControllerForwardVec;
+	FVector end = start + Interact_Range * pawn->GetActorForwardVector();
+
+	ETraceTypeQuery TraceType = UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel1);
+
+	FHitResult hitResult;
+	UKismetSystemLibrary::SphereTraceSingle(pawn, start, end, Interact_Radius,
+		TraceType, false, IgnoreActors,
+		EDrawDebugTrace::ForOneFrame, hitResult, true);
+
+	if (hitResult.bBlockingHit)
 	{
-		InteractiveObject->Interact();
+		InteractiveObject = Cast<IInteractiveInterface>(hitResult.GetActor());
+		{
+			if (InteractiveObject)
+			{
+				InteractiveObject->Interact();
+			}
+		}
 	}
 }
 

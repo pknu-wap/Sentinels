@@ -53,7 +53,7 @@ public:
 	virtual bool IsMissionCleared() override;
 
 public:
-	virtual void UpdateRescueHostageInfo(int NPCID) override;
+	virtual void UpdateRescueHostageInfo_Server_Implementation(int NPCID) override;
 
 	UFUNCTION()
 	void OnRep_RescuedNPCInfos();

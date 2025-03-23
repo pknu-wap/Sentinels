@@ -52,7 +52,7 @@ public:
 	virtual bool IsMissionCleared() override;
 
 public:
-	virtual void UpdateEliminatedMonsterInfo(int MonsterID) override;
+	virtual void UpdateEliminatedMonsterInfo_Server_Implementation(int MonsterID) override;
 
 	UFUNCTION()
 	void OnRep_MonsterInfos();

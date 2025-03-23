@@ -53,7 +53,7 @@ public:
 	virtual bool IsMissionCleared() override;
 
 public:
-	virtual void UpdateRepairRiftInfo(int RiftID) override;
+	virtual void UpdateRepairRiftInfo_Server_Implementation(int RiftID) override;
 
 	UFUNCTION()
 	void OnRep_RepairedRiftInfos();

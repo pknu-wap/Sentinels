@@ -29,6 +29,26 @@ void USTMissionBase::DeactivateMission(bool IsCleared)
 	bIsMisionActivated = false;
 }
 
+void USTMissionBase::UpdateEliminatedMonsterInfo_Server_Implementation(int MonsterID)
+{
+}
+
+void USTMissionBase::UpdateObjectDestroyedInfo_Server_Implementation(int ObjectID)
+{
+}
+
+void USTMissionBase::UpdateAcquiredQuestItemInfo_Server_Implementation(int ItemID)
+{
+}
+
+void USTMissionBase::UpdateRescueHostageInfo_Server_Implementation(int NPCID)
+{
+}
+
+void USTMissionBase::UpdateRepairRiftInfo_Server_Implementation(int RiftID)
+{
+}
+
 void USTMissionBase::OnRep_bIsMisionActivated()
 {
 	UE_LOG(LogTemp, Display, TEXT("USTMissionBase::OnRep_bIsMisionActivated"));

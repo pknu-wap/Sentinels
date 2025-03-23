@@ -22,7 +22,8 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	void Interact();
+	UFUNCTION(Server, Reliable)
+	void Interact_Server();
 
 protected:
 	void FindInteractiveActor();

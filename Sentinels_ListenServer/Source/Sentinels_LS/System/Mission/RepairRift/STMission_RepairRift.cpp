@@ -5,6 +5,7 @@
 #include "Net/UnrealNetwork.h"
 #include "STGameplayTags.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Actors/Interact/Rift/InteractableRift.h"
 #include "Actors/SpawnPoint/SpawnPoint_Rift.h"
 
@@ -54,12 +55,41 @@ void USTMission_RepairRift::ActivateMission()
 	TArray<AActor*> SpawnPoints;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), SubClassOfSpawnPoint, SpawnPoints);
 
+	if (SpawnPoints.IsEmpty())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("USTMission_RepairRift::ActivateMission Failed to get SpawnPoints of NPC!"));
+		return;
+	}
+
+	if (SpawnPoints.Num() < RepairedRiftInfos.Num())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("USTMission_RepairRift::ActivateMission SpawnPoints Num is Smaller than Repair Rift Num."));
+		return;
+	}
+
+	TSet<int> UsedSpawnPoints;
 	for (int i = 0; i < RepairedRiftInfos.Num(); i++)
 	{
 		// Set Random Point From SpawnPoints
 
-		// SpawnLocation = 
-		// SpawnRotation =
+		int Rand = -1;
+		while (true)
+		{
+			Rand = UKismetMathLibrary::RandomIntegerInRange(0, SpawnPoints.Num() - 1);
+			if (!UsedSpawnPoints.Contains(Rand))
+			{
+				UsedSpawnPoints.Add(Rand);
+				break;
+			}
+		}
+
+		if (!SpawnPoints.IsValidIndex(Rand))
+		{
+			continue;
+		}
+
+		SpawnLocation = SpawnPoints[Rand]->GetActorLocation();
+		SpawnRotation = SpawnPoints[Rand]->GetActorRotation();
 
 		if (RepairedRiftInfos[i].SubClassOfRift)
 		{
@@ -90,7 +120,7 @@ void USTMission_RepairRift::DeactivateMission(bool IsCleared)
 	/*
 		Ended Broadcast
 	*/
-	Delegate_MissionEnded.Broadcast(FSTGameplayTags::Get().Mission_RescueHostage, IsCleared);
+	Delegate_MissionEnded.Broadcast(FSTGameplayTags::Get().Mission_RepairRift, IsCleared);
 }
 
 bool USTMission_RepairRift::IsMissionCleared()
@@ -106,7 +136,7 @@ bool USTMission_RepairRift::IsMissionCleared()
 	return true;
 }
 
-void USTMission_RepairRift::UpdateRepairRiftInfo(int RiftID)
+void USTMission_RepairRift::UpdateRepairRiftInfo_Server_Implementation(int RiftID)
 {
 	for (int i = 0; i < RepairedRiftInfos.Num(); i++)
 	{
