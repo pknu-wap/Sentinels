@@ -76,6 +76,11 @@ void UInteractComponent::FindInteractiveActor()
 	}
 	else
 	{
+		if (InteractiveObject)
+		{
+			InteractiveObject->HideInteractiveUI();
+		}
+
 		InteractiveObject = nullptr;
 	}
 }

@@ -19,7 +19,6 @@ protected:
 
 public:
 	virtual void Interact() override;
-	virtual void ShowInteractiveUI() override;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
