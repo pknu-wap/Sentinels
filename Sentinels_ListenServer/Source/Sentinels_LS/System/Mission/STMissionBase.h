@@ -11,6 +11,8 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMissionEnded, FGameplayTag, MissionTag, bool, IsSuccessed);
 
+class USTMissionConditionBase;
+
 UCLASS()
 class SENTINELS_LS_API USTMissionBase : public UNetworkObject, public FTickableGameObject
 {
@@ -28,7 +30,7 @@ public:
 	virtual void DeactivateMission(bool IsCleared);
 
 	// Define Mission Clear
-	virtual bool IsMissionCleared() { return false; };
+	virtual bool IsMissionCleared();
 
 	/*
 		Update Mission Info
@@ -53,6 +55,13 @@ public:
 	// Repair Rift
 	UFUNCTION(Server, Reliable)
 	virtual void UpdateRepairRiftInfo_Server(int RiftID);
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<TSubclassOf<USTMissionConditionBase>> SubclassOfMissionConditions;
+
+	UPROPERTY(Replicated)
+	TArray<USTMissionConditionBase*> MissionConditions;
 	
 
 	/*

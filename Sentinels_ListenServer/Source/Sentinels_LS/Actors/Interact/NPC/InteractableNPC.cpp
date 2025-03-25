@@ -11,7 +11,7 @@ void AInteractableNPC::Interact()
 	ASTGameState* GameState = Cast<ASTGameState>(UGameplayStatics::GetGameState(this));
 	if (GameState)
 	{
-		USTMissionBase* mission = GameState->GetMission(FSTGameplayTags::Get().Mission_RepairRift);
+		USTMissionBase* mission = GameState->GetMission(FSTGameplayTags::Get().Mission_RescueHostage);
 		if (mission)
 		{
 			mission->UpdateRescueHostageInfo_Server(NPCID);

@@ -57,4 +57,14 @@ public:
 private:
 	UPROPERTY(Replicated)
 	TArray<FMissionInfo> Missions;
+
+public:
+	/*
+		Update Mission Condition
+	*/
+	virtual void UpdateEliminatedMonsterInfo(int MonsterID);
+	virtual void UpdateObjectDestroyedInfo(int ObjectID);
+	virtual void UpdateAcquiredQuestItemInfo(int ItemID);
+	virtual void UpdateRescueHostageInfo(int NPCID);
+	virtual void UpdateRepairRiftInfo(int RiftID);
 };
