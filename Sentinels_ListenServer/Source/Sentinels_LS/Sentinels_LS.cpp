@@ -4,4 +4,4 @@
 #include "Modules/ModuleManager.h"
 
 IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, Sentinels_LS, "Sentinels_LS" );
- 
+DEFINE_LOG_CATEGORY(LogSTNetwork);
