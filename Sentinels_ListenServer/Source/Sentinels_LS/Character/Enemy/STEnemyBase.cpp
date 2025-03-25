@@ -12,6 +12,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Components/STEnemyStatusComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "Character/Enemy/STEnemyBase_AIController.h"
 
 ASTEnemyBase::ASTEnemyBase(const FObjectInitializer& object_initializer)
 	: Super(object_initializer)
@@ -51,6 +52,19 @@ void ASTEnemyBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ASTEnemyBase, StatusComponent);
+}
+
+float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+
+	ASTEnemyBase_AIController* controller = Cast<ASTEnemyBase_AIController>(GetController());
+	if (controller)
+	{
+		controller->SetTarget(DamageCauser);
+	}
+
+	return 0.0f;
 }
 
 void ASTEnemyBase::ActivateNormalAttack_Server_Implementation()
