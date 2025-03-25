@@ -48,6 +48,8 @@ void USTMissionBase::DeactivateMission(bool IsCleared)
 	UE_LOG(LogTemp, Display, TEXT("USTMissionBase::DeactivateMission"));
 	bIsMisionActivated = false;
 
+	Delegate_MissionEnded.Broadcast(MissionTag, IsCleared);
+
 	for (auto& condition : MissionConditions)
 	{
 		if (condition)
@@ -161,8 +163,4 @@ void USTMissionBase::UpdateRepairRiftInfo_Server_Implementation(int RiftID)
 void USTMissionBase::OnRep_bIsMisionActivated()
 {
 	UE_LOG(LogTemp, Display, TEXT("USTMissionBase::OnRep_bIsMisionActivated"));
-	if (bIsMisionActivated)
-	{
-		ActivateMission();
-	}
 }

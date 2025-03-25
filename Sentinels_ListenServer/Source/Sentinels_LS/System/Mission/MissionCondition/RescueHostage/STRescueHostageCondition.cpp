@@ -7,6 +7,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Actors/SpawnPoint/SpawnPoint_NPC.h"
 #include "Actors/Interact/NPC/InteractableNPC.h"
+#include "Sentinels_LS.h"
 
 
 void USTRescueHostageCondition::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

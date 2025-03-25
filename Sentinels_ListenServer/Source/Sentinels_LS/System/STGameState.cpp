@@ -4,6 +4,7 @@
 #include "System/STGameState.h"
 #include "System/Mission/STMissionBase.h"
 #include "Net/UnrealNetwork.h"
+#include "Sentinels_LS.h"
 
 ASTGameState::ASTGameState()
 {
@@ -19,6 +20,12 @@ void ASTGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 
 void ASTGameState::ActivateMission(FGameplayTag InMissionTag)
 {
+    if (!HasAuthority())
+    {
+        ST_LOG(LogSTNetwork, Log, TEXT("ActivateMission should be called on server!"));
+        return;
+    }
+
     USTMissionBase* mission = GetMission(InMissionTag);
     if (mission)
     {
@@ -39,6 +46,12 @@ bool ASTGameState::IsMissionCleared(FGameplayTag InMissionTag)
 
 void ASTGameState::RegisterMission(FGameplayTag InMissionTag, TSubclassOf<USTMissionBase> MissionSubClass)
 {
+    if (!HasAuthority())
+    {
+        ST_LOG(LogSTNetwork, Log, TEXT("RegisterMission should be called on server!"));
+        return;
+    }
+
     USTMissionBase* mission = GetMission(InMissionTag);
     if (mission)
     {
@@ -57,6 +70,12 @@ void ASTGameState::RegisterMission(FGameplayTag InMissionTag, TSubclassOf<USTMis
 
 void ASTGameState::UnRegisterMission(FGameplayTag InMissionTag)
 {
+    if (!HasAuthority())
+    {
+        ST_LOG(LogSTNetwork, Log, TEXT("UnRegisterMission should be called on server!"));
+        return;
+    }
+
     for (int i = 0; i < Missions.Num(); i++)
     {
         if (Missions[i].MissionTag == InMissionTag)
@@ -82,14 +101,6 @@ void ASTGameState::OnMissionEnded(FGameplayTag InMissionTag, bool IsCleared)
 
     // Start Next Mission 
 
-    if (IsCleared)
-    {
-        UE_LOG(LogTemp, Display, TEXT("ASTGameState : %s Mission Cleared!"), *InMissionTag.GetTagName().ToString());
-    }
-    else
-    {
-        UE_LOG(LogTemp, Display, TEXT("ASTGameState : %s Mission Failed!"), *InMissionTag.GetTagName().ToString());
-    }
 
     // UnRegister Mission On Server
     UnRegisterMission(InMissionTag);
@@ -99,11 +110,11 @@ void ASTGameState::OnMissionEnded_Multicast_Implementation(FGameplayTag InMissio
 {
     if (IsCleared)
     {
-        UE_LOG(LogTemp, Display, TEXT("ASTGameState_Client : %s Mission Cleared!"), *InMissionTag.GetTagName().ToString());
+        ST_LOG(LogSTNetwork, Log, TEXT(" %s Mission Cleared!"), *InMissionTag.GetTagName().ToString());
     }
     else
     {
-        UE_LOG(LogTemp, Display, TEXT("ASTGameState_Client : %s Mission Failed!"), *InMissionTag.GetTagName().ToString());
+        ST_LOG(LogSTNetwork, Log, TEXT(" %s Mission Failed!"), *InMissionTag.GetTagName().ToString());
     }
 }
 

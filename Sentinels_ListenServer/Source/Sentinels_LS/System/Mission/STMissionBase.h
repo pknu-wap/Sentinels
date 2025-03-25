@@ -58,6 +58,9 @@ public:
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FGameplayTag MissionTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<TSubclassOf<USTMissionConditionBase>> SubclassOfMissionConditions;
 
 	UPROPERTY(Replicated)
