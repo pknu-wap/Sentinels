@@ -12,6 +12,7 @@ public class Sentinels_LS : ModuleRules
          { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput",
             "AIModule", "NavigationSystem",
             "GameplayTags",
+            "UMG", "Slate", "SlateCore",
             "OnlineSubsystem", "OnlineSubsystemUtils",
          });
 

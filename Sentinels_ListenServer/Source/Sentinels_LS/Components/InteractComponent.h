@@ -36,5 +36,4 @@ protected:
 
 private:
 	IInteractiveInterface* InteractiveObject;
-		
 };

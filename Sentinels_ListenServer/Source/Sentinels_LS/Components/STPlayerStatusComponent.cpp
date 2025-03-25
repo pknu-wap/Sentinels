@@ -31,52 +31,61 @@ void USTPlayerStatusComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	/*
+	*	Replicate to All Clients
+	*/
 	DOREPLIFETIME(USTPlayerStatusComponent, MaxHP);
 	DOREPLIFETIME(USTPlayerStatusComponent, HP);
 
-	DOREPLIFETIME(USTPlayerStatusComponent, ATK);
-	DOREPLIFETIME(USTPlayerStatusComponent, DEF);
+	/*
+		Replicate to Only for Owner
+	*/
+	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, ATK, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, DEF, COND_OwnerOnly);
 
-	DOREPLIFETIME(USTPlayerStatusComponent, MaxDamageIncreaseRate);
-	DOREPLIFETIME(USTPlayerStatusComponent, DamageIncreaseRate);
+	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, MaxDamageIncreaseRate, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, DamageIncreaseRate, COND_OwnerOnly);
 
-	DOREPLIFETIME(USTPlayerStatusComponent, MaxCDR);
-	DOREPLIFETIME(USTPlayerStatusComponent, CDR);
+	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, MaxCDR, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, CDR, COND_OwnerOnly);
 
-	DOREPLIFETIME(USTPlayerStatusComponent, MaxCriticalRate);
-	DOREPLIFETIME(USTPlayerStatusComponent, CriticalRate);
+	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, MaxCriticalRate, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, CriticalRate, COND_OwnerOnly);
 }
 
 void USTPlayerStatusComponent::CalculateStatus()
 {
-	UInventorySubsystem* InvSubSystem = GetWorld()->GetGameInstance()->GetSubsystem<UInventorySubsystem>();
-	UInventoryComponent* InvComp = GetOwner()->GetComponentByClass<UInventoryComponent>();
-	if (!InvComp || !InvSubSystem) return;
-
-	// Reset Status 
-	MaxHP = BaseMaxHP; DEF = 0; DamageIncreaseRate = 0; CDR = 0; CriticalRate = 0;
-
-	// ReCalculate Status
-	const TArray<FInvSlotStruct>& Inventory =  InvComp->GetInventory();
-	for (auto& Slot : Inventory)
+	if (GetOwner()->HasAuthority())
 	{
-		const FItemStruct* itemInfo = InvSubSystem->GetItemInfo(Slot.ItemID);
-		if (!itemInfo) continue;
+		UInventorySubsystem* InvSubSystem = GetWorld()->GetGameInstance()->GetSubsystem<UInventorySubsystem>();
+		UInventoryComponent* InvComp = GetOwner()->GetComponentByClass<UInventoryComponent>();
+		if (!InvComp || !InvSubSystem) return;
 
-		if(itemInfo->MaxHP > 0)
-			MaxHP += itemInfo->MaxHP * Slot.Quantity;
+		// Reset Status 
+		MaxHP = BaseMaxHP; DEF = 0; DamageIncreaseRate = 0; CDR = 0; CriticalRate = 0;
 
-		if(itemInfo->DEF > 0)
-			DEF += itemInfo->DEF * Slot.Quantity;
+		// ReCalculate Status
+		const TArray<FInvSlotStruct>& Inventory = InvComp->GetInventory();
+		for (auto& Slot : Inventory)
+		{
+			const FItemStruct* itemInfo = InvSubSystem->GetItemInfo(Slot.ItemID);
+			if (!itemInfo) continue;
 
-		if(itemInfo->DamageIncreaseRate > 0)
-			DamageIncreaseRate = FMath::Clamp(DamageIncreaseRate + itemInfo->DamageIncreaseRate * Slot.Quantity, 0, MaxDamageIncreaseRate);
+			if (itemInfo->MaxHP > 0)
+				MaxHP += itemInfo->MaxHP * Slot.Quantity;
 
-		if(itemInfo->CDR > 0)
-			CDR = FMath::Clamp(CDR + itemInfo->CDR * Slot.Quantity, 0, MaxCDR);
+			if (itemInfo->DEF > 0)
+				DEF += itemInfo->DEF * Slot.Quantity;
 
-		if(itemInfo->CriticalRate > 0)
-			CriticalRate = FMath::Clamp(CriticalRate + itemInfo->CriticalRate * Slot.Quantity, 0, MaxCriticalRate);
+			if (itemInfo->DamageIncreaseRate > 0)
+				DamageIncreaseRate = FMath::Clamp(DamageIncreaseRate + itemInfo->DamageIncreaseRate * Slot.Quantity, 0, MaxDamageIncreaseRate);
+
+			if (itemInfo->CDR > 0)
+				CDR = FMath::Clamp(CDR + itemInfo->CDR * Slot.Quantity, 0, MaxCDR);
+
+			if (itemInfo->CriticalRate > 0)
+				CriticalRate = FMath::Clamp(CriticalRate + itemInfo->CriticalRate * Slot.Quantity, 0, MaxCriticalRate);
+		}
 	}
 }
 

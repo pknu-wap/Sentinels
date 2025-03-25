@@ -24,4 +24,5 @@ class SENTINELS_LS_API IInteractiveInterface
 public:
 	virtual void Interact() = 0;
 	virtual void ShowInteractiveUI() = 0;
+	virtual void HideInteractiveUI() = 0;
 };

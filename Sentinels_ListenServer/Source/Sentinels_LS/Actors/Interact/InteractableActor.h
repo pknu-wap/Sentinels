@@ -7,6 +7,8 @@
 #include "Interfaces/InteractiveInterface.h"
 #include "InteractableActor.generated.h"
 
+class UUserWidget;
+
 UCLASS()
 class SENTINELS_LS_API AInteractableActor : public AActor, public IInteractiveInterface
 {
@@ -26,8 +28,15 @@ protected:
 protected:
 	virtual void Interact() override;
 	virtual void ShowInteractiveUI() override;
+	virtual void HideInteractiveUI() override;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UStaticMeshComponent> Mesh;
+
+	UPROPERTY(EditAnywhere, Category = "Debug")
+	TSubclassOf<UUserWidget> InteractWidgetClass_ForDebug;
+
+	UPROPERTY()
+	UUserWidget* InteractWidget_ForDebug;
 };
