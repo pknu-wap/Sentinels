@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Actors/Interact/InteractableCharacter.h"
+#include "Actors/MissionObject/MissionObject.h"
 #include "InteractableNPC.generated.h"
 
 /**
@@ -17,7 +18,13 @@ class SENTINELS_LS_API AInteractableNPC : public AInteractableCharacter
 public:
 	virtual void Interact() override;
 
+public:
+	void SetNPCID(int InNPCID) { NPCID = InNPCID; }
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int NPCID = 0;
+
+public:
+	FMissionConditionUpdate Delegate_MissionConditionUpdate;
 };

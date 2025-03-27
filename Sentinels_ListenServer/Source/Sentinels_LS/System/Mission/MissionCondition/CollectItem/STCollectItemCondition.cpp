@@ -5,8 +5,9 @@
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Actors/SpawnPoint/SpawnPoint_Spawner.h"
+#include "Actors/SpawnPoint/SpawnPointBase.h"
 #include "Actors/Spawner/Spawner.h"
+#include "STGameplayTags.h"
 
 void USTCollectItemCondition::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -39,8 +40,8 @@ void USTCollectItemCondition::MissionActivated()
 	*/
 	FVector SpawnLocation; FRotator SpawnRotation;
 
-	TArray<AActor*> SpawnPoints;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), SubClassOfSpawnPoint, SpawnPoints);
+	TArray<ASpawnPointBase*> SpawnPoints;
+	GetAllSpawnPointsWithTag(FSTGameplayTags::Get().SpawnPoint_Spawner, SpawnPoints);
 
 	if (SpawnPoints.IsEmpty())
 	{
@@ -59,7 +60,7 @@ void USTCollectItemCondition::MissionActivated()
 	{
 		for (auto& actor : SpawnPoints)
 		{
-			ASpawnPoint_Spawner* SpawnerPoint = Cast<ASpawnPoint_Spawner>(actor);
+			ASpawnPointBase* SpawnerPoint = Cast<ASpawnPointBase>(actor);
 			if (SpawnerPoint && SpawnerPoint->SpawnPointIdx == SpawnerInfos[i].SpawnPointIdx)
 			{
 				SpawnLocation = SpawnerPoint->GetActorLocation();
@@ -78,17 +79,6 @@ void USTCollectItemCondition::MissionActivated()
 
 void USTCollectItemCondition::MissionDeactivated(bool IsCleared)
 {
-}
-
-void USTCollectItemCondition::UpdateAcquiredQuestItemInfo(int InItemID)
-{
-	for (int i = 0; i < CollectedItemInfos.Num(); i++)
-	{
-		if (CollectedItemInfos[i].ItemID == InItemID)
-		{
-			CollectedItemInfos[i].Current = FMath::Clamp(CollectedItemInfos[i].Current + 1, 0, CollectedItemInfos[i].Required);
-		}
-	}
 }
 
 void USTCollectItemCondition::OnRep_CollectedItemInfos()

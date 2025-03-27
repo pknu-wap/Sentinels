@@ -8,7 +8,7 @@
 
 void AInteractableNPC::Interact()
 {
-	ASTGameState* GameState = Cast<ASTGameState>(UGameplayStatics::GetGameState(this));
+	/*ASTGameState* GameState = Cast<ASTGameState>(UGameplayStatics::GetGameState(this));
 	if (GameState)
 	{
 		USTMissionBase* mission = GameState->GetMission(FSTGameplayTags::Get().Mission_RescueHostage);
@@ -16,7 +16,8 @@ void AInteractableNPC::Interact()
 		{
 			mission->UpdateRescueHostageInfo_Server(NPCID);
 		}
-
-		// GameState->UpdateRescueHostageInfo_Server(NPCID);
-	}
+	}*/
+	
+	// GetUniqueID
+	Delegate_MissionConditionUpdate.Broadcast(NPCID, true);
 }

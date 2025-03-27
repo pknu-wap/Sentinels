@@ -6,7 +6,7 @@
 #include "System/Mission/MissionCondition/STMissionConditionBase.h"
 #include "STCollectItemCondition.generated.h"
 
-class ASpawnPoint_Spawner;
+class ASpawnPointBase;
 class ASpawner;
 
 USTRUCT(BlueprintType)
@@ -49,8 +49,6 @@ public:
 	virtual void MissionActivated() override;
 	virtual void MissionDeactivated(bool IsCleared) override;
 
-	virtual void UpdateAcquiredQuestItemInfo(int InItemID) override;
-
 	UFUNCTION()
 	void OnRep_CollectedItemInfos();
 
@@ -61,7 +59,7 @@ protected:
 	float CurrentMissionTime;
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<ASpawnPoint_Spawner> SubClassOfSpawnPoint;
+	TSubclassOf<ASpawnPointBase> SubClassOfSpawnPoint;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<FSpawnerInfo> SpawnerInfos;

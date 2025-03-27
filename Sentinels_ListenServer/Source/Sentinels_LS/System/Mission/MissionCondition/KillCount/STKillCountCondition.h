@@ -34,7 +34,8 @@ public:
 	virtual void MissionActivated() override;
 	virtual void MissionDeactivated(bool IsCleared) override;
 
-	virtual void UpdateEliminatedMonsterInfo(int MonsterID);
+	UFUNCTION()
+	void ConditionUpdated(int ObjectID, bool Success);
 
 	UFUNCTION()
 	void OnRep_KillInfos();

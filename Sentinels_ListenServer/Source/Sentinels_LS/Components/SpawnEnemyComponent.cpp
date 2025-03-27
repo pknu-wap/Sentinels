@@ -33,6 +33,12 @@ void USpawnEnemyComponent::StopSpawnEnemy()
 
 void USpawnEnemyComponent::SpawnEnemy()
 {
+	if (SpawnPawnClasses.Num() == 0)
+	{
+		UE_LOG(LogTemp, Display, TEXT("USpawnEnemyComponent : Pawn Classes are not setted!"));
+		return;
+	}
+
 	if (GetOwner()->HasAuthority())
 	{
 		UNavigationSystemV1* NavSystem = Cast<UNavigationSystemV1>(GetWorld()->GetNavigationSystem());

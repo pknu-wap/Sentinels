@@ -2,6 +2,11 @@
 
 
 #include "System/Mission/MissionCondition/Escort/STEscortCondition.h"
+#include "System/STGameState.h"
+#include "System/Mission/STMissionBase.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Actors/MissionObject/Interactable/EscortObject/EscortObject.h"
 
 void USTEscortCondition::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -16,6 +21,23 @@ bool USTEscortCondition::IsSatisfied()
 void USTEscortCondition::MissionActivated()
 {
     Super::MissionActivated();
+
+	TArray<AActor*> Actors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEscortObject::StaticClass(), Actors);
+	
+	if (Actors.IsEmpty()) 
+	{
+		UE_LOG(LogTemp, Warning, TEXT("USTEscortCondition : Failed to get Escort objects Array."));
+		return;
+	}
+
+	// Set Activatable for Random Escort Object
+	int rand = UKismetMathLibrary::RandomIntegerInRange(0, Actors.Num() - 1);
+	AEscortObject* escortObject = Cast<AEscortObject>(Actors[rand]);
+	if (escortObject)
+	{
+		escortObject->Delegate_MissionConditionUpdate.AddUObject(this, &USTEscortCondition::ConditionUpdated);
+	}
 }
 
 void USTEscortCondition::MissionDeactivated(bool IsCleared)
@@ -23,7 +45,16 @@ void USTEscortCondition::MissionDeactivated(bool IsCleared)
     Super::MissionDeactivated(IsCleared);
 }
 
-void USTEscortCondition::UpdateEscortInfo(int ObjectID, bool IsSuccessed)
+void USTEscortCondition::ConditionUpdated(int ObjectID, bool Success)
 {
-    Successed = IsSuccessed;
+	// Time Limit Success
+	ASTGameState* GameState = Cast<ASTGameState>(GetWorld()->GetGameState());
+	if (GameState)
+	{
+		USTMissionBase* Mission = GameState->GetMission(MissionTag);
+		if (Mission)
+		{
+			Mission->DeactivateMission(Success);
+		}
+	}
 }

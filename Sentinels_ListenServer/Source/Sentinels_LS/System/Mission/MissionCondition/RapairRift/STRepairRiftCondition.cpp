@@ -5,8 +5,11 @@
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Actors/SpawnPoint/SpawnPoint_Rift.h"
-#include "Actors/Interact/Rift/InteractableRift.h"
+#include "Actors/SpawnPoint/SpawnPointBase.h"
+#include "Actors/MissionObject/Interactable/Rift/Rift.h"
+#include "STGameplayTags.h"
+#include "System/STGameState.h"
+#include "System/Mission/STMissionBase.h"
 
 void USTRepairRiftCondition::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -40,8 +43,8 @@ void USTRepairRiftCondition::MissionActivated()
 	*/
 	FVector SpawnLocation; FRotator SpawnRotation;
 
-	TArray<AActor*> SpawnPoints;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), SubClassOfSpawnPoint, SpawnPoints);
+	TArray<ASpawnPointBase*> SpawnPoints;
+	GetAllSpawnPointsWithTag(FSTGameplayTags::Get().SpawnPoint_Rift, SpawnPoints);
 
 	if (SpawnPoints.IsEmpty())
 	{
@@ -81,7 +84,12 @@ void USTRepairRiftCondition::MissionActivated()
 
 		if (RiftInfos[i].SubClassOfRift)
 		{
-			GetWorld()->SpawnActor<AActor>(RiftInfos[i].SubClassOfRift, SpawnLocation, SpawnRotation);
+			ARift* rift = GetWorld()->SpawnActor<ARift>(RiftInfos[i].SubClassOfRift, SpawnLocation, SpawnRotation);
+			if (rift)
+			{
+				rift->SetObjectID(RiftInfos[i].RiftID);
+				rift->Delegate_MissionConditionUpdate.AddUObject(this, &USTRepairRiftCondition::ConditionUpdated);
+			}
 		}
 	}
 
@@ -95,16 +103,30 @@ void USTRepairRiftCondition::MissionDeactivated(bool IsCleared)
 {
 }
 
-void USTRepairRiftCondition::UpdateRepairRiftInfo(int RiftID)
+void USTRepairRiftCondition::ConditionUpdated(int ObjectID, bool Success)
 {
 	for (int i = 0; i < RiftInfos.Num(); i++)
 	{
-		if (RiftInfos[i].RiftID == RiftID)
+		if (RiftInfos[i].RiftID == ObjectID)
 		{
-			RiftInfos[i].bIsRepaired = true;
+			RiftInfos[i].bIsRepaired = Success;
+		}
+	}
+
+	if (IsSatisfied())
+	{
+		ASTGameState* GameState = Cast<ASTGameState>(GetWorld()->GetGameState());
+		if (GameState)
+		{
+			USTMissionBase* Mission = GameState->GetMission(MissionTag);
+			if (Mission)
+			{
+				Mission->CheckMissionClearable();
+			}
 		}
 	}
 }
+
 
 void USTRepairRiftCondition::OnRep_RiftInfos()
 {

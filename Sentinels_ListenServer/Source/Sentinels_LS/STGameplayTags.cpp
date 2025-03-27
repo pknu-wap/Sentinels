@@ -18,6 +18,11 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 		FString("Domination")
 	);
 
+	GameplayTags.Mission_DefenseWave = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Mission.DefenseWave"),
+		FString("DefenseWave")
+	);
+
 	GameplayTags.Mission_Eliminate_EliteMonster = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Mission.Eliminate_EliteMonster"),
 		FString("Eliminate EliteMonster")
@@ -51,5 +56,33 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.Mission_FinalDefense = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Mission.FinalDefense"),
 		FString("Final Defense Until Lift Activate")
+	);
+
+	/*
+		Spawn Points
+	*/
+	GameplayTags.SpawnPoint_DefenseCore = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("SpawnPoint.DefenseCore"),
+		FString("SpawnPoint DefenseCore")
+	);
+
+	GameplayTags.SpawnPoint_DominationPoint = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("SpawnPoint.DominationPoint"),
+		FString("SpawnPoint DominationPoint")
+	);
+
+	GameplayTags.SpawnPoint_NPC = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("SpawnPoint.NPC"),
+		FString("SpawnPoint NPC")
+	);
+
+	GameplayTags.SpawnPoint_Rift = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("SpawnPoint.Rift"),
+		FString("SpawnPoint Rift")
+	);
+
+	GameplayTags.SpawnPoint_Spawner = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("SpawnPoint.Spawner"),
+		FString("SpawnPoint Spawner")
 	);
 }

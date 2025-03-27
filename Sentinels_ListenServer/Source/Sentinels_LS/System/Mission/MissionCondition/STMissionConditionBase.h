@@ -7,9 +7,8 @@
 #include "GameplayTagContainer.h"
 #include "STMissionConditionBase.generated.h"
 
-/**
- * 
- */
+class ASpawnPointBase;
+
 UCLASS(ABSTRACT)
 class SENTINELS_LS_API USTMissionConditionBase : public UNetworkObject
 {
@@ -18,19 +17,12 @@ class SENTINELS_LS_API USTMissionConditionBase : public UNetworkObject
 public:
 	virtual void MissionActivated() {};
 	virtual void MissionDeactivated(bool IsCleared) {};
-
-	virtual void UpdateDominationInfo(int ObjectID, bool Success) {};
-	virtual void UpdateEliminatedMonsterInfo(int MonsterID) {};
-	virtual void UpdateObjectDestroyedInfo(int ObjectID) {};
-	virtual void UpdateAcquiredQuestItemInfo(int ItemID) {};
-	virtual void UpdateRescueHostageInfo(int NPCID) {};
-	virtual void UpdateRepairRiftInfo(int RiftID) {};
-	virtual void UpdateEscortInfo(int ObjectID, bool IsSuccessed) { };
-
 	virtual bool IsSatisfied() { return false; };
 
 public:
 	void SetMissionTag(FGameplayTag InTag) { MissionTag = InTag; };
+
+	void GetAllSpawnPointsWithTag(FGameplayTag InTag, TArray<ASpawnPointBase*>& OutActors) const;
 
 protected:
 	FGameplayTag MissionTag;

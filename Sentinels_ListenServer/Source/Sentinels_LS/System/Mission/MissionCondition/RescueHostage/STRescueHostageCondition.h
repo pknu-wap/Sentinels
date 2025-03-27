@@ -7,7 +7,7 @@
 #include "STRescueHostageCondition.generated.h"
 
 class AInteractableNPC;
-class ASpawnPoint_NPC;
+class ASpawnPointBase;
 
 USTRUCT(BlueprintType)
 struct FHostageCInfo
@@ -38,7 +38,8 @@ public:
 	virtual void MissionActivated() override;
 	virtual void MissionDeactivated(bool IsCleared) override;
 
-	virtual void UpdateRescueHostageInfo(int NPCID) override;
+	UFUNCTION()
+	void ConditionUpdated(int ObjectID, bool Success);
 
 	UFUNCTION()
 	void OnRep_HostageInfos();
@@ -50,7 +51,7 @@ protected:
 	float CurrentMissionTime;
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<ASpawnPoint_NPC> SubClassOfSpawnPoint;
+	TSubclassOf<ASpawnPointBase> SubClassOfSpawnPoint;
 
 	UPROPERTY(ReplicatedUsing = OnRep_HostageInfos, EditAnywhere, BlueprintReadOnly)
 	TArray<FHostageCInfo> HostageInfos;

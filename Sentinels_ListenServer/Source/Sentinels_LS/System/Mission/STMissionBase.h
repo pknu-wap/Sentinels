@@ -29,40 +29,11 @@ public:
 	// Hide Widget & Clear Mission
 	virtual void DeactivateMission(bool IsCleared);
 
+	// Check Mission is clearable
+	virtual void CheckMissionClearable();
+
 	// Define Mission Clear
 	virtual bool IsMissionCleared();
-
-	/*
-		Update Mission Info
-	*/
-public:
-	// Domination || Eliminate EliteMonster || Final Defense
-	UFUNCTION(Server, Reliable)
-	virtual void UpdateEliminatedMonsterInfo_Server(int MonsterID);
-
-	// Destroy Object 
-	UFUNCTION(Server, Reliable)
-	virtual void UpdateObjectDestroyedInfo_Server(int ObjectID);
-
-	// Collect QuestItems
-	UFUNCTION(Server, Reliable)
-	virtual void UpdateAcquiredQuestItemInfo_Server(int ItemID);
-
-	// Resque Hostage
-	UFUNCTION(Server, Reliable)
-	virtual void UpdateRescueHostageInfo_Server(int NPCID);
-
-	// Repair Rift
-	UFUNCTION(Server, Reliable)
-	virtual void UpdateRepairRiftInfo_Server(int RiftID);
-
-	// Escort Object
-	UFUNCTION(Server, Reliable)
-	virtual void UpdateEscortObjectInfo_Server(int ObjectID, bool IsSuccessed);
-
-	// Domination
-	UFUNCTION(Server, Reliable)
-	virtual void UpdateDominationInfo_Server(int ObjectID, bool IsSuccessed);
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

@@ -10,17 +10,6 @@ void USTKillCountCondition::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 	DOREPLIFETIME(USTKillCountCondition, KillInfos);
 }
 
-void USTKillCountCondition::UpdateEliminatedMonsterInfo(int MonsterID)
-{
-	for (int i = 0; i < KillInfos.Num(); i++)
-	{
-		if (KillInfos[i].MonsterID == MonsterID)
-		{
-			KillInfos[i].Current = FMath::Clamp(KillInfos[i].Current + 1, 0, KillInfos[i].Required);
-		}
-	}
-}
-
 bool USTKillCountCondition::IsSatisfied()
 {
 	for (int i = 0; i < KillInfos.Num(); i++)
@@ -38,6 +27,17 @@ void USTKillCountCondition::MissionActivated()
 
 void USTKillCountCondition::MissionDeactivated(bool IsCleared)
 {
+}
+
+void USTKillCountCondition::ConditionUpdated(int ObjectID, bool Success)
+{
+	for (int i = 0; i < KillInfos.Num(); i++)
+	{
+		if (KillInfos[i].MonsterID == ObjectID)
+		{
+			KillInfos[i].Current = FMath::Clamp(KillInfos[i].Current + 1, 0, KillInfos[i].Required);
+		}
+	}
 }
 
 void USTKillCountCondition::OnRep_KillInfos()

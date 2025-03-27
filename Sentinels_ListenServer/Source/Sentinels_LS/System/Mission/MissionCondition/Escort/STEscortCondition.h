@@ -22,7 +22,9 @@ public:
 	virtual void MissionActivated() override;
 	virtual void MissionDeactivated(bool IsCleared) override;
 
-	virtual void UpdateEscortInfo(int ObjectID, bool IsSuccessed) override;
+	UFUNCTION()
+	void ConditionUpdated(int ObjectID, bool Success);
+
 
 public:
 	bool Successed = false;

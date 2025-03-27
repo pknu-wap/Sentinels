@@ -5,10 +5,12 @@
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Actors/SpawnPoint/SpawnPoint_NPC.h"
+#include "Actors/SpawnPoint/SpawnPointBase.h"
 #include "Actors/Interact/NPC/InteractableNPC.h"
 #include "Sentinels_LS.h"
-
+#include "STGameplayTags.h"
+#include "System/STGameState.h"
+#include "System/Mission/STMissionBase.h"
 
 void USTRescueHostageCondition::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -41,8 +43,8 @@ void USTRescueHostageCondition::MissionActivated()
 	*/
 	FVector SpawnLocation; FRotator SpawnRotation;
 
-	TArray<AActor*> SpawnPoints;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), SubClassOfSpawnPoint, SpawnPoints);
+	TArray<ASpawnPointBase*> SpawnPoints;
+	GetAllSpawnPointsWithTag(FSTGameplayTags::Get().SpawnPoint_NPC, SpawnPoints);
 
 	if (SpawnPoints.IsEmpty())
 	{
@@ -82,7 +84,12 @@ void USTRescueHostageCondition::MissionActivated()
 
 		if (HostageInfos[i].SubClassOfNPC)
 		{
-			GetWorld()->SpawnActor<AActor>(HostageInfos[i].SubClassOfNPC, SpawnLocation, SpawnRotation);
+			AInteractableNPC* npc = GetWorld()->SpawnActor<AInteractableNPC>(HostageInfos[i].SubClassOfNPC, SpawnLocation, SpawnRotation);
+			if (npc)
+			{
+				npc->SetNPCID(HostageInfos[i].NPCID);
+				npc->Delegate_MissionConditionUpdate.AddUObject(this, &USTRescueHostageCondition::ConditionUpdated);
+			}
 		}
 	}
 
@@ -96,13 +103,26 @@ void USTRescueHostageCondition::MissionDeactivated(bool IsCleared)
 {
 }
 
-void USTRescueHostageCondition::UpdateRescueHostageInfo(int NPCID)
+void USTRescueHostageCondition::ConditionUpdated(int ObjectID, bool Success)
 {
 	for (int i = 0; i < HostageInfos.Num(); i++)
 	{
-		if (HostageInfos[i].NPCID == NPCID)
+		if (HostageInfos[i].NPCID == ObjectID)
 		{
 			HostageInfos[i].bIsRescued = true;
+		}
+	}
+
+	if (IsSatisfied())
+	{
+		ASTGameState* GameState = Cast<ASTGameState>(GetWorld()->GetGameState());
+		if (GameState)
+		{
+			USTMissionBase* Mission = GameState->GetMission(MissionTag);
+			if (Mission)
+			{
+				Mission->CheckMissionClearable();
+			}
 		}
 	}
 }

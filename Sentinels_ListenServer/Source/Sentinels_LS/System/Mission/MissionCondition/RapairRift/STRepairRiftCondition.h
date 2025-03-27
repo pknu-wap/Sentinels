@@ -6,8 +6,8 @@
 #include "System/Mission/MissionCondition/STMissionConditionBase.h"
 #include "STRepairRiftCondition.generated.h"
 
-class ASpawnPoint_Rift;
-class AInteractableRift;
+class ASpawnPointBase;
+class ARift;
 
 USTRUCT(BlueprintType)
 struct FRiftInfo
@@ -18,7 +18,7 @@ struct FRiftInfo
 	int RiftID = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<AInteractableRift> SubClassOfRift;
+	TSubclassOf<ARift> SubClassOfRift;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bIsRepaired = false;
@@ -37,7 +37,8 @@ public:
 	virtual void MissionActivated() override;
 	virtual void MissionDeactivated(bool IsCleared) override;
 
-	virtual void UpdateRepairRiftInfo(int RiftID) override;
+	UFUNCTION()
+	void ConditionUpdated(int ObjectID, bool Success);
 
 	UFUNCTION()
 	void OnRep_RiftInfos();
@@ -49,7 +50,7 @@ protected:
 	float CurrentMissionTime;
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<ASpawnPoint_Rift> SubClassOfSpawnPoint;
+	TSubclassOf<ASpawnPointBase> SubClassOfSpawnPoint;
 
 	UPROPERTY(ReplicatedUsing = OnRep_RiftInfos, EditAnywhere, BlueprintReadOnly)
 	TArray<FRiftInfo> RiftInfos;

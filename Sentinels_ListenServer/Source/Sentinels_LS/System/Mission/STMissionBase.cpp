@@ -58,6 +58,19 @@ void USTMissionBase::DeactivateMission(bool IsCleared)
 	}
 }
 
+void USTMissionBase::CheckMissionClearable()
+{
+	for (int i = 0; i < MissionConditions.Num(); i++)
+	{
+		if (MissionConditions[i] && !MissionConditions[i]->IsSatisfied())
+		{
+			return;
+		}
+	}
+
+	DeactivateMission(true);
+}
+
 bool USTMissionBase::IsMissionCleared()
 {
 	for (int i = 0; i < MissionConditions.Num(); i++)
@@ -69,132 +82,6 @@ bool USTMissionBase::IsMissionCleared()
 	}
 
 	return true;
-}
-
-void USTMissionBase::UpdateEliminatedMonsterInfo_Server_Implementation(int MonsterID)
-{
-	for (int i = 0; i < MissionConditions.Num(); i++)
-	{
-		if (MissionConditions[i])
-		{
-			MissionConditions[i]->UpdateEliminatedMonsterInfo(MonsterID);
-		}
-	}
-
-	if (IsMissionCleared())
-	{
-		FTimerHandle handle;
-		GetWorld()->GetTimerManager().SetTimer(handle, [&]() {DeactivateMission(true); }, 0.5f, false);
-		// GetWorld()->GetTimerManager().SetTimerForNextTick([&]() {DeactivateMission(true); });
-	}
-}
-
-void USTMissionBase::UpdateObjectDestroyedInfo_Server_Implementation(int ObjectID)
-{
-	for (int i = 0; i < MissionConditions.Num(); i++)
-	{
-		if (MissionConditions[i])
-		{
-			MissionConditions[i]->UpdateObjectDestroyedInfo(ObjectID);
-		}
-	}
-
-	if (IsMissionCleared())
-	{
-		FTimerHandle handle;
-		GetWorld()->GetTimerManager().SetTimer(handle, [&]() {DeactivateMission(true); }, 0.5f, false);
-		// GetWorld()->GetTimerManager().SetTimerForNextTick([&]() {DeactivateMission(true); });
-	}
-}
-
-void USTMissionBase::UpdateAcquiredQuestItemInfo_Server_Implementation(int ItemID)
-{
-	for (int i = 0; i < MissionConditions.Num(); i++)
-	{
-		if (MissionConditions[i])
-		{
-			MissionConditions[i]->UpdateAcquiredQuestItemInfo(ItemID);
-		}
-	}
-
-	if (IsMissionCleared())
-	{
-		FTimerHandle handle;
-		GetWorld()->GetTimerManager().SetTimer(handle, [&]() {DeactivateMission(true); }, 0.5f, false);
-		// GetWorld()->GetTimerManager().SetTimerForNextTick([&]() {DeactivateMission(true); });
-	}
-}
-
-void USTMissionBase::UpdateRescueHostageInfo_Server_Implementation(int NPCID)
-{
-	for (int i = 0; i < MissionConditions.Num(); i++)
-	{
-		if (MissionConditions[i])
-		{
-			MissionConditions[i]->UpdateRescueHostageInfo(NPCID);
-		}
-	}
-
-	if (IsMissionCleared())
-	{
-		FTimerHandle handle;
-		GetWorld()->GetTimerManager().SetTimer(handle, [&]() {DeactivateMission(true); }, 0.5f, false);
-		// GetWorld()->GetTimerManager().SetTimerForNextTick([&]() {DeactivateMission(true); });
-	}
-}
-
-void USTMissionBase::UpdateRepairRiftInfo_Server_Implementation(int RiftID)
-{
-	for (int i = 0; i < MissionConditions.Num(); i++)
-	{
-		if (MissionConditions[i])
-		{
-			MissionConditions[i]->UpdateRepairRiftInfo(RiftID);
-		}
-	}
-
-	if (IsMissionCleared())
-	{
-		FTimerHandle handle;
-		GetWorld()->GetTimerManager().SetTimer(handle, [&]() {DeactivateMission(true); }, 0.5f, false);
-		// GetWorld()->GetTimerManager().SetTimerForNextTick([&]() {DeactivateMission(true); });
-	}
-}
-
-void USTMissionBase::UpdateEscortObjectInfo_Server_Implementation(int ObjectID, bool IsSuccessed)
-{
-	for (int i = 0; i < MissionConditions.Num(); i++)
-	{
-		if (MissionConditions[i])
-		{
-			MissionConditions[i]->UpdateEscortInfo(ObjectID, IsSuccessed);
-		}
-	}
-
-	if (IsMissionCleared())
-	{
-		FTimerHandle handle;
-		GetWorld()->GetTimerManager().SetTimer(handle, [&]() {DeactivateMission(true); }, 0.5f, false);
-		// GetWorld()->GetTimerManager().SetTimerForNextTick([&]() {DeactivateMission(true); });
-	}
-}
-
-void USTMissionBase::UpdateDominationInfo_Server_Implementation(int ObjectID, bool IsSuccessed)
-{
-	for (int i = 0; i < MissionConditions.Num(); i++)
-	{
-		if (MissionConditions[i])
-		{
-			MissionConditions[i]->UpdateDominationInfo(ObjectID, IsSuccessed);
-		}
-	}
-
-	if (IsMissionCleared())
-	{
-		FTimerHandle handle;
-		GetWorld()->GetTimerManager().SetTimer(handle, [&]() {DeactivateMission(true); }, 0.5f, false);
-		// GetWorld()->GetTimerManager().SetTimerForNextTick([&]() {DeactivateMission(true); });
-	}
 }
 
 void USTMissionBase::OnRep_bIsMisionActivated()
