@@ -31,6 +31,7 @@ void USTMissionBase::ActivateMission()
 		USTMissionConditionBase* condition = NewObject<USTMissionConditionBase>(Owner, conditionClass);
 		if (condition)
 		{
+			condition->SetMissionTag(MissionTag);
 			Owner->AddReplicatedSubObject(condition);
 			MissionConditions.Push(condition);
 		}
@@ -149,6 +150,42 @@ void USTMissionBase::UpdateRepairRiftInfo_Server_Implementation(int RiftID)
 		if (MissionConditions[i])
 		{
 			MissionConditions[i]->UpdateRepairRiftInfo(RiftID);
+		}
+	}
+
+	if (IsMissionCleared())
+	{
+		FTimerHandle handle;
+		GetWorld()->GetTimerManager().SetTimer(handle, [&]() {DeactivateMission(true); }, 0.5f, false);
+		// GetWorld()->GetTimerManager().SetTimerForNextTick([&]() {DeactivateMission(true); });
+	}
+}
+
+void USTMissionBase::UpdateEscortObjectInfo_Server_Implementation(int ObjectID, bool IsSuccessed)
+{
+	for (int i = 0; i < MissionConditions.Num(); i++)
+	{
+		if (MissionConditions[i])
+		{
+			MissionConditions[i]->UpdateEscortInfo(ObjectID, IsSuccessed);
+		}
+	}
+
+	if (IsMissionCleared())
+	{
+		FTimerHandle handle;
+		GetWorld()->GetTimerManager().SetTimer(handle, [&]() {DeactivateMission(true); }, 0.5f, false);
+		// GetWorld()->GetTimerManager().SetTimerForNextTick([&]() {DeactivateMission(true); });
+	}
+}
+
+void USTMissionBase::UpdateDominationInfo_Server_Implementation(int ObjectID, bool IsSuccessed)
+{
+	for (int i = 0; i < MissionConditions.Num(); i++)
+	{
+		if (MissionConditions[i])
+		{
+			MissionConditions[i]->UpdateDominationInfo(ObjectID, IsSuccessed);
 		}
 	}
 

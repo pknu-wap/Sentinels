@@ -56,6 +56,14 @@ public:
 	UFUNCTION(Server, Reliable)
 	virtual void UpdateRepairRiftInfo_Server(int RiftID);
 
+	// Escort Object
+	UFUNCTION(Server, Reliable)
+	virtual void UpdateEscortObjectInfo_Server(int ObjectID, bool IsSuccessed);
+
+	// Domination
+	UFUNCTION(Server, Reliable)
+	virtual void UpdateDominationInfo_Server(int ObjectID, bool IsSuccessed);
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FGameplayTag MissionTag;

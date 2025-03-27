@@ -2,6 +2,7 @@
 
 
 #include "Character/Enemy/STEnemyBase_AIController.h"
+#include "Character/Enemy/STEnemyBase.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -98,6 +99,9 @@ void ASTEnemyBase_AIController::SetTarget(AActor* InTarget)
 		UE_LOG(LogTemp, Warning, TEXT("ASTEnemyBase_AIController : Blackboard is not valid."));
 		return;
 	}
+
+	if (InTarget->IsA<ASTEnemyBase>())
+		return;
 
 	AActor* currentTarget = Cast<AActor>(Blackboard->GetValueAsObject(BBKey_Target));
 	if (currentTarget)
