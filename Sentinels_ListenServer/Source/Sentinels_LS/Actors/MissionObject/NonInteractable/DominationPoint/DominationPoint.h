@@ -19,6 +19,7 @@ public:
 
 protected:
     virtual void BeginPlay() override;
+    virtual void Tick(float fDeltaTime) override;
 
     /*
         Box Trigger
@@ -30,6 +31,22 @@ protected:
     UFUNCTION()
     void TriggerSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, 
         UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+    UFUNCTION()
+    void TriggerSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+    /*
+        Domination
+    */
+protected:
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    float RequireTimeForDomination = 10.f;
+
+private:
+    int OverlappedPlayer = 0;
+    float currentDominationTime = 0.f;
+
+
 
     /*
         Spawn Enemy

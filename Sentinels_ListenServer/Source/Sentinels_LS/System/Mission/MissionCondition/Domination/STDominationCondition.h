@@ -8,7 +8,22 @@
 #include "STDominationCondition.generated.h"
 
 class AInteractableDefenseCore;
-class ASpawnPoint_DefenseCore;
+class ADominationPoint;
+
+USTRUCT(BlueprintType)
+struct FDominationPointInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int DominationPID = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<ADominationPoint> SubClassOfDominationPoint;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bIsDominated = false;
+};
 
 UCLASS()
 class SENTINELS_LS_API USTDominationCondition : public USTMissionConditionBase
@@ -23,5 +38,25 @@ public:
 	virtual void MissionActivated() override;
 	virtual void MissionDeactivated(bool IsCleared) override;
 
+	UFUNCTION()
+	void ConditionUpdated(int ObjectID, bool Success);
 
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<ASpawnPointBase> SubclassOfSpawnPoint;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<FDominationPointInfo> DominationPointInfos;
+
+	/*
+	*	Time Limit
+	*/
+protected:
+	void TimeLimitEnded();
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float DominationTimeLimit = 120.f;
+
+	FTimerHandle handle;
 };

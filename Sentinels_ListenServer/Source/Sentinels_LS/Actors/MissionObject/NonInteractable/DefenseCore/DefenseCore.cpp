@@ -17,6 +17,8 @@ ADefenseCore::ADefenseCore()
 
 void ADefenseCore::BeginPlay()
 {
+	Super::BeginPlay();
+
 	if (HasAuthority())
 	{
 		TriggerBoxComponent->OnComponentBeginOverlap.AddDynamic(this, &ADefenseCore::TriggerBoxBeginOverlap);
