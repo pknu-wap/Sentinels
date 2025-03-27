@@ -19,6 +19,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void InitializeComponent() override;
 
 public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -30,15 +31,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	const bool GetbIsReady() const { return bIsReady; }
 
-	UFUNCTION(BlueprintCallable)
-	void SetbIsReady(bool value) { bIsReady = value; }
-
 protected:
 	UFUNCTION(Server, Reliable, BlueprintCallable)
-	void ServerRPCChangebIsReady(const bool value);
+	void ServerRPCSetbIsReady(bool Value);
 
-	UFUNCTION(NetMulticast, Reliable, BlueprintCallable)
-	void MulticastRPCCheckbIsReady();
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void ServerRPCChangebIsReady();
+
+	UFUNCTION(Client, UnReliable, BlueprintCallable)
+	void ClientRPCCheckbIsReady();
 
 protected:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Lobby", meta = (AllowPrivateAccess = "true"))

@@ -6,7 +6,6 @@
 #include "Components/InventoryComponent.h"
 #include "Components/InteractComponent.h"
 #include "Components/SplineComponent.h"
-#include "Components/UI/STPlayerUIComponent.h"
 #include "EnhancedInputComponent.h"
 #include "NavigationSystem.h"
 #include "NavigationPath.h"
@@ -20,6 +19,8 @@
 #include "OnlineSubsystemUtils.h"
 #include "GameFramework/PlayerState.h"
 #include "EngineUtils.h"
+#include "Net/UnrealNetwork.h"
+#include "Components/UI/STPlayerUIComponent.h"
 
 
 ASTPlayerController::ASTPlayerController()
@@ -33,7 +34,7 @@ ASTPlayerController::ASTPlayerController()
 	InteractComponent = CreateDefaultSubobject<UInteractComponent>(TEXT("InteractComp"));
 	InteractComponent->SetIsReplicated(true);
 
-	UIComponent = CreateDefaultSubobject<USTPlayerUIComponent>(TEXT("UIComp"));
+	UIComponent = CreateDefaultSubobject<USTPlayerUIComponent>(TEXT("UIComponent"));
 	UIComponent->SetIsReplicated(true);
 }
 
@@ -45,6 +46,8 @@ void ASTPlayerController::Tick(float DeltaTime)
 void ASTPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ASTPlayerController, UIComponent);
 }
 
 void ASTPlayerController::SetupInputComponent()

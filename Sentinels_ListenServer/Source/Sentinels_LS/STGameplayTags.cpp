@@ -8,11 +8,29 @@ FSTGameplayTags FSTGameplayTags::GameplayTags;
 
 void FSTGameplayTags::InitializeNativeGameplayTags()
 {
+	/*
+		Widget
+	*/
+
+	GameplayTags.Widget_Lobby_Ready = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Widget.Lobby.Ready"),
+		FString("Ready")
+	);
+
+	GameplayTags.Widget_Lobby_CharacterSelect = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Widget.Lobby.CharacterSelect"),
+		FString("Character Select")
+	);
+
+	GameplayTags.Widget_Lobby_SkillSelect = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Widget.Lobby.SkillSelect"),
+		FString("Skill Select")
+	);
 
 	/*
 		Missions
 	*/
-
+	
 	GameplayTags.Mission_Domination = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Mission.Domination"),
 		FString("Domination")

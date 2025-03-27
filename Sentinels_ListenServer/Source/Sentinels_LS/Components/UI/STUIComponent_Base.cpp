@@ -23,6 +23,11 @@ void USTUIComponent_Base::BeginPlay()
 	
 }
 
+void USTUIComponent_Base::InitializeComponent()
+{
+
+}
+
 
 // Called every frame
 void USTUIComponent_Base::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)

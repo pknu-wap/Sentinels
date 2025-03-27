@@ -59,6 +59,11 @@ public:
 		Interact
 	*/
 	void Interact();
+
+	/*
+		UI
+	*/
+	USTPlayerUIComponent* GetUIComponent() { return UIComponent; }
 	
 public:
 	/*
@@ -120,7 +125,7 @@ protected:
 	/*
 		UI
 	*/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USTPlayerUIComponent> UIComponent;
 
 private:

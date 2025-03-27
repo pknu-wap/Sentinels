@@ -17,6 +17,9 @@ public:
 	////////// Character /////////
 
 	//////////  Widget   /////////
+	FGameplayTag Widget_Lobby_Ready;
+	FGameplayTag Widget_Lobby_CharacterSelect;
+	FGameplayTag Widget_Lobby_SkillSelect;
 
 	//////////  Mission  /////////
 	FGameplayTag Mission_Domination;
