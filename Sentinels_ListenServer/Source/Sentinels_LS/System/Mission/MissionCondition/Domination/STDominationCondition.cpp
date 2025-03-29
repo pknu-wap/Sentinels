@@ -45,6 +45,13 @@ void USTDominationCondition::MissionActivated()
 		return;
 	}
 
+	if (SpawnPoints.Num() < DominationPointInfos.Num())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("USTDominationCondition::ActivateMission SpawnPoints Num is Smaller than DominationPointInfos."));
+		return;
+	}
+
+
 	TSet<int> UsedSpawnPoints;
 	for (int i = 0; i < DominationPointInfos.Num(); i++)
 	{

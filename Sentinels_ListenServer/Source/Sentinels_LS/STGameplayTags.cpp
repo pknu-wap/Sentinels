@@ -85,4 +85,11 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 		FName("SpawnPoint.Spawner"),
 		FString("SpawnPoint Spawner")
 	);
+
+	GameplayTags.SpawnPoint_DestructibleObject = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("SpawnPoint.DestructibleObject"),
+		FString("SpawnPoint DestructibleObject")
+	);
+
+	
 }

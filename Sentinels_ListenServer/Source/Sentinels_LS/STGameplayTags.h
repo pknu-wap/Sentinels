@@ -35,6 +35,7 @@ public:
 	FGameplayTag SpawnPoint_NPC;
 	FGameplayTag SpawnPoint_Rift;
 	FGameplayTag SpawnPoint_Spawner;
+	FGameplayTag SpawnPoint_DestructibleObject;
 
 private:
 	static FSTGameplayTags GameplayTags;
