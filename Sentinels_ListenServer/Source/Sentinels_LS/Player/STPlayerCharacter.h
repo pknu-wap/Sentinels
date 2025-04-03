@@ -13,6 +13,8 @@ class UCameraComponent;
 class ASTPlayerCharacter;
 class UInventoryComponent;
 class USTPlayerStatusComponent;
+class UCameraModeManagerComponent;
+struct FInputActionValue;
 
 UCLASS()
 class SENTINELS_LS_API ASTPlayerCharacter : public ASTCharacterBase
@@ -27,6 +29,17 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+public:
+	void BindDefaultTopDownInput();
+	void BindDefaultThirdPersonInput();
+
+protected:
+	/** Called for movement input */
+	void Move(const FInputActionValue& Value);
+
+	/** Called for looking input */
+	void Look(const FInputActionValue& Value);
 
 	/*
 		Normal Attack
@@ -60,6 +73,7 @@ protected:
 	bool bShouldDoNextAttack = false;
 
 
+protected:
 	/*
 		Skills
 	*/
@@ -110,6 +124,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UCameraModeManagerComponent* CameraManager;
+
 	/*
 		Inventory
 	*/
@@ -145,6 +162,15 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* Skill_R_Action;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputMappingContext* MappingContext_ThirdPerson;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* MoveAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* LookAction;
 
 	/*
 		Montages
