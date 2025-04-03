@@ -14,7 +14,10 @@ struct FMissionInfo
 {
 	GENERATED_BODY()
 
+	UPROPERTY()
 	FGameplayTag MissionTag;
+
+	UPROPERTY()
 	TObjectPtr<USTMissionBase> Mission;
 };
 
@@ -45,14 +48,10 @@ public:
 	UFUNCTION()
 	void OnMissionEnded(FGameplayTag InMissionTag, bool IsCleared);
 
-public:
-	void UpdateEliminatedMonsterInfo(int MonsterID);
-	void UpdateObjectDestroyedInfo(int ObjectID);
-	void UpdateAcquiredQuestItemInfo(int ItemID);
-	void UpdateRescueHostageInfo(int NPCID);
-	void UpdateRepairRiftInfo(int RiftID);
+	UFUNCTION(NetMulticast, Reliable)
+	void OnMissionEnded_Multicast(FGameplayTag InMissionTag, bool IsCleared);
 	
-protected:
+public:
 	USTMissionBase* GetMission(FGameplayTag InMissionTag);
 
 private:

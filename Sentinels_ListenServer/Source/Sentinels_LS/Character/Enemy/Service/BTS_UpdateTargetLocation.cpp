@@ -26,7 +26,7 @@ void UBTS_UpdateTargetLocation::TickNode(UBehaviorTreeComponent& OwnerComp, uint
 	UObject* TargetObject = blackBoard->GetValueAsObject(FName("Target"));
 	if (!TargetObject) return;
 
-	APawn* Target = Cast<APawn>(TargetObject);
+	AActor* Target = Cast<AActor>(TargetObject);
 	if (!Target) return;
 
 	FVector ownerLocation = owner->GetActorLocation();

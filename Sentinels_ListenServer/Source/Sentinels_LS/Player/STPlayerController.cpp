@@ -186,7 +186,7 @@ void ASTPlayerController::AutoRun()
 void ASTPlayerController::Interact()
 {
 	if(InteractComponent)
-		InteractComponent->Interact();
+		InteractComponent->Interact_Server();
 }
 
 void ASTPlayerController::RegisterSelfToSession(FName SessionName)

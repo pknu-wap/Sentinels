@@ -2,6 +2,7 @@
 
 
 #include "Player/STPlayerCharacter.h"
+#include "Player/STPlayerAnimInstance.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
@@ -79,6 +80,8 @@ void ASTPlayerCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+
+	BindAttackDelegate();
 }
 
 void ASTPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -90,7 +93,7 @@ void ASTPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(Skill_W_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_W_Pressed);
 		EnhancedInputComponent->BindAction(Skill_E_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_E_Pressed);
 		EnhancedInputComponent->BindAction(Skill_R_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_R_Pressed);
-
+		EnhancedInputComponent->BindAction(NormalAttack_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::NormalAttack_Pressed);
 	}
 }
 
@@ -191,18 +194,104 @@ void ASTPlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	DOREPLIFETIME(ASTPlayerCharacter, StatusComponent);
 }
 
-void ASTPlayerCharacter::SetFlyModeUntilMontageEnd()
+#pragma region Region_NormalAttack
+
+void ASTPlayerCharacter::BindAttackDelegate()
 {
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
-	GetMesh()->GetAnimInstance()->OnMontageEnded.RemoveDynamic(this, &ASTPlayerCharacter::SetMovementMode_Walk);
-	GetMesh()->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &ASTPlayerCharacter::SetMovementMode_Walk);
+	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+	if (AnimInst)
+	{
+		AnimInst->OnMontageEnded.AddDynamic(this, &ASTPlayerCharacter::OnMontageEnded_ResetAttackInfo);
+	}
+
+	USTPlayerAnimInstance* PAnimInst = Cast<USTPlayerAnimInstance>(AnimInst);
+	if (PAnimInst)
+	{
+		PAnimInst->Delegate_StartCheckNextInput.AddUObject(this, &ASTPlayerCharacter::StartCheckNextInput);
+		PAnimInst->Delegate_CheckNextAttack.AddUObject(this, &ASTPlayerCharacter::CheckNextAttack);
+	}
 }
 
-void ASTPlayerCharacter::SetMovementMode_Walk(UAnimMontage* Montage, bool bInterrupted)
+void ASTPlayerCharacter::NormalAttack_Pressed()
 {
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-	GetMesh()->GetAnimInstance()->OnMontageEnded.RemoveDynamic(this, &ASTPlayerCharacter::SetMovementMode_Walk);
+	if (CurrentCombo == 0)
+	{
+		CurrentCombo++;
+		PlayMontage_NormalAttack(CurrentCombo);
+		NormalAttack_Pressed_Server(CurrentCombo);
+	}
+
+	else if (bIsCheckingNextInput)
+	{
+		bShouldDoNextAttack = true;
+	}
 }
+
+void ASTPlayerCharacter::PlayMontage_NormalAttack(int currentCombo)
+{
+	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+	if (AnimInst)
+	{
+		if (currentCombo <= 1)
+		{
+			AnimInst->Montage_Play(Montage_NormalAttack);
+		}
+		else
+		{
+			FString currentSection = GetMesh()->GetAnimInstance()->Montage_GetCurrentSection().ToString();
+			currentSection[currentSection.Len() - 1] += 1;
+			AnimInst->Montage_JumpToSection(FName(currentSection));
+		}
+	}
+}
+
+void ASTPlayerCharacter::NormalAttack_Pressed_Server_Implementation(int currentCombo)
+{
+	NormalAttack_Pressed_Multicast(currentCombo);
+}
+
+void ASTPlayerCharacter::NormalAttack_Pressed_Multicast_Implementation(int currentCombo)
+{
+	if (!IsLocallyControlled())
+	{
+		PlayMontage_NormalAttack(currentCombo);
+	}
+}
+
+void ASTPlayerCharacter::StartCheckNextInput()
+{
+	bIsCheckingNextInput = true;
+}
+
+void ASTPlayerCharacter::CheckNextAttack()
+{
+	if (!bShouldDoNextAttack || CurrentCombo > MaxCombo)
+	{
+		ResetAttackInfo();
+	}
+	else if (bShouldDoNextAttack)
+	{
+		bIsCheckingNextInput = false; bShouldDoNextAttack = false; 
+		CurrentCombo++;
+
+		PlayMontage_NormalAttack(CurrentCombo);
+		NormalAttack_Pressed_Server(CurrentCombo);
+	}
+}
+
+void ASTPlayerCharacter::OnMontageEnded_ResetAttackInfo(UAnimMontage* Montage, bool bInterrupted)
+{
+	ResetAttackInfo();
+}
+
+void ASTPlayerCharacter::ResetAttackInfo()
+{
+	CurrentCombo = 0; 
+	bShouldDoNextAttack = false;
+	bIsCheckingNextInput = false;
+}
+
+#pragma endregion
 
 
 #pragma region Region_Skills
@@ -237,13 +326,7 @@ void ASTPlayerCharacter::Skill_Q_Pressed_Multicast_Implementation()
 {
 	if (!IsLocallyControlled())
 	{
-		UE_LOG(LogTemp, Display, TEXT("ASTPlayerCharacter : Skill_Q_Pressed_Multicast Called!"));
-
-		UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
-		if (AnimInst)
-		{
-			AnimInst->Montage_Play(Montage_Skill_Q);
-		}
+		PlayMontage_Skill_Q();
 	}
 }
 
@@ -277,13 +360,7 @@ void ASTPlayerCharacter::Skill_W_Pressed_Multicast_Implementation()
 {
 	if (!IsLocallyControlled())
 	{
-		UE_LOG(LogTemp, Display, TEXT("ASTPlayerCharacter : Skill_W_Pressed_Multicast Called!"));
-
-		UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
-		if (AnimInst)
-		{
-			AnimInst->Montage_Play(Montage_Skill_W);
-		}
+		PlayMontage_Skill_W();
 	}
 }
 
@@ -317,13 +394,7 @@ void ASTPlayerCharacter::Skill_E_Pressed_Multicast_Implementation()
 {
 	if (!IsLocallyControlled())
 	{
-		UE_LOG(LogTemp, Display, TEXT("ASTPlayerCharacter : Skill_E_Pressed_Multicast Called!"));
-
-		UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
-		if (AnimInst)
-		{
-			AnimInst->Montage_Play(Montage_Skill_E);
-		}
+		PlayMontage_Skill_E();
 	}
 }
 
@@ -357,13 +428,7 @@ void ASTPlayerCharacter::Skill_R_Pressed_Multicast_Implementation()
 {
 	if (!IsLocallyControlled())
 	{
-		UE_LOG(LogTemp, Display, TEXT("ASTPlayerCharacter : Skill_R_Pressed_Multicast Called!"));
-
-		UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
-		if (AnimInst)
-		{
-			AnimInst->Montage_Play(Montage_Skill_R);
-		}
+		PlayMontage_Skill_R();
 	}
 }
 

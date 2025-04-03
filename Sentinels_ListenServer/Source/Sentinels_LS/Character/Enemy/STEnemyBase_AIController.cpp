@@ -2,6 +2,7 @@
 
 
 #include "Character/Enemy/STEnemyBase_AIController.h"
+#include "Character/Enemy/STEnemyBase.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -89,6 +90,46 @@ void ASTEnemyBase_AIController::OnTargetDetected(AActor* actor, const FAIStimulu
 			Blackboard->SetValueAsVector(BBKey_TargetLocation, actor->GetActorLocation());
 		}
 	}
+}
+
+void ASTEnemyBase_AIController::SetTarget(AActor* InTarget)
+{
+	if (!IsValid(Blackboard))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ASTEnemyBase_AIController : Blackboard is not valid."));
+		return;
+	}
+
+	if (InTarget->IsA<ASTEnemyBase>())
+		return;
+
+	AActor* currentTarget = Cast<AActor>(Blackboard->GetValueAsObject(BBKey_Target));
+	if (currentTarget)
+	{
+		UE_LOG(LogTemp, Display, TEXT("ASTEnemyBase_AIController::SetTarget"));
+		if (currentTarget->IsA<ASTPlayerCharacter>())
+		{
+			Blackboard->SetValueAsObject(BBKey_Target, InTarget);
+		}
+		else
+		{
+			StoredTarget = currentTarget;
+			Blackboard->SetValueAsObject(BBKey_Target, InTarget);
+
+			GetWorldTimerManager().SetTimer(StoreTargetHandle, this, &ASTEnemyBase_AIController::RestoreTarget, 30.f, false);
+		}
+	}
+	else
+	{
+		Blackboard->SetValueAsObject(BBKey_Target, InTarget);
+		Blackboard->SetValueAsVector(BBKey_TargetLocation, InTarget->GetActorLocation());
+	}
+}
+
+void ASTEnemyBase_AIController::RestoreTarget()
+{
+	if(IsValid(StoredTarget) && IsValid(Blackboard))
+		Blackboard->SetValueAsObject(BBKey_Target, StoredTarget);
 }
 
 void ASTEnemyBase_AIController::SetAIPerception()

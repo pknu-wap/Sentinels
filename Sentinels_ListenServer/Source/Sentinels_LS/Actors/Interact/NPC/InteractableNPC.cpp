@@ -2,11 +2,22 @@
 
 
 #include "Actors/Interact/NPC/InteractableNPC.h"
+#include "Kismet/GameplayStatics.h"
+#include "System/STGameState.h"
+#include "System/Mission/STMissionBase.h"
 
 void AInteractableNPC::Interact()
 {
-}
-
-void AInteractableNPC::ShowInteractiveUI()
-{
+	/*ASTGameState* GameState = Cast<ASTGameState>(UGameplayStatics::GetGameState(this));
+	if (GameState)
+	{
+		USTMissionBase* mission = GameState->GetMission(FSTGameplayTags::Get().Mission_RescueHostage);
+		if (mission)
+		{
+			mission->UpdateRescueHostageInfo_Server(NPCID);
+		}
+	}*/
+	
+	// GetUniqueID
+	Delegate_MissionConditionUpdate.Broadcast(NPCID, true);
 }
