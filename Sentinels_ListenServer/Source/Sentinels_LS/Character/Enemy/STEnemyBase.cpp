@@ -13,9 +13,11 @@
 #include "Components/STEnemyStatusComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Character/Enemy/STEnemyBase_AIController.h"
+#include "SkeletalMeshComponentBudgeted.h"
+#include "IAnimationBudgetAllocator.h"
 
 ASTEnemyBase::ASTEnemyBase(const FObjectInitializer& object_initializer)
-	: Super(object_initializer)
+	: Super(object_initializer.SetDefaultSubobjectClass<USkeletalMeshComponentBudgeted>(ACharacter::MeshComponentName))
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -40,11 +42,15 @@ ASTEnemyBase::ASTEnemyBase(const FObjectInitializer& object_initializer)
 
 	StatusComponent = CreateDefaultSubobject<USTEnemyStatusComponent>(TEXT("EnemyStatusComp"));
 	StatusComponent->SetIsReplicated(true);
+
+	PrimaryActorTick.bStartWithTickEnabled = false;
 }
 
 void ASTEnemyBase::BeginPlay()
 {
 	Super::BeginPlay();
+
+	IAnimationBudgetAllocator::Get(GetWorld())->SetEnabled(true);
 }
 
 void ASTEnemyBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
