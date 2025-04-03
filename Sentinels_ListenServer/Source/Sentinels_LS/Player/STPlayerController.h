@@ -11,6 +11,7 @@
 #include "STPlayerController.generated.h"
 
 class ASTPlayerCharacter;
+class ASTPlayerState;
 class UInputAction;
 class USplineComponent;
 class UInventoryComponent;

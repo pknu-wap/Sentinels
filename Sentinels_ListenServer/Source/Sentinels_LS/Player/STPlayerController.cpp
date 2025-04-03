@@ -46,8 +46,6 @@ void ASTPlayerController::Tick(float DeltaTime)
 void ASTPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(ASTPlayerController, UIComponent);
 }
 
 void ASTPlayerController::SetupInputComponent()
