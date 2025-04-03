@@ -5,5 +5,5 @@
 
 FVector USTCharacterMovementComponent::ConstrainAnimRootMotionVelocity(const FVector& RootMotionVelocity, const FVector& CurrentVelocity) const
 {
-	return RootMotionVelocity;
+	return Super::ConstrainAnimRootMotionVelocity(RootMotionVelocity, CurrentVelocity);
 }
