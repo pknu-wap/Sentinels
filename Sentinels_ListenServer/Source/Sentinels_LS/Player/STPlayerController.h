@@ -38,6 +38,10 @@ protected:
 	virtual void SetupInputComponent() override;
 
 public:
+	void BindDefaultTopDownInput();
+	void BindDefaultThirdPersonInput();
+
+public:
 	/*
 		Update Player
 	*/
