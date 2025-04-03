@@ -20,6 +20,7 @@ public:
 
 	//////////  Mission  /////////
 	FGameplayTag Mission_Domination;
+	FGameplayTag Mission_DefenseWave;
 	FGameplayTag Mission_Eliminate_EliteMonster;
 	FGameplayTag Mission_RescueHostage;
 	FGameplayTag Mission_EscortObject;
@@ -28,6 +29,13 @@ public:
 	FGameplayTag Mission_RepairRift;
 	FGameplayTag Mission_FinalDefense;
 
+	/////////  SpawnPoint  /////////
+	FGameplayTag SpawnPoint_DefenseCore;
+	FGameplayTag SpawnPoint_DominationPoint;
+	FGameplayTag SpawnPoint_NPC;
+	FGameplayTag SpawnPoint_Rift;
+	FGameplayTag SpawnPoint_Spawner;
+	FGameplayTag SpawnPoint_DestructibleObject;
 
 private:
 	static FSTGameplayTags GameplayTags;

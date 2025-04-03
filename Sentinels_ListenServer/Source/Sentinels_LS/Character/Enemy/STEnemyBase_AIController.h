@@ -41,6 +41,15 @@ public:
 	UFUNCTION()
 	virtual void OnTargetDetected(AActor* actor, const FAIStimulus Stimulus);
 
+	void SetTarget(AActor* InTarget);
+	void RestoreTarget();
+
+protected:
+	FTimerHandle StoreTargetHandle;
+
+	UPROPERTY()
+	AActor* StoredTarget;
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float AISightRadius = 2000.f;

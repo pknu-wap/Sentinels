@@ -3,19 +3,28 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Actors/Interact/InteractableActor.h"
+#include "Actors/Interact/InteractableCharacter.h"
+#include "Actors/MissionObject/MissionObject.h"
 #include "InteractableNPC.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class SENTINELS_LS_API AInteractableNPC : public AInteractableActor
+class SENTINELS_LS_API AInteractableNPC : public AInteractableCharacter
 {
 	GENERATED_BODY()
 	
 public:
 	virtual void Interact() override;
-	virtual void ShowInteractiveUI() override;
 
+public:
+	void SetNPCID(int InNPCID) { NPCID = InNPCID; }
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int NPCID = 0;
+
+public:
+	FMissionConditionUpdate Delegate_MissionConditionUpdate;
 };
