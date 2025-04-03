@@ -28,15 +28,42 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	/*
+		Normal Attack
+	*/
 protected:
+	void BindAttackDelegate();
 
-	void SetFlyModeUntilMontageEnd();
+	virtual void NormalAttack_Pressed();
+	void PlayMontage_NormalAttack(int currentCombo);
+
+	UFUNCTION(Server, Reliable)
+	virtual void NormalAttack_Pressed_Server(int currentCombo);
+
+	UFUNCTION(NetMulticast, Reliable)
+	virtual void NormalAttack_Pressed_Multicast(int currentCombo);
+
 	UFUNCTION()
-	void SetMovementMode_Walk(UAnimMontage* Montage, bool bInterrupted);
+	void StartCheckNextInput();
+
+	UFUNCTION()
+	void CheckNextAttack();
+
+	UFUNCTION()
+	void OnMontageEnded_ResetAttackInfo(UAnimMontage* Montage, bool bInterrupted);
+	void ResetAttackInfo();
+
+protected:
+	int CurrentCombo = 0;
+	int MaxCombo = 3;
+	bool bIsCheckingNextInput = false;
+	bool bShouldDoNextAttack = false;
+
 
 	/*
 		Skills
 	*/
+protected:
 	virtual void Skill_Q_Pressed();
 	void PlayMontage_Skill_Q();
 
@@ -105,6 +132,9 @@ protected:
 	UInputAction* JumpAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* NormalAttack_Action;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* Skill_Q_Action;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -119,6 +149,9 @@ protected:
 	/*
 		Montages
 	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* Montage_NormalAttack;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* Montage_Skill_Q;
 
