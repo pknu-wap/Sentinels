@@ -17,7 +17,7 @@ class SENTINELS_LS_API UNetworkObject : public UObject
 */
 public:
 	FORCEINLINE bool IsSupportedForNetworking() const override { return true; }
-
+	
 	int32 GetFunctionCallspace(UFunction* Function, FFrame* Stack) override;
 	bool CallRemoteFunction(UFunction* Function, void* Parameters, FOutParmRec* OutParms, FFrame* Stack) override;
 

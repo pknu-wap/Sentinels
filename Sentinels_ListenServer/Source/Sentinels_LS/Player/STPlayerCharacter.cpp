@@ -2,8 +2,10 @@
 
 
 #include "Player/STPlayerCharacter.h"
+#include "Player/STPlayerAnimInstance.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "InputActionValue.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -16,6 +18,7 @@
 #include "Components/InventoryComponent.h"
 #include "Components/STCharacterMovementComponent.h"
 #include "Components/STPlayerStatusComponent.h"
+#include "Components/CameraModeManagerComponent.h"
 #include "Net/UnrealNetwork.h"
 
 ASTPlayerCharacter::ASTPlayerCharacter(const FObjectInitializer& ObjectInitializer)
@@ -62,6 +65,7 @@ ASTPlayerCharacter::ASTPlayerCharacter(const FObjectInitializer& ObjectInitializ
 	StatusComponent = CreateDefaultSubobject<USTPlayerStatusComponent>(TEXT("StatusComp"));
 	StatusComponent->SetIsReplicated(true);
 
+	CameraManager = CreateDefaultSubobject<UCameraModeManagerComponent>(TEXT("CameraManager"));
 }
 
 void ASTPlayerCharacter::BeginPlay()
@@ -76,6 +80,8 @@ void ASTPlayerCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+
+	BindAttackDelegate();
 }
 
 void ASTPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -87,7 +93,101 @@ void ASTPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(Skill_W_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_W_Pressed);
 		EnhancedInputComponent->BindAction(Skill_E_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_E_Pressed);
 		EnhancedInputComponent->BindAction(Skill_R_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_R_Pressed);
+		EnhancedInputComponent->BindAction(NormalAttack_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::NormalAttack_Pressed);
+	}
+}
 
+void ASTPlayerCharacter::BindDefaultTopDownInput()
+{
+	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			Subsystem->ClearAllMappings();
+			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		}
+
+		if (UInputComponent* InputComp = PlayerController->GetComponentByClass<UInputComponent>())
+		{
+			if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComp))
+			{
+				EnhancedInputComponent->BindAction(NormalAttack_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::NormalAttack_Pressed);
+
+				EnhancedInputComponent->BindAction(Skill_Q_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_Q_Pressed);
+				EnhancedInputComponent->BindAction(Skill_W_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_W_Pressed);
+				EnhancedInputComponent->BindAction(Skill_E_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_E_Pressed);
+				EnhancedInputComponent->BindAction(Skill_R_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_R_Pressed);
+
+				EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ASTPlayerCharacter::Jump);
+			}
+		}
+	}
+}
+
+void ASTPlayerCharacter::BindDefaultThirdPersonInput()
+{
+	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			Subsystem->ClearAllMappings();
+			Subsystem->AddMappingContext(MappingContext_ThirdPerson, 0);
+		}
+
+		if (UInputComponent* InputComp = PlayerController->GetComponentByClass<UInputComponent>())
+		{
+			if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComp))
+			{
+				EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASTPlayerCharacter::Move);
+				EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ASTPlayerCharacter::Look);
+
+				EnhancedInputComponent->BindAction(NormalAttack_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::NormalAttack_Pressed);
+
+				EnhancedInputComponent->BindAction(Skill_Q_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_Q_Pressed);
+				EnhancedInputComponent->BindAction(Skill_W_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_W_Pressed);
+				EnhancedInputComponent->BindAction(Skill_E_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_E_Pressed);
+				EnhancedInputComponent->BindAction(Skill_R_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_R_Pressed);
+
+				EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+				EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+			}
+		}
+	}
+}
+
+void ASTPlayerCharacter::Move(const FInputActionValue& Value)
+{
+	// input is a Vector2D
+	FVector2D MovementVector = Value.Get<FVector2D>();
+
+	if (Controller != nullptr)
+	{
+		// find out which way is forward
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+		// get forward vector
+		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+
+		// get right vector 
+		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+		// add movement 
+		AddMovementInput(ForwardDirection, MovementVector.Y);
+		AddMovementInput(RightDirection, MovementVector.X);
+	}
+}
+
+void ASTPlayerCharacter::Look(const FInputActionValue& Value)
+{
+	// input is a Vector2D
+	FVector2D LookAxisVector = Value.Get<FVector2D>();
+
+	if (Controller != nullptr)
+	{
+		// add yaw and pitch input to controller
+		AddControllerYawInput(LookAxisVector.X);
+		AddControllerPitchInput(LookAxisVector.Y);
 	}
 }
 
@@ -98,18 +198,107 @@ void ASTPlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	DOREPLIFETIME(ASTPlayerCharacter, StatusComponent);
 }
 
-void ASTPlayerCharacter::SetFlyModeUntilMontageEnd()
+#pragma region Region_NormalAttack
+
+void ASTPlayerCharacter::BindAttackDelegate()
 {
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
-	GetMesh()->GetAnimInstance()->OnMontageEnded.RemoveDynamic(this, &ASTPlayerCharacter::SetMovementMode_Walk);
-	GetMesh()->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &ASTPlayerCharacter::SetMovementMode_Walk);
+	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+	if (AnimInst)
+	{
+		AnimInst->OnMontageEnded.AddDynamic(this, &ASTPlayerCharacter::OnMontageEnded_ResetAttackInfo);
+	}
+
+	USTPlayerAnimInstance* PAnimInst = Cast<USTPlayerAnimInstance>(AnimInst);
+	if (PAnimInst)
+	{
+		PAnimInst->Delegate_StartCheckNextInput.AddUObject(this, &ASTPlayerCharacter::StartCheckNextInput);
+		PAnimInst->Delegate_CheckNextAttack.AddUObject(this, &ASTPlayerCharacter::CheckNextAttack);
+	}
 }
 
-void ASTPlayerCharacter::SetMovementMode_Walk(UAnimMontage* Montage, bool bInterrupted)
+void ASTPlayerCharacter::NormalAttack_Pressed()
 {
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-	GetMesh()->GetAnimInstance()->OnMontageEnded.RemoveDynamic(this, &ASTPlayerCharacter::SetMovementMode_Walk);
+	if (CurrentCombo == 0)
+	{
+		CurrentCombo++;
+		PlayMontage_NormalAttack(CurrentCombo);
+		NormalAttack_Pressed_Server(CurrentCombo);
+	}
+
+	else if (bIsCheckingNextInput)
+	{
+		bShouldDoNextAttack = true;
+	}
 }
+
+void ASTPlayerCharacter::PlayMontage_NormalAttack(int currentCombo)
+{
+	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+	if (AnimInst)
+	{
+		if (currentCombo <= 1)
+		{
+			AnimInst->Montage_Play(Montage_NormalAttack);
+		}
+		else
+		{
+			FString currentSection = GetMesh()->GetAnimInstance()->Montage_GetCurrentSection().ToString();
+			currentSection[currentSection.Len() - 1] += 1;
+			AnimInst->Montage_JumpToSection(FName(currentSection));
+		}
+	}
+}
+
+void ASTPlayerCharacter::NormalAttack_Pressed_Server_Implementation(int currentCombo)
+{
+	NormalAttack_Pressed_Multicast(currentCombo);
+}
+
+void ASTPlayerCharacter::NormalAttack_Pressed_Multicast_Implementation(int currentCombo)
+{
+	if (!IsLocallyControlled())
+	{
+		PlayMontage_NormalAttack(currentCombo);
+	}
+}
+
+void ASTPlayerCharacter::StartCheckNextInput()
+{
+	bIsCheckingNextInput = true;
+}
+
+void ASTPlayerCharacter::CheckNextAttack()
+{
+	if (!bShouldDoNextAttack || CurrentCombo > MaxCombo)
+	{
+		ResetAttackInfo();
+	}
+	else if (bShouldDoNextAttack)
+	{
+		bIsCheckingNextInput = false; bShouldDoNextAttack = false; 
+		CurrentCombo++;
+
+		PlayMontage_NormalAttack(CurrentCombo);
+		NormalAttack_Pressed_Server(CurrentCombo);
+	}
+}
+
+void ASTPlayerCharacter::OnMontageEnded_ResetAttackInfo(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (bInterrupted && Montage == Montage_NormalAttack)
+		return;
+
+	ResetAttackInfo();
+}
+
+void ASTPlayerCharacter::ResetAttackInfo()
+{
+	CurrentCombo = 0; 
+	bShouldDoNextAttack = false;
+	bIsCheckingNextInput = false;
+}
+
+#pragma endregion
 
 
 #pragma region Region_Skills
@@ -131,7 +320,6 @@ void ASTPlayerCharacter::PlayMontage_Skill_Q()
 	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
 	if (AnimInst)
 	{
-		SetFlyModeUntilMontageEnd();
 		AnimInst->Montage_Play(Montage_Skill_Q);
 	}
 }
@@ -145,13 +333,7 @@ void ASTPlayerCharacter::Skill_Q_Pressed_Multicast_Implementation()
 {
 	if (!IsLocallyControlled())
 	{
-		UE_LOG(LogTemp, Display, TEXT("ASTPlayerCharacter : Skill_Q_Pressed_Multicast Called!"));
-
-		UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
-		if (AnimInst)
-		{
-			AnimInst->Montage_Play(Montage_Skill_Q);
-		}
+		PlayMontage_Skill_Q();
 	}
 }
 
@@ -172,7 +354,6 @@ void ASTPlayerCharacter::PlayMontage_Skill_W()
 	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
 	if (AnimInst)
 	{
-		SetFlyModeUntilMontageEnd();
 		AnimInst->Montage_Play(Montage_Skill_W);
 	}
 }
@@ -186,13 +367,7 @@ void ASTPlayerCharacter::Skill_W_Pressed_Multicast_Implementation()
 {
 	if (!IsLocallyControlled())
 	{
-		UE_LOG(LogTemp, Display, TEXT("ASTPlayerCharacter : Skill_W_Pressed_Multicast Called!"));
-
-		UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
-		if (AnimInst)
-		{
-			AnimInst->Montage_Play(Montage_Skill_W);
-		}
+		PlayMontage_Skill_W();
 	}
 }
 
@@ -213,7 +388,6 @@ void ASTPlayerCharacter::PlayMontage_Skill_E()
 	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
 	if (AnimInst)
 	{
-		SetFlyModeUntilMontageEnd();
 		AnimInst->Montage_Play(Montage_Skill_E);
 	}
 }
@@ -227,13 +401,7 @@ void ASTPlayerCharacter::Skill_E_Pressed_Multicast_Implementation()
 {
 	if (!IsLocallyControlled())
 	{
-		UE_LOG(LogTemp, Display, TEXT("ASTPlayerCharacter : Skill_E_Pressed_Multicast Called!"));
-
-		UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
-		if (AnimInst)
-		{
-			AnimInst->Montage_Play(Montage_Skill_E);
-		}
+		PlayMontage_Skill_E();
 	}
 }
 
@@ -254,7 +422,6 @@ void ASTPlayerCharacter::PlayMontage_Skill_R()
 	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
 	if (AnimInst)
 	{
-		SetFlyModeUntilMontageEnd();
 		AnimInst->Montage_Play(Montage_Skill_R);
 	}
 }
@@ -268,13 +435,7 @@ void ASTPlayerCharacter::Skill_R_Pressed_Multicast_Implementation()
 {
 	if (!IsLocallyControlled())
 	{
-		UE_LOG(LogTemp, Display, TEXT("ASTPlayerCharacter : Skill_R_Pressed_Multicast Called!"));
-
-		UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
-		if (AnimInst)
-		{
-			AnimInst->Montage_Play(Montage_Skill_R);
-		}
+		PlayMontage_Skill_R();
 	}
 }
 

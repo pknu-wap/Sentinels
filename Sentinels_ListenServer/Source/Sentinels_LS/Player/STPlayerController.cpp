@@ -52,6 +52,11 @@ void ASTPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 
+	BindDefaultTopDownInput();
+}
+
+void ASTPlayerController::BindDefaultTopDownInput()
+{
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
 	{
 		EnhancedInputComponent->BindAction(MoveClickAction, ETriggerEvent::Started, this, &ASTPlayerController::MoveClick_Started);
@@ -61,6 +66,25 @@ void ASTPlayerController::SetupInputComponent()
 
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &ASTPlayerController::Interact);
 	}
+
+	FInputModeGameAndUI InputMode;
+	InputMode.SetHideCursorDuringCapture(false);
+	SetInputMode(InputMode);
+
+	SetShowMouseCursor(true);
+}
+
+void ASTPlayerController::BindDefaultThirdPersonInput()
+{
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
+	{
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &ASTPlayerController::Interact);
+	}
+
+	FInputModeGameOnly InputMode;
+	SetInputMode(InputMode);
+
+	SetShowMouseCursor(false);
 }
 
 void ASTPlayerController::UpdatePlayerClass_Implementation(ESTClassType InClass)
@@ -168,7 +192,7 @@ void ASTPlayerController::AutoRun()
 void ASTPlayerController::Interact()
 {
 	if(InteractComponent)
-		InteractComponent->Interact();
+		InteractComponent->Interact_Server();
 }
 
 void ASTPlayerController::RegisterSelfToSession(FName SessionName)

@@ -24,6 +24,7 @@ void UANS_CheckAttackHit_Player::NotifyTick(USkeletalMeshComponent* MeshComp, UA
 
     TArray<TEnumAsByte<EObjectTypeQuery>> objectType;
     objectType.Emplace(UEngineTypes::ConvertToObjectType(ECC_Pawn));
+    objectType.Emplace(UEngineTypes::ConvertToObjectType(ECC_Destructible));
 
     TArray<AActor*> ignore;
     ignore.Emplace(MeshComp->GetOwner());
