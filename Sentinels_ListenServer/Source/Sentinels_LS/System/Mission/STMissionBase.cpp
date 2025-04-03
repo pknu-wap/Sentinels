@@ -3,6 +3,7 @@
 
 #include "System/Mission/STMissionBase.h"
 #include "Net/UnrealNetwork.h"
+#include "MissionCondition/STMissionConditionBase.h"
 
 void USTMissionBase::BeginDestroy()
 {
@@ -15,25 +16,75 @@ void USTMissionBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(USTMissionBase, bIsMisionActivated);
+	DOREPLIFETIME(USTMissionBase, MissionConditions);
 }
 
 void USTMissionBase::ActivateMission()
 {
 	UE_LOG(LogTemp, Display, TEXT("USTMissionBase::ActivateMission"));
 	bIsMisionActivated = true;
+
+	AActor* Owner = GetTypedOuter<AActor>();
+
+	for (auto& conditionClass : SubclassOfMissionConditions)
+	{
+		USTMissionConditionBase* condition = NewObject<USTMissionConditionBase>(Owner, conditionClass);
+		if (condition)
+		{
+			condition->SetMissionTag(MissionTag);
+			Owner->AddReplicatedSubObject(condition);
+			MissionConditions.Push(condition);
+		}
+	}
+
+	for (auto& condition : MissionConditions)
+	{
+		if(condition)
+			condition->MissionActivated();
+	}
 }
 
 void USTMissionBase::DeactivateMission(bool IsCleared)
 {
 	UE_LOG(LogTemp, Display, TEXT("USTMissionBase::DeactivateMission"));
 	bIsMisionActivated = false;
+
+	Delegate_MissionEnded.Broadcast(MissionTag, IsCleared);
+
+	for (auto& condition : MissionConditions)
+	{
+		if (condition)
+			condition->MissionDeactivated(IsCleared);
+	}
+}
+
+void USTMissionBase::CheckMissionClearable()
+{
+	for (int i = 0; i < MissionConditions.Num(); i++)
+	{
+		if (MissionConditions[i] && !MissionConditions[i]->IsSatisfied())
+		{
+			return;
+		}
+	}
+
+	DeactivateMission(true);
+}
+
+bool USTMissionBase::IsMissionCleared()
+{
+	for (int i = 0; i < MissionConditions.Num(); i++)
+	{
+		if (MissionConditions[i] && !MissionConditions[i]->IsSatisfied())
+		{
+			return false;
+		}
+	}
+
+	return true;
 }
 
 void USTMissionBase::OnRep_bIsMisionActivated()
 {
 	UE_LOG(LogTemp, Display, TEXT("USTMissionBase::OnRep_bIsMisionActivated"));
-	if (bIsMisionActivated)
-	{
-		ActivateMission();
-	}
 }

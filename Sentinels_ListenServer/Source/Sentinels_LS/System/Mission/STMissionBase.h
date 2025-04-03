@@ -11,6 +11,8 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMissionEnded, FGameplayTag, MissionTag, bool, IsSuccessed);
 
+class USTMissionConditionBase;
+
 UCLASS()
 class SENTINELS_LS_API USTMissionBase : public UNetworkObject, public FTickableGameObject
 {
@@ -27,27 +29,21 @@ public:
 	// Hide Widget & Clear Mission
 	virtual void DeactivateMission(bool IsCleared);
 
+	// Check Mission is clearable
+	virtual void CheckMissionClearable();
+
 	// Define Mission Clear
-	virtual bool IsMissionCleared() { return false; };
+	virtual bool IsMissionCleared();
 
-	/*
-		Update Mission Info
-	*/
-public:
-	// Domination || Eliminate EliteMonster || Final Defense
-	virtual void UpdateEliminatedMonsterInfo(int MonsterID) {};
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FGameplayTag MissionTag;
 
-	// Destroy Object 
-	virtual void UpdateObjectDestroyedInfo(int ObjectID) {};
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<TSubclassOf<USTMissionConditionBase>> SubclassOfMissionConditions;
 
-	// Collect QuestItems
-	virtual void UpdateAcquiredQuestItemInfo(int ItemID) {};
-
-	// Resque Hostage
-	virtual void UpdateRescueHostageInfo(int NPCID) {};
-
-	// Repair Rift
-	virtual void UpdateRepairRiftInfo(int RiftID) {};
+	UPROPERTY(Replicated)
+	TArray<USTMissionConditionBase*> MissionConditions;
 	
 
 	/*

@@ -4,6 +4,7 @@
 #include "System/STGameState.h"
 #include "System/Mission/STMissionBase.h"
 #include "Net/UnrealNetwork.h"
+#include "Sentinels_LS.h"
 
 ASTGameState::ASTGameState()
 {
@@ -19,6 +20,12 @@ void ASTGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 
 void ASTGameState::ActivateMission(FGameplayTag InMissionTag)
 {
+    if (!HasAuthority())
+    {
+        ST_LOG(LogSTNetwork, Log, TEXT("ActivateMission should be called on server!"));
+        return;
+    }
+
     USTMissionBase* mission = GetMission(InMissionTag);
     if (mission)
     {
@@ -39,6 +46,12 @@ bool ASTGameState::IsMissionCleared(FGameplayTag InMissionTag)
 
 void ASTGameState::RegisterMission(FGameplayTag InMissionTag, TSubclassOf<USTMissionBase> MissionSubClass)
 {
+    if (!HasAuthority())
+    {
+        ST_LOG(LogSTNetwork, Log, TEXT("RegisterMission should be called on server!"));
+        return;
+    }
+
     USTMissionBase* mission = GetMission(InMissionTag);
     if (mission)
     {
@@ -57,6 +70,12 @@ void ASTGameState::RegisterMission(FGameplayTag InMissionTag, TSubclassOf<USTMis
 
 void ASTGameState::UnRegisterMission(FGameplayTag InMissionTag)
 {
+    if (!HasAuthority())
+    {
+        ST_LOG(LogSTNetwork, Log, TEXT("UnRegisterMission should be called on server!"));
+        return;
+    }
+
     for (int i = 0; i < Missions.Num(); i++)
     {
         if (Missions[i].MissionTag == InMissionTag)
@@ -64,6 +83,7 @@ void ASTGameState::UnRegisterMission(FGameplayTag InMissionTag)
             if (Missions[i].Mission)
             {
                 RemoveReplicatedSubObject(Missions[i].Mission);
+                Missions[i].Mission = nullptr;
 
                 // Should Destory Mission?
             }
@@ -77,16 +97,24 @@ void ASTGameState::UnRegisterMission(FGameplayTag InMissionTag)
 void ASTGameState::OnMissionEnded(FGameplayTag InMissionTag, bool IsCleared)
 {
     // Mission Clear On Client
+    OnMissionEnded_Multicast(InMissionTag, IsCleared);
 
     // Start Next Mission 
 
+
+    // UnRegister Mission On Server
+    UnRegisterMission(InMissionTag);
+}
+
+void ASTGameState::OnMissionEnded_Multicast_Implementation(FGameplayTag InMissionTag, bool IsCleared)
+{
     if (IsCleared)
     {
-        UE_LOG(LogTemp, Display, TEXT("ASTGameState : %s Mission Cleared!"), *InMissionTag.GetTagName().ToString());
+        ST_LOG(LogSTNetwork, Log, TEXT(" %s Mission Cleared!"), *InMissionTag.GetTagName().ToString());
     }
     else
     {
-        UE_LOG(LogTemp, Display, TEXT("ASTGameState : %s Mission Failed!"), *InMissionTag.GetTagName().ToString());
+        ST_LOG(LogSTNetwork, Log, TEXT(" %s Mission Failed!"), *InMissionTag.GetTagName().ToString());
     }
 }
 
@@ -101,60 +129,4 @@ USTMissionBase* ASTGameState::GetMission(FGameplayTag InMissionTag)
     }
 
     return nullptr;
-}
-
-
-void ASTGameState::UpdateEliminatedMonsterInfo(int MonsterID)
-{
-    for (int i = 0; i < Missions.Num(); i++)
-    {
-        if (Missions[i].Mission)
-        {
-            Missions[i].Mission->UpdateEliminatedMonsterInfo(MonsterID);
-        }
-    }
-}
-
-void ASTGameState::UpdateObjectDestroyedInfo(int ObjectID)
-{
-    for (int i = 0; i < Missions.Num(); i++)
-    {
-        if (Missions[i].Mission)
-        {
-            Missions[i].Mission->UpdateObjectDestroyedInfo(ObjectID);
-        }
-    }
-}
-
-void ASTGameState::UpdateAcquiredQuestItemInfo(int ItemID)
-{
-    for (int i = 0; i < Missions.Num(); i++)
-    {
-        if (Missions[i].Mission)
-        {
-            Missions[i].Mission->UpdateAcquiredQuestItemInfo(ItemID);
-        }
-    }
-}
-
-void ASTGameState::UpdateRescueHostageInfo(int NPCID)
-{
-    for (int i = 0; i < Missions.Num(); i++)
-    {
-        if (Missions[i].Mission)
-        {
-            Missions[i].Mission->UpdateRescueHostageInfo(NPCID);
-        }
-    }
-}
-
-void ASTGameState::UpdateRepairRiftInfo(int RiftID)
-{
-    for (int i = 0; i < Missions.Num(); i++)
-    {
-        if (Missions[i].Mission)
-        {
-            Missions[i].Mission->UpdateRepairRiftInfo(RiftID);
-        }
-    }
 }
