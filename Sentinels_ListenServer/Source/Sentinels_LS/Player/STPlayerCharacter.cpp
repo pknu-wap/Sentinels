@@ -111,6 +111,8 @@ void ASTPlayerCharacter::BindDefaultTopDownInput()
 		{
 			if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComp))
 			{
+				EnhancedInputComponent->BindAction(NormalAttack_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::NormalAttack_Pressed);
+
 				EnhancedInputComponent->BindAction(Skill_Q_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_Q_Pressed);
 				EnhancedInputComponent->BindAction(Skill_W_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_W_Pressed);
 				EnhancedInputComponent->BindAction(Skill_E_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_E_Pressed);
@@ -138,6 +140,8 @@ void ASTPlayerCharacter::BindDefaultThirdPersonInput()
 			{
 				EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASTPlayerCharacter::Move);
 				EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ASTPlayerCharacter::Look);
+
+				EnhancedInputComponent->BindAction(NormalAttack_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::NormalAttack_Pressed);
 
 				EnhancedInputComponent->BindAction(Skill_Q_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_Q_Pressed);
 				EnhancedInputComponent->BindAction(Skill_W_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_W_Pressed);
@@ -281,6 +285,9 @@ void ASTPlayerCharacter::CheckNextAttack()
 
 void ASTPlayerCharacter::OnMontageEnded_ResetAttackInfo(UAnimMontage* Montage, bool bInterrupted)
 {
+	if (bInterrupted && Montage == Montage_NormalAttack)
+		return;
+
 	ResetAttackInfo();
 }
 
