@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Character/Enemy/STEnemyBase_AIController.h"
+#include "Character/Enemy/STEnemyBase.h"
 
 
 // Sets default values for this component's properties
@@ -47,6 +48,9 @@ void USpawnEnemyComponent::SpawnEnemy()
 		int rand;
 		for (int i = 0; i < SpawnRate; i++)
 		{
+			if (CurrentSpawned >= MaxSpawnCount)
+				break;
+
 			FNavLocation SpawnNavLocation;
 			NavSystem->GetRandomReachablePointInRadius(GetOwner()->GetActorLocation(), SpawnableRadius_Outer, SpawnNavLocation);
 			while (FVector::Dist2D(SpawnNavLocation.Location, GetOwner()->GetActorLocation()) < SpawnableRadius_Inner)
@@ -60,16 +64,32 @@ void USpawnEnemyComponent::SpawnEnemy()
 				APawn* pawn = UAIBlueprintHelperLibrary::SpawnAIFromClass(this, SpawnPawnClasses[rand], nullptr,
 					SpawnNavLocation.Location, GetOwner()->GetActorRotation());
 
-				if (pawn)
+				// Check It is enemy
+				if (ASTEnemyBase* Enemy = Cast<ASTEnemyBase>(pawn))
 				{
-					ASTEnemyBase_AIController* controller = Cast<ASTEnemyBase_AIController>(pawn->GetController());
-					if (controller)
+					ASTEnemyBase_AIController* controller = Cast<ASTEnemyBase_AIController>(Enemy->GetController());
+					if (controller && bShouldTargetOwner)
 					{
 						controller->SetTarget(GetOwner());
 					}
+
+					// Bind Function on Enemy Died!
+					Enemy->Delegate_OnEnemyDied.AddDynamic(this, &USpawnEnemyComponent::OnEnemyDied);
+					CurrentSpawned++;
+					SpawnedEnemys.Push(pawn);
 				}
 			}
 		}
+	}
+}
+
+void USpawnEnemyComponent::OnEnemyDied(AActor* DiedEnemy)
+{
+	// Called when enemy died
+	if (DiedEnemy)
+	{
+		CurrentSpawned--;
+		SpawnedEnemys.Remove(DiedEnemy);
 	}
 }
 
