@@ -51,6 +51,19 @@ void ASTEnemyBase::BeginPlay()
 	Super::BeginPlay();
 
 	IAnimationBudgetAllocator::Get(GetWorld())->SetEnabled(true);
+
+	if (HasAuthority())
+	{
+		AAIController* AIController = Cast<AAIController>(GetController());
+		if (AIController)
+		{
+			UBlackboardComponent* BBComp = AIController->GetBlackboardComponent();
+			if (BBComp)
+			{
+				BBComp->SetValueAsVector(FName("StartLocation"), GetActorLocation());
+			}
+		}
+	}
 }
 
 void ASTEnemyBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
