@@ -22,6 +22,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
 
 	/*
 		Interactive Interface
@@ -32,10 +33,15 @@ protected:
 	virtual void ShowInteractiveUI(UInteractComponent* InteractingComponent) override;
 	virtual void HideInteractiveUI(UInteractComponent* InteractingComponent) override;
 
+	virtual bool IsInteractable() override { return bIsInteractable; };
+
 protected:
 	UPROPERTY(EditAnywhere, Category = "Debug")
 	TSubclassOf<UUserWidget> InteractWidgetClass_ForDebug;
 
 	UPROPERTY()
 	UUserWidget* InteractWidget_ForDebug;
+
+	UPROPERTY(Replicated, VisibleAnywhere)
+	bool bIsInteractable = true;
 };

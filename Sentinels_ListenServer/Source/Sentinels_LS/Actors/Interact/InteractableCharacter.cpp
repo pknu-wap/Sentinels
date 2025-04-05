@@ -5,6 +5,7 @@
 #include "Actors/Interact/InteractableCharacter.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
 AInteractableCharacter::AInteractableCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -14,6 +15,12 @@ AInteractableCharacter::AInteractableCharacter(const FObjectInitializer& ObjectI
 void AInteractableCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void AInteractableCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AInteractableCharacter, bIsInteractable);
 }
 
 void AInteractableCharacter::Interact(UInteractComponent* InteractingComponent)
@@ -26,6 +33,9 @@ void AInteractableCharacter::Interact_Finish(UInteractComponent* InteractingComp
 
 void AInteractableCharacter::ShowInteractiveUI(UInteractComponent* InteractingComponent)
 {
+	if (!bIsInteractable)
+		return;
+
 	if (InteractWidget_ForDebug)
 	{
 		InteractWidget_ForDebug->RemoveFromParent();

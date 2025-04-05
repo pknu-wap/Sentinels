@@ -5,6 +5,7 @@
 #include "System/Mission/STMissionBase.h"
 #include "Net/UnrealNetwork.h"
 #include "Sentinels_LS.h"
+#include "Kismet/KismetMathLibrary.h"
 
 ASTGameState::ASTGameState()
 {
@@ -16,6 +17,21 @@ void ASTGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(ASTGameState, Missions);
+}
+
+void ASTGameState::ActivateRandomMission()
+{
+    if (!HasAuthority())
+    {
+        ST_LOG(LogSTNetwork, Log, TEXT("ActivateMission should be called on server!"));
+        return;
+    }
+
+    int rand = UKismetMathLibrary::RandomIntegerInRange(0, Missions.Num() - 1);
+    if (Missions.IsValidIndex(rand))
+    {
+        ActivateMission(Missions[rand].MissionTag);
+    }
 }
 
 void ASTGameState::ActivateMission(FGameplayTag InMissionTag)
@@ -44,6 +60,46 @@ bool ASTGameState::IsMissionCleared(FGameplayTag InMissionTag)
     return false;
 }
 
+void ASTGameState::RegisterRandomMissions(int RegisterMissionNum, const TArray<FRegisterMissionInfo>& AvailableMissionInfos)
+{
+    if (!HasAuthority())
+    {
+        ST_LOG(LogSTNetwork, Log, TEXT("RegisterMission should be called on server!"));
+        return;
+    }
+
+    if (RegisterMissionNum > AvailableMissionInfos.Num())
+    {
+        UE_LOG(LogTemp, Display, TEXT("ASTGameState::RegisterRandomMissions Failed by Num of RegisterMission is bigger than Num Of AvailableMissionInfo ! "));
+        return;
+    }
+
+    /*
+        Register Random Mission
+    */
+    TSet<int> Registered;
+    int registeredNum = 0; int rand;
+    int MaxLoopIdx = 500; int CurrentLoopIdx = 0;
+    while (registeredNum < RegisterMissionNum && CurrentLoopIdx < MaxLoopIdx)
+    {
+        rand = UKismetMathLibrary::RandomIntegerInRange(0, AvailableMissionInfos.Num() - 1);
+
+        // Skip if mission is already registered
+        if (Registered.Contains(rand))
+            continue;
+
+        // Register Mission
+        if (AvailableMissionInfos[rand].MissionSubClass)
+        {
+            RegisterMission(AvailableMissionInfos[rand].MissionTag, AvailableMissionInfos[rand].MissionSubClass);
+            Registered.Add(rand);
+            registeredNum++;
+        }
+
+        CurrentLoopIdx++;
+    }
+}
+
 void ASTGameState::RegisterMission(FGameplayTag InMissionTag, TSubclassOf<USTMissionBase> MissionSubClass)
 {
     if (!HasAuthority())
@@ -55,16 +111,18 @@ void ASTGameState::RegisterMission(FGameplayTag InMissionTag, TSubclassOf<USTMis
     USTMissionBase* mission = GetMission(InMissionTag);
     if (mission)
     {
-        UnRegisterMission(InMissionTag);
+        UE_LOG(LogTemp, Display, TEXT("%s is Already Registered Mission ! "), *mission->GetName());
+        return;
     }
 
     USTMissionBase* NewMission = NewObject<USTMissionBase>(this, MissionSubClass);
     if (NewMission)
     {
-        NewMission->Delegate_MissionEnded.AddDynamic(this, &ASTGameState::OnMissionEnded);
-
         AddReplicatedSubObject(NewMission);
         Missions.Push(FMissionInfo(InMissionTag, NewMission));
+
+        NewMission->RegisterMission();
+        NewMission->Delegate_MissionEnded.AddDynamic(this, &ASTGameState::OnMissionEnded);
     }
 }
 
@@ -86,6 +144,7 @@ void ASTGameState::UnRegisterMission(FGameplayTag InMissionTag)
                 Missions[i].Mission = nullptr;
 
                 // Should Destory Mission?
+                // Automatically Destroyed by Garbage Collection
             }
 
             Missions.RemoveAt(i);
@@ -99,11 +158,11 @@ void ASTGameState::OnMissionEnded(FGameplayTag InMissionTag, bool IsCleared)
     // Mission Clear On Client
     OnMissionEnded_Multicast(InMissionTag, IsCleared);
 
-    // Start Next Mission 
-
-
     // UnRegister Mission On Server
     UnRegisterMission(InMissionTag);
+
+    // Start Next Random Mission
+    ActivateRandomMission();
 }
 
 void ASTGameState::OnMissionEnded_Multicast_Implementation(FGameplayTag InMissionTag, bool IsCleared)

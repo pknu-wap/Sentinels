@@ -25,4 +25,6 @@ public:
 	virtual void Interact_Finish(UInteractComponent* InteractingComponent) = 0;
 	virtual void ShowInteractiveUI(UInteractComponent* InteractingComponent) = 0;
 	virtual void HideInteractiveUI(UInteractComponent* InteractingComponent) = 0;
+
+	virtual bool IsInteractable() = 0;
 };

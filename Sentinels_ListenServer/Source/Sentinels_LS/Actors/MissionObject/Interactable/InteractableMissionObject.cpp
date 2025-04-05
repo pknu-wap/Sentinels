@@ -5,6 +5,18 @@
 #include "Components/StaticMeshComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
+
+AInteractableMissionObject::AInteractableMissionObject()
+{
+	
+}
+
+void AInteractableMissionObject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AInteractableMissionObject, bIsInteractable)
+}
 
 void AInteractableMissionObject::Interact(UInteractComponent* InteractingComponent)
 {
@@ -16,6 +28,9 @@ void AInteractableMissionObject::Interact_Finish(UInteractComponent* Interacting
 
 void AInteractableMissionObject::ShowInteractiveUI(UInteractComponent* InteractingComponent)
 {
+	if (!bIsInteractable)
+		return;
+
 	if (InteractWidget_ForDebug)
 	{
 		InteractWidget_ForDebug->RemoveFromParent();

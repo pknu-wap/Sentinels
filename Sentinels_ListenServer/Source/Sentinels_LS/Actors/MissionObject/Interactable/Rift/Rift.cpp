@@ -40,6 +40,7 @@ void ARift::Interact_Finish(UInteractComponent* InteractingComponent)
 void ARift::RepairSuccessed()
 {
 	Delegate_MissionConditionUpdate.Broadcast(ObjectID, true);
+	bIsInteractable = false;
 
 	// Hide Interacting Widget On Client
 	if (InteractedComponent)

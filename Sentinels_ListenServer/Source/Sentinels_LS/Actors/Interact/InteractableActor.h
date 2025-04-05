@@ -22,6 +22,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
 
 	/*
 		Interactive Interface
@@ -32,6 +33,8 @@ protected:
 	virtual void ShowInteractiveUI(UInteractComponent* InteractingComponent) override;
 	virtual void HideInteractiveUI(UInteractComponent* InteractingComponent) override;
 
+	virtual bool IsInteractable() override { return bIsInteractable; };
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UStaticMeshComponent> Mesh;
@@ -41,4 +44,7 @@ protected:
 
 	UPROPERTY()
 	UUserWidget* InteractWidget_ForDebug;
+
+	UPROPERTY(VisibleAnywhere)
+	bool bIsInteractable = true;
 };

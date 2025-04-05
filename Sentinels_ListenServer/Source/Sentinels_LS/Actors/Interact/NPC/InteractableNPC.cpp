@@ -39,6 +39,8 @@ void AInteractableNPC::Interact_Finish(UInteractComponent* InteractingComponent)
 
 void AInteractableNPC::RescueSuccessed()
 {
+	bIsInteractable = false;
+
 	Delegate_MissionConditionUpdate.Broadcast(NPCID, true);
 
 	// Hide Interacting Widget On Client

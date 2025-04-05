@@ -60,7 +60,7 @@ void UInteractComponent::Interact_Server_Implementation()
 	{
 		InteractiveObject = Cast<IInteractiveInterface>(hitResult.GetActor());
 		{
-			if (InteractiveObject)
+			if (InteractiveObject && InteractiveObject->IsInteractable())
 			{
 				InteractiveObject->Interact(this);
 			}

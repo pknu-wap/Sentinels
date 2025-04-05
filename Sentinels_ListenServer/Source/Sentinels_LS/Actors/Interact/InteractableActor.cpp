@@ -5,6 +5,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AInteractableActor::AInteractableActor()
@@ -23,6 +24,12 @@ void AInteractableActor::BeginPlay()
 	
 }
 
+void AInteractableActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AInteractableActor, bIsInteractable);
+}
+
 void AInteractableActor::Interact(UInteractComponent* InteractingComponent)
 {
 }
@@ -33,6 +40,9 @@ void AInteractableActor::Interact_Finish(UInteractComponent* InteractingComponen
 
 void AInteractableActor::ShowInteractiveUI(UInteractComponent* InteractingComponent)
 {
+	if (!bIsInteractable)
+		return;
+
 	if (InteractWidget_ForDebug)
 	{
 		InteractWidget_ForDebug->RemoveFromParent();

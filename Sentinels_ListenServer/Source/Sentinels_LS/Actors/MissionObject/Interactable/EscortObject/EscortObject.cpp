@@ -84,5 +84,8 @@ void AEscortObject::StopMove()
 void AEscortObject::Interact(UInteractComponent* InteractingComponent)
 {
 	if (HasAuthority())
+	{
 		StartMoveAlongSpline();
+		bIsInteractable = false;
+	}
 }
