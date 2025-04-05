@@ -2,22 +2,48 @@
 
 
 #include "Actors/Interact/NPC/InteractableNPC.h"
-#include "Kismet/GameplayStatics.h"
-#include "System/STGameState.h"
-#include "System/Mission/STMissionBase.h"
+#include "Components/InteractComponent.h"
 
-void AInteractableNPC::Interact()
+void AInteractableNPC::Interact(UInteractComponent* InteractingComponent)
 {
-	/*ASTGameState* GameState = Cast<ASTGameState>(UGameplayStatics::GetGameState(this));
-	if (GameState)
+	if (HasAuthority())
 	{
-		USTMissionBase* mission = GameState->GetMission(FSTGameplayTags::Get().Mission_RescueHostage);
-		if (mission)
+		// Caching Interact Component
+		InteractedComponent = InteractingComponent;
+
+		// Start Rescue
+		GetWorldTimerManager().SetTimer(Handle_Hold, this, &AInteractableNPC::RescueSuccessed, InteractionHoldTime, false);
+
+		// Show Interacting Widget
+		if (InteractedComponent)
 		{
-			mission->UpdateRescueHostageInfo_Server(NPCID);
+			InteractedComponent->StartInteractHold_Client(InteractionHoldTime);
 		}
-	}*/
-	
-	// GetUniqueID
+	}
+}
+
+void AInteractableNPC::Interact_Finish(UInteractComponent* InteractingComponent)
+{
+	if (HasAuthority())
+	{
+		// Clear Timer
+		GetWorldTimerManager().ClearTimer(Handle_Hold);
+
+		// Hide Interacting Widget
+		if (InteractedComponent)
+		{
+			InteractedComponent->FinishInteractHold_Client();
+		}
+	}
+}
+
+void AInteractableNPC::RescueSuccessed()
+{
 	Delegate_MissionConditionUpdate.Broadcast(NPCID, true);
+
+	// Hide Interacting Widget On Client
+	if (InteractedComponent)
+	{
+		InteractedComponent->FinishInteractHold_Client();
+	}
 }

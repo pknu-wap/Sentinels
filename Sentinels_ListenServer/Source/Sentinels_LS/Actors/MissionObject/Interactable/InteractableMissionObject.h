@@ -7,6 +7,8 @@
 #include "Interfaces/InteractiveInterface.h"
 #include "InteractableMissionObject.generated.h"
 
+class UInteractComponent;
+
 UCLASS()
 class SENTINELS_LS_API AInteractableMissionObject : public AMissionObject, public IInteractiveInterface
 {
@@ -16,9 +18,10 @@ class SENTINELS_LS_API AInteractableMissionObject : public AMissionObject, publi
 	Interactive Interface
 */
 protected:
-	virtual void Interact() override;
-	virtual void ShowInteractiveUI() override;
-	virtual void HideInteractiveUI() override;
+	virtual void Interact(UInteractComponent* InteractingComponent) override;
+	virtual void Interact_Finish(UInteractComponent* InteractingComponent) override;
+	virtual void ShowInteractiveUI(UInteractComponent* InteractingComponent) override;
+	virtual void HideInteractiveUI(UInteractComponent* InteractingComponent) override;
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Debug")

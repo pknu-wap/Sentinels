@@ -16,11 +16,15 @@ void AInteractableCharacter::BeginPlay()
 	Super::BeginPlay();
 }
 
-void AInteractableCharacter::Interact()
+void AInteractableCharacter::Interact(UInteractComponent* InteractingComponent)
 {
 }
 
-void AInteractableCharacter::ShowInteractiveUI()
+void AInteractableCharacter::Interact_Finish(UInteractComponent* InteractingComponent)
+{
+}
+
+void AInteractableCharacter::ShowInteractiveUI(UInteractComponent* InteractingComponent)
 {
 	if (InteractWidget_ForDebug)
 	{
@@ -41,7 +45,7 @@ void AInteractableCharacter::ShowInteractiveUI()
 	}
 }
 
-void AInteractableCharacter::HideInteractiveUI()
+void AInteractableCharacter::HideInteractiveUI(UInteractComponent* InteractingComponent)
 {
 	if (InteractWidget_ForDebug)
 	{

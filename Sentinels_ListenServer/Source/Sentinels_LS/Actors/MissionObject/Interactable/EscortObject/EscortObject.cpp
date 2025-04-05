@@ -81,7 +81,7 @@ void AEscortObject::StopMove()
 	}
 }
 
-void AEscortObject::Interact()
+void AEscortObject::Interact(UInteractComponent* InteractingComponent)
 {
 	if (HasAuthority())
 		StartMoveAlongSpline();

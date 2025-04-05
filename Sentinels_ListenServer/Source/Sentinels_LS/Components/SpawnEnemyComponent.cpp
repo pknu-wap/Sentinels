@@ -53,10 +53,16 @@ void USpawnEnemyComponent::SpawnEnemy()
 
 			FNavLocation SpawnNavLocation;
 			NavSystem->GetRandomReachablePointInRadius(GetOwner()->GetActorLocation(), SpawnableRadius_Outer, SpawnNavLocation);
-			while (FVector::Dist2D(SpawnNavLocation.Location, GetOwner()->GetActorLocation()) < SpawnableRadius_Inner)
+
+			int maxLoopIdx = 50; int currentLoopIdx = 0;
+			while (FVector::Dist2D(SpawnNavLocation.Location, GetOwner()->GetActorLocation()) < SpawnableRadius_Inner && currentLoopIdx <= maxLoopIdx)
 			{
 				NavSystem->GetRandomReachablePointInRadius(GetOwner()->GetActorLocation(), SpawnableRadius_Outer, SpawnNavLocation);
+				currentLoopIdx++;
 			}
+
+			if(currentLoopIdx >= 50)
+				UE_LOG(LogTemp, Warning, TEXT("USpawnEnemyComponent : Can't get Point between Inner and Outer Circle!"));
 
 			rand = UKismetMathLibrary::RandomIntegerInRange(0, SpawnPawnClasses.Num() - 1);
 			if (SpawnPawnClasses[rand])

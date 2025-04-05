@@ -8,6 +8,7 @@
 #include "InteractableCharacter.generated.h"
 
 class UUserWidget;
+class UInteractComponent;
 
 UCLASS()
 class SENTINELS_LS_API AInteractableCharacter : public ASTCharacterBase, public IInteractiveInterface
@@ -26,9 +27,10 @@ protected:
 		Interactive Interface
 	*/
 protected:
-	virtual void Interact() override;
-	virtual void ShowInteractiveUI() override;
-	virtual void HideInteractiveUI() override;
+	virtual void Interact(UInteractComponent* InteractingComponent) override;
+	virtual void Interact_Finish(UInteractComponent* InteractingComponent) override;
+	virtual void ShowInteractiveUI(UInteractComponent* InteractingComponent) override;
+	virtual void HideInteractiveUI(UInteractComponent* InteractingComponent) override;
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Debug")

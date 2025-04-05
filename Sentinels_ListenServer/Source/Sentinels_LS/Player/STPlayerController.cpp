@@ -53,7 +53,8 @@ void ASTPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(MoveClickAction, ETriggerEvent::Completed, this, &ASTPlayerController::MoveClick_Released);
 		EnhancedInputComponent->BindAction(MoveClickAction, ETriggerEvent::Canceled, this, &ASTPlayerController::MoveClick_Released);
 
-		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &ASTPlayerController::Interact);
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &ASTPlayerController::Interact_Pressed);
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, this, &ASTPlayerController::Interact_Released);
 	}
 }
 
@@ -159,10 +160,16 @@ void ASTPlayerController::AutoRun()
 	}
 }
 
-void ASTPlayerController::Interact()
+void ASTPlayerController::Interact_Pressed()
 {
 	if(InteractComponent)
 		InteractComponent->Interact_Server();
+}
+
+void ASTPlayerController::Interact_Released()
+{
+	if (InteractComponent)
+		InteractComponent->Interact_Finish_Server();
 }
 
 void ASTPlayerController::RegisterSelfToSession(FName SessionName)

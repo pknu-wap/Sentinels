@@ -8,6 +8,7 @@
 
 class ASplineRouteActor;
 class USpawnEnemyComponent;
+class UInteractComponent;
 
 UCLASS()
 class SENTINELS_LS_API AEscortObject : public AInteractableMissionObject
@@ -25,7 +26,7 @@ protected:
         Interactive Interface
     */
 protected:
-    virtual void Interact() override;
+    virtual void Interact(UInteractComponent* InteractingComponent) override;
 
 protected:
     UPROPERTY(EditAnywhere)

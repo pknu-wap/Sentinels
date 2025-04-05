@@ -6,11 +6,15 @@
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 
-void AInteractableMissionObject::Interact()
+void AInteractableMissionObject::Interact(UInteractComponent* InteractingComponent)
 {
 }
 
-void AInteractableMissionObject::ShowInteractiveUI()
+void AInteractableMissionObject::Interact_Finish(UInteractComponent* InteractingComponent)
+{
+}
+
+void AInteractableMissionObject::ShowInteractiveUI(UInteractComponent* InteractingComponent)
 {
 	if (InteractWidget_ForDebug)
 	{
@@ -31,7 +35,7 @@ void AInteractableMissionObject::ShowInteractiveUI()
 	}
 }
 
-void AInteractableMissionObject::HideInteractiveUI()
+void AInteractableMissionObject::HideInteractiveUI(UInteractComponent* InteractingComponent)
 {
 	if (InteractWidget_ForDebug)
 	{
