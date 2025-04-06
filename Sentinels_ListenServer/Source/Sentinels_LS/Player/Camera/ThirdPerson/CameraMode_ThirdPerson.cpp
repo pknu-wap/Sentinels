@@ -41,11 +41,12 @@ void UCameraMode_ThirdPerson::Tick(float DeltaTime)
     if (bShouldLerp && Camera && SpringArm)
     {
         SpringArm->TargetArmLength = FMath::FInterpTo(SpringArm->TargetArmLength, TargetArmLength, DeltaTime, 2.5f);
-        Camera->SetWorldRotation(FMath::RInterpTo(Camera->GetComponentRotation(), TargetRotation, DeltaTime, 2.5f));
-        // SpringArm->TargetOffset = FMath::VInterpTo(SpringArm->TargetOffset, TargetOffset, DeltaTime, 2.5f);
+        PC->SetControlRotation(FMath::RInterpTo(PC->GetControlRotation(), FRotator(0, -90, 0), DeltaTime, 2.5f));
+
+        Camera->SetRelativeRotation(FMath::RInterpTo(Camera->GetRelativeRotation(), TargetRotation, DeltaTime, 2.5f));
         Camera->SetRelativeLocation(FMath::VInterpTo(Camera->GetRelativeLocation(), TargetOffset, DeltaTime, 2.5f));
 
-        if (Camera->GetComponentRotation().Equals(TargetRotation, 1.0f)
+        if (Camera->GetRelativeRotation().Equals(TargetRotation, 1.0f)
             // && SpringArm->TargetOffset.Equals(TargetOffset, 1.0f)
             && Camera->GetRelativeLocation().Equals(TargetOffset, 1.0f)
             && abs(SpringArm->TargetArmLength - TargetArmLength) < 2.5f)

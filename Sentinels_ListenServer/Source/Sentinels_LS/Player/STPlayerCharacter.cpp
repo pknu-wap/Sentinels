@@ -19,7 +19,9 @@
 #include "Components/STCharacterMovementComponent.h"
 #include "Components/STPlayerStatusComponent.h"
 #include "Components/CameraModeManagerComponent.h"
+#include "Components/InteractComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "STGameplayTags.h"
 
 ASTPlayerCharacter::ASTPlayerCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<USTCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
@@ -196,6 +198,23 @@ void ASTPlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ASTPlayerCharacter, InventoryComponent);
 	DOREPLIFETIME(ASTPlayerCharacter, StatusComponent);
+}
+
+float ASTPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	float actualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	if (HasTag(FSTGameplayTags::Get().Character_Player_State_RescueHostage))
+	{
+		// if damaged while Rescuing, Fail Interact
+		UInteractComponent* IC = Cast<UInteractComponent>(GetController());
+		if (IC)
+		{
+			IC->Interact_Finish_Server();
+		}
+	}
+
+	return 0.0f;
 }
 
 #pragma region Region_NormalAttack

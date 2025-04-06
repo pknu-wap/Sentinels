@@ -23,8 +23,15 @@ USpawnEnemyComponent::USpawnEnemyComponent()
 
 void USpawnEnemyComponent::StartSpawnEnemy()
 {
-	if(!GetWorld()->GetTimerManager().TimerExists(handle))
-		GetWorld()->GetTimerManager().SetTimer(handle, this, &USpawnEnemyComponent::SpawnEnemy, SpawnPeriod, true);
+	if (bShouldLoop)
+	{
+		if (!GetWorld()->GetTimerManager().TimerExists(handle))
+			GetWorld()->GetTimerManager().SetTimer(handle, this, &USpawnEnemyComponent::SpawnEnemy, SpawnPeriod, true);
+	}
+	else
+	{
+		SpawnEnemy();
+	}
 }
 
 void USpawnEnemyComponent::StopSpawnEnemy()

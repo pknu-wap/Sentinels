@@ -20,6 +20,8 @@ public:
     Spawn Enemy
 */
 public:
+    void SetShouldLoop(bool inValue) { bShouldLoop = inValue; }
+
     UFUNCTION(BlueprintCallable)
     void StartSpawnEnemy();
 
@@ -48,6 +50,9 @@ protected:
     /*
         Spawn Pawns of SpawnRate per Spawn Period
     */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
+    bool bShouldLoop = true;
+
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
     int SpawnRate = 5;
 

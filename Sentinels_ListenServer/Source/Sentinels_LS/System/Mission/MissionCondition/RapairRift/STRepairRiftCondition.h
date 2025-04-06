@@ -34,6 +34,7 @@ protected:
 	virtual bool IsSatisfied() override;
 
 public:
+	virtual void MissionRegistered() override;
 	virtual void MissionActivated() override;
 	virtual void MissionDeactivated(bool IsCleared) override;
 
@@ -44,6 +45,9 @@ public:
 	void OnRep_RiftInfos();
 
 protected:
+	UPROPERTY()
+	TArray<ARift*> SpawnedRifts;
+
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 	int MaxMissionTime = 120.f;
 
