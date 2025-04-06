@@ -37,6 +37,9 @@ protected:
 */
 	virtual void SetupInputComponent() override;
 
+public:
+	void BindDefaultTopDownInput();
+	void BindDefaultThirdPersonInput();
 
 /*
 	Update Player
@@ -45,7 +48,7 @@ public:
 	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void UpdatePlayerClass(ESTClassType InClass);
 
-	FORCEINLINE TSubclassOf<APawn> GetDefaultPlayerClass() { return DefaultPlayerClass; }
+	TSubclassOf<APawn> GetDefaultPlayerClass() { return DefaultPlayerClass; }
 
 
 /*
