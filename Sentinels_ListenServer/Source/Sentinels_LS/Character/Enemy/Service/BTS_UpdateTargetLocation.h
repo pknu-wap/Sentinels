@@ -21,5 +21,8 @@ public:
 
 public:
 	UPROPERTY(EditAnywhere)
-	float MaxDistance = 3000.f;
+	float MaxDistance_FromPlayer = 3000.f;
+
+	UPROPERTY(EditAnywhere)
+	float MaxDistance_FromStartLocation = 0.f;
 };

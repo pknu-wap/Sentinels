@@ -14,7 +14,8 @@ public class Sentinels_LS : ModuleRules
             "GameplayTags",
             "UMG", "Slate", "SlateCore",
             "OnlineSubsystem", "OnlineSubsystemUtils",
-            "GeometryCollectionEngine", "FieldSystemEngine"
+            "GeometryCollectionEngine", "FieldSystemEngine",
+            "AnimationBudgetAllocator"
          });
 
         PrivateIncludePaths.Add("Sentinels_LS");

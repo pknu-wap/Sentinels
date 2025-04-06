@@ -35,13 +35,35 @@ public:
 
 	void PlayNormalAttackMontage();
 
+	// Hit
+	UFUNCTION(NetMulticast, Reliable)
+	void PlayKnockbackMontage_Multicast();
+
+	void PlayKnockbackMontage();
+
+	// Die
+	UFUNCTION(NetMulticast, Reliable)
+	void PlayDiedMontage_Multicast();
+
+	void PlayDiedMontage();
+
 protected:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<USTEnemyStatusComponent> StatusComponent;
 
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
 	UAnimMontage* Montage_NormalAttack;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
+	UAnimMontage* Montage_Knockback;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
+	UAnimMontage* Montage_KnockDown;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
+	UAnimMontage* Montage_Died;
+	
 public:
 	FOnEnemyDied Delegate_OnEnemyDied;
 };

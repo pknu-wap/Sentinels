@@ -13,9 +13,12 @@
 #include "Components/STEnemyStatusComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Character/Enemy/STEnemyBase_AIController.h"
+#include "SkeletalMeshComponentBudgeted.h"
+#include "IAnimationBudgetAllocator.h"
+#include "BrainComponent.h"
 
 ASTEnemyBase::ASTEnemyBase(const FObjectInitializer& object_initializer)
-	: Super(object_initializer)
+	: Super(object_initializer.SetDefaultSubobjectClass<USkeletalMeshComponentBudgeted>(ACharacter::MeshComponentName))
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -40,11 +43,28 @@ ASTEnemyBase::ASTEnemyBase(const FObjectInitializer& object_initializer)
 
 	StatusComponent = CreateDefaultSubobject<USTEnemyStatusComponent>(TEXT("EnemyStatusComp"));
 	StatusComponent->SetIsReplicated(true);
+
+	PrimaryActorTick.bStartWithTickEnabled = false;
 }
 
 void ASTEnemyBase::BeginPlay()
 {
 	Super::BeginPlay();
+
+	IAnimationBudgetAllocator::Get(GetWorld())->SetEnabled(true);
+
+	if (HasAuthority())
+	{
+		AAIController* AIController = Cast<AAIController>(GetController());
+		if (AIController)
+		{
+			UBlackboardComponent* BBComp = AIController->GetBlackboardComponent();
+			if (BBComp)
+			{
+				BBComp->SetValueAsVector(FName("StartLocation"), GetActorLocation());
+			}
+		}
+	}
 }
 
 void ASTEnemyBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -58,10 +78,49 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 {
 	float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 
-	ASTEnemyBase_AIController* controller = Cast<ASTEnemyBase_AIController>(GetController());
-	if (controller)
+	if (StatusComponent && StatusComponent->IsDied())
+		return 0.f;
+
+	if (HasAuthority())
 	{
-		controller->SetTarget(DamageCauser);
+		/*
+			Set Target as DamageCauser
+		*/
+		ASTEnemyBase_AIController* controller = Cast<ASTEnemyBase_AIController>(GetController());
+		if (controller)
+		{
+			controller->SetTarget(DamageCauser);
+		}
+
+		/*
+			Calculate Current HP & Check Died
+		*/
+		if (StatusComponent && StatusComponent->TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser) <= 0)
+		{
+			PlayDiedMontage_Multicast();
+			
+			AAIController* AIController = Cast<AAIController>(GetController());
+			if (AIController)
+			{
+				AIController->GetBrainComponent()->StopLogic(FString("Died."));
+			}
+
+			return ActualDamage;
+		}
+
+		/*
+			Play Knockback Montage
+		*/
+		if (Montage_Knockback)
+		{
+			PlayKnockbackMontage_Multicast();
+		}
+		else
+		{
+			StopAnimMontage();
+			FVector LaunchDir = (GetActorLocation() - DamageCauser->GetActorLocation()).GetSafeNormal2D();
+			LaunchCharacter(LaunchDir * 1500.f, false, false);
+		}
 	}
 
 	return 0.0f;
@@ -84,5 +143,33 @@ void ASTEnemyBase::PlayNormalAttackMontage()
 	if (AnimInst)
 	{
 		AnimInst->Montage_Play(Montage_NormalAttack);
+	}
+}
+
+void ASTEnemyBase::PlayKnockbackMontage_Multicast_Implementation()
+{
+	PlayKnockbackMontage();
+}
+
+void ASTEnemyBase::PlayKnockbackMontage()
+{
+	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+	if (AnimInst)
+	{
+		AnimInst->Montage_Play(Montage_Knockback);
+	}
+}
+
+void ASTEnemyBase::PlayDiedMontage_Multicast_Implementation()
+{
+	PlayDiedMontage();
+}
+
+void ASTEnemyBase::PlayDiedMontage()
+{
+	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+	if (AnimInst)
+	{
+		AnimInst->Montage_Play(Montage_Died);
 	}
 }

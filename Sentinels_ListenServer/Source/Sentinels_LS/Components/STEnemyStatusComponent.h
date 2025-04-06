@@ -20,7 +20,21 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+public:
+	float TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
+
+public:
+	FORCEINLINE bool IsDied() { return bIsDied; }
 
 
-		
+protected:
+	UPROPERTY(EditAnywhere)
+	float MaxHP = 500.f;
+
+	UPROPERTY(EditAnywhere)
+	float CurrentHP;
+
+	UPROPERTY()
+	bool bIsDied = false;
+
 };

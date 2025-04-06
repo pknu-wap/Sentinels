@@ -20,6 +20,8 @@ public:
 	const FName BBKey_TargetLocation = FName("TargetLocation");
 	const FName BBKey_TargetDistance = FName("TargetDistance");
 	const FName BBKey_Stunned = FName("Stunned");
+	const FName BBKey_bShouldReturn = FName("bShouldReturn");
+	const FName BBKey_StartLocation = FName("StartLocation");
 
 public:
 	ASTEnemyBase_AIController(const FObjectInitializer& object_initializer);
