@@ -60,12 +60,32 @@ void UInteractComponent::Interact_Server_Implementation()
 	{
 		InteractiveObject = Cast<IInteractiveInterface>(hitResult.GetActor());
 		{
-			if (InteractiveObject)
+			if (InteractiveObject && InteractiveObject->IsInteractable())
 			{
-				InteractiveObject->Interact();
+				InteractiveObject->Interact(this);
 			}
 		}
 	}
+}
+
+void UInteractComponent::Interact_Finish_Server_Implementation()
+{
+	if (InteractiveObject)
+	{
+		InteractiveObject->Interact_Finish(this);
+	}
+}
+
+void UInteractComponent::StartInteractHold_Client_Implementation(float InHoldingTime)
+{
+	bIsHolding = true;
+	Delegate_StartInteractHold.Broadcast(InHoldingTime);
+}
+
+void UInteractComponent::FinishInteractHold_Client_Implementation()
+{
+	bIsHolding = false;
+	Delegate_FinishInteractHold.Broadcast();
 }
 
 void UInteractComponent::FindInteractiveActor()
@@ -99,14 +119,24 @@ void UInteractComponent::FindInteractiveActor()
 		// Show Interactable UI 
 		if (InteractiveObject)
 		{
-			InteractiveObject->ShowInteractiveUI();
+			InteractiveObject->ShowInteractiveUI(this);
 		}
 	}
 	else
 	{
 		if (InteractiveObject)
 		{
-			InteractiveObject->HideInteractiveUI();
+			InteractiveObject->HideInteractiveUI(this);
+		}
+
+		if (bIsHolding)
+		{
+			/*
+				Should Cancel Interact In Server !  ! !
+			*/
+			Interact_Finish_Server();
+			// InteractiveObject->Interact_Finish(this);
+			FinishInteractHold_Client();
 		}
 
 		InteractiveObject = nullptr;

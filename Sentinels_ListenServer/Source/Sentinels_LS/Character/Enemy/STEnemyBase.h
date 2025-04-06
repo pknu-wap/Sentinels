@@ -8,6 +8,8 @@
 
 class USTEnemyStatusComponent;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyDied, AActor*, DiedEnemy);
+
 UCLASS()
 class SENTINELS_LS_API ASTEnemyBase : public ASTCharacterBase
 {
@@ -61,4 +63,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
 	UAnimMontage* Montage_Died;
+	
+public:
+	FOnEnemyDied Delegate_OnEnemyDied;
 };
