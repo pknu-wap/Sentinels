@@ -65,11 +65,6 @@ void ASTEnemyBase_AIController::OnTargetDetected(AActor* actor, const FAIStimulu
 		return;
 	}
 
-	if (actor == nullptr)
-	{
-		Blackboard->SetValueAsObject(BBKey_Target, nullptr);
-	}
-
 	UObject* target = Blackboard->GetValueAsObject(BBKey_Target);
 	if (target)
 		return;

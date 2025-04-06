@@ -74,6 +74,8 @@ void USpawnEnemyComponent::SpawnEnemy()
 			rand = UKismetMathLibrary::RandomIntegerInRange(0, SpawnPawnClasses.Num() - 1);
 			if (SpawnPawnClasses[rand])
 			{
+				SpawnNavLocation.Location.Z += 50.f;
+
 				APawn* pawn = UAIBlueprintHelperLibrary::SpawnAIFromClass(this, SpawnPawnClasses[rand], nullptr,
 					SpawnNavLocation.Location, GetOwner()->GetActorRotation());
 
@@ -90,6 +92,10 @@ void USpawnEnemyComponent::SpawnEnemy()
 					Enemy->Delegate_OnEnemyDied.AddDynamic(this, &USpawnEnemyComponent::OnEnemyDied);
 					CurrentSpawned++;
 					SpawnedEnemys.Push(pawn);
+				}
+				else
+				{
+					DrawDebugCapsule(GetWorld(), SpawnNavLocation.Location, 50.f, 25.f, FRotator::ZeroRotator.Quaternion(), FColor::Red, true);
 				}
 			}
 		}
