@@ -3,6 +3,7 @@
 
 #include "Actors/Interact/NPC/InteractableNPC.h"
 #include "Components/InteractComponent.h"
+#include "GameFramework/PlayerController.h"
 #include "Character/STCharacterBase.h"
 #include "STGameplayTags.h"
 
@@ -22,10 +23,14 @@ void AInteractableNPC::Interact(UInteractComponent* InteractingComponent)
 		{
 			InteractedComponent->StartInteractHold_Client(InteractionHoldTime);
 
-			ASTCharacterBase* character = Cast<ASTCharacterBase>(InteractedComponent->GetOwner());
-			if (character)
+			APlayerController* PC = Cast<APlayerController>(InteractedComponent->GetOwner());
+			if (PC)
 			{
-				character->AddTag(FSTGameplayTags::Get().Character_Player_State_RescueHostage);
+				ASTCharacterBase* Character = Cast<ASTCharacterBase>(PC->GetPawn());
+				if (Character)
+				{
+					Character->AddTag(FSTGameplayTags::Get().Character_Player_State_RescueHostage);
+				}
 			}
 		}
 	}
@@ -44,10 +49,14 @@ void AInteractableNPC::Interact_Finish(UInteractComponent* InteractingComponent)
 		{
 			InteractedComponent->FinishInteractHold_Client();
 
-			ASTCharacterBase* character = Cast<ASTCharacterBase>(InteractedComponent->GetOwner());
-			if (character)
+			APlayerController* PC = Cast<APlayerController>(InteractedComponent->GetOwner());
+			if (PC)
 			{
-				character->RemoveTag(FSTGameplayTags::Get().Character_Player_State_RescueHostage);
+				ASTCharacterBase* Character = Cast<ASTCharacterBase>(PC->GetPawn());
+				if (Character)
+				{
+					Character->AddTag(FSTGameplayTags::Get().Character_Player_State_RescueHostage);
+				}
 			}
 		}
 	}
@@ -65,10 +74,14 @@ void AInteractableNPC::RescueSuccessed()
 	{
 		InteractedComponent->FinishInteractHold_Client();
 
-		ASTCharacterBase* character = Cast<ASTCharacterBase>(InteractedComponent->GetOwner());
-		if (character)
+		APlayerController* PC = Cast<APlayerController>(InteractedComponent->GetOwner());
+		if (PC)
 		{
-			character->RemoveTag(FSTGameplayTags::Get().Character_Player_State_RescueHostage);
+			ASTCharacterBase* Character = Cast<ASTCharacterBase>(PC->GetPawn());
+			if (Character)
+			{
+				Character->AddTag(FSTGameplayTags::Get().Character_Player_State_RescueHostage);
+			}
 		}
 	}
 }

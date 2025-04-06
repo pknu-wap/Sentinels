@@ -37,10 +37,14 @@ void ARift::Interact(UInteractComponent* InteractingComponent)
 		{
 			InteractedComponent->StartInteractHold_Client(InteractionHoldTime);
 
-			ASTCharacterBase* character = Cast<ASTCharacterBase>(InteractedComponent->GetOwner());
-			if (character)
+			APlayerController* PC = Cast<APlayerController>(InteractedComponent->GetOwner());
+			if (PC)
 			{
-				character->AddTag(FSTGameplayTags::Get().Character_Player_State_RepairRift);
+				ASTCharacterBase* Character = Cast<ASTCharacterBase>(PC->GetPawn());
+				if (Character)
+				{
+					Character->AddTag(FSTGameplayTags::Get().Character_Player_State_RescueHostage);
+				}
 			}
 		}
 	}
@@ -59,10 +63,14 @@ void ARift::Interact_Finish(UInteractComponent* InteractingComponent)
 		{
 			InteractedComponent->FinishInteractHold_Client();
 
-			ASTCharacterBase* character = Cast<ASTCharacterBase>(InteractedComponent->GetOwner());
-			if (character)
+			APlayerController* PC = Cast<APlayerController>(InteractedComponent->GetOwner());
+			if (PC)
 			{
-				character->RemoveTag(FSTGameplayTags::Get().Character_Player_State_RepairRift);
+				ASTCharacterBase* Character = Cast<ASTCharacterBase>(PC->GetPawn());
+				if (Character)
+				{
+					Character->AddTag(FSTGameplayTags::Get().Character_Player_State_RescueHostage);
+				}
 			}
 		}
 	}
@@ -88,10 +96,14 @@ void ARift::RepairSuccessed()
 	{
 		InteractedComponent->FinishInteractHold_Client();
 
-		ASTCharacterBase* character = Cast<ASTCharacterBase>(InteractedComponent->GetOwner());
-		if (character)
+		APlayerController* PC = Cast<APlayerController>(InteractedComponent->GetOwner());
+		if (PC)
 		{
-			character->RemoveTag(FSTGameplayTags::Get().Character_Player_State_RepairRift);
+			ASTCharacterBase* Character = Cast<ASTCharacterBase>(PC->GetPawn());
+			if (Character)
+			{
+				Character->AddTag(FSTGameplayTags::Get().Character_Player_State_RescueHostage);
+			}
 		}
 	}
 }

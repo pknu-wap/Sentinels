@@ -207,7 +207,7 @@ float ASTPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 	if (HasTag(FSTGameplayTags::Get().Character_Player_State_RescueHostage))
 	{
 		// if damaged while Rescuing, Fail Interact
-		UInteractComponent* IC = Cast<UInteractComponent>(GetController());
+		UInteractComponent* IC = GetController()->GetComponentByClass<UInteractComponent>();
 		if (IC)
 		{
 			IC->Interact_Finish_Server();
