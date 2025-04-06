@@ -8,6 +8,7 @@
 #include "InteractableCharacter.generated.h"
 
 class UUserWidget;
+class UInteractComponent;
 
 UCLASS()
 class SENTINELS_LS_API AInteractableCharacter : public ASTCharacterBase, public IInteractiveInterface
@@ -21,14 +22,18 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
 
 	/*
 		Interactive Interface
 	*/
 protected:
-	virtual void Interact() override;
-	virtual void ShowInteractiveUI() override;
-	virtual void HideInteractiveUI() override;
+	virtual void Interact(UInteractComponent* InteractingComponent) override;
+	virtual void Interact_Finish(UInteractComponent* InteractingComponent) override;
+	virtual void ShowInteractiveUI(UInteractComponent* InteractingComponent) override;
+	virtual void HideInteractiveUI(UInteractComponent* InteractingComponent) override;
+
+	virtual bool IsInteractable() override { return bIsInteractable; };
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Debug")
@@ -36,4 +41,7 @@ protected:
 
 	UPROPERTY()
 	UUserWidget* InteractWidget_ForDebug;
+
+	UPROPERTY(Replicated, VisibleAnywhere)
+	bool bIsInteractable = true;
 };

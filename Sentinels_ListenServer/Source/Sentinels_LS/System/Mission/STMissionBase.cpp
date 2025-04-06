@@ -19,13 +19,10 @@ void USTMissionBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME(USTMissionBase, MissionConditions);
 }
 
-void USTMissionBase::ActivateMission()
+void USTMissionBase::RegisterMission()
 {
-	UE_LOG(LogTemp, Display, TEXT("USTMissionBase::ActivateMission"));
-	bIsMisionActivated = true;
-
+	UE_LOG(LogTemp, Display, TEXT("USTMissionBase::RegisterMission"));
 	AActor* Owner = GetTypedOuter<AActor>();
-
 	for (auto& conditionClass : SubclassOfMissionConditions)
 	{
 		USTMissionConditionBase* condition = NewObject<USTMissionConditionBase>(Owner, conditionClass);
@@ -34,8 +31,20 @@ void USTMissionBase::ActivateMission()
 			condition->SetMissionTag(MissionTag);
 			Owner->AddReplicatedSubObject(condition);
 			MissionConditions.Push(condition);
+			condition->MissionRegistered();
 		}
 	}
+}
+
+void USTMissionBase::ActivateMission()
+{
+	if (bIsMisionActivated)
+		return;
+
+	UE_LOG(LogTemp, Display, TEXT("USTMissionBase::ActivateMission : %s is Activated!"), *GetName());
+	bIsMisionActivated = true;
+
+	AActor* Owner = GetTypedOuter<AActor>();
 
 	for (auto& condition : MissionConditions)
 	{

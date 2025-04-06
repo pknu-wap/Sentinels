@@ -23,7 +23,7 @@ void AInteractableItem::BeginPlay()
 	}
 }
 
-void AInteractableItem::Interact()
+void AInteractableItem::Interact(UInteractComponent* InteractingComponent)
 {
 	if (Item_DataRow.DataTable)
 	{
@@ -33,6 +33,7 @@ void AInteractableItem::Interact()
 		UInventoryComponent* InvComp = pawn->GetComponentByClass<UInventoryComponent>();
 		if (InvComp)
 		{
+			bIsInteractable = false;
 			InvComp->AddItem_Server(ItemID);
 			UE_LOG(LogTemp, Display, TEXT(" AInteractableItem::Interact!"));
 		}

@@ -9,6 +9,18 @@
 
 class USTMissionBase;
 
+USTRUCT(BlueprintType)
+struct FRegisterMissionInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGameplayTag MissionTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<USTMissionBase> MissionSubClass;
+};
+
 USTRUCT()
 struct FMissionInfo
 {
@@ -34,11 +46,18 @@ protected:
 	
 public:
 	UFUNCTION(BlueprintCallable)
+	void ActivateRandomMission();
+
+	UFUNCTION(BlueprintCallable)
 	void ActivateMission(FGameplayTag InMissionTag);
+
 	UFUNCTION(BlueprintCallable)
 	bool IsMissionCleared(FGameplayTag InMissionTag);
 
 public:
+	UFUNCTION(BlueprintCallable)
+	void RegisterRandomMissions(int RegisterMissionNum, const TArray<FRegisterMissionInfo>& AvailableMissionInfos);
+
 	UFUNCTION(BlueprintCallable)
 	void RegisterMission(FGameplayTag InMissionTag, TSubclassOf<USTMissionBase> MissionSubClass);
 

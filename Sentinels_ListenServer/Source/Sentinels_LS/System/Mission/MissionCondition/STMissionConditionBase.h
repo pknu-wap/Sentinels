@@ -15,6 +15,7 @@ class SENTINELS_LS_API USTMissionConditionBase : public UNetworkObject
 	GENERATED_BODY()
 	
 public:
+	virtual void MissionRegistered() {};
 	virtual void MissionActivated() {};
 	virtual void MissionDeactivated(bool IsCleared) {};
 	virtual bool IsSatisfied() { return false; };

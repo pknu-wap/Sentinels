@@ -23,6 +23,9 @@ protected:
 	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
 
 public:
+	// Spawn Mission Object
+	virtual void RegisterMission();
+
 	// Show Widget & Set Mission
 	virtual void ActivateMission();
 
@@ -50,6 +53,8 @@ protected:
 		On Mission Ended Delegate
 	*/
 public:
+	FORCEINLINE bool IsActivated() { return bIsMisionActivated; }
+
 	FOnMissionEnded Delegate_MissionEnded;
 
 
