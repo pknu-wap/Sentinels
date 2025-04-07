@@ -18,8 +18,7 @@
 ASTEnemyBase_AIController::ASTEnemyBase_AIController(const FObjectInitializer& object_initializer)
 	: Super(object_initializer)
 {
-
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = false;
 
 	BTComponent = object_initializer.CreateDefaultSubobject<UBehaviorTreeComponent>(this, TEXT("BehaviorComp"));
 	Blackboard = object_initializer.CreateDefaultSubobject<UBlackboardComponent>(this, TEXT("BlackboardComp"));
@@ -64,6 +63,11 @@ void ASTEnemyBase_AIController::OnTargetDetected(AActor* actor, const FAIStimulu
 	{
 		UE_LOG(LogTemp, Warning, TEXT("ASTEnemyBase_AIController : Blackboard is not valid."));
 		return;
+	}
+
+	if (actor == nullptr)
+	{
+		Blackboard->SetValueAsObject(BBKey_Target, nullptr);
 	}
 
 	UObject* target = Blackboard->GetValueAsObject(BBKey_Target);

@@ -6,9 +6,8 @@
 #include "Actors/Interact/InteractableActor.h"
 #include "InteractableItem.generated.h"
 
-/**
- * 
- */
+class UInteractComponent;
+
 UCLASS()
 class SENTINELS_LS_API AInteractableItem : public AInteractableActor
 {
@@ -18,7 +17,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	virtual void Interact() override;
+	virtual void Interact(UInteractComponent* InteractingComponent) override;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")

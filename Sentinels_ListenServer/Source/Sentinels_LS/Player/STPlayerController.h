@@ -34,27 +34,29 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	/*
-		Input
-	*/
+/*
+	Input
+*/
 	virtual void SetupInputComponent() override;
 
 public:
 	void BindDefaultTopDownInput();
 	void BindDefaultThirdPersonInput();
 
+/*
+	Update Player
+*/
 public:
-	/*
-		Update Player
-	*/
-	TSubclassOf<APawn> GetDefaultPlayerClass() { return DefaultPlayerClass; }
-
 	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void UpdatePlayerClass(ESTClassType InClass);
 
-	/*
-		Move
-	*/
+	TSubclassOf<APawn> GetDefaultPlayerClass() { return DefaultPlayerClass; }
+
+
+/*
+	Move
+*/
+protected:
 	void MoveClick_Started();
 	void MoveClick_Triggered();
 	void MoveClick_Released();
@@ -69,11 +71,20 @@ public:
 		UI
 	*/
 	USTPlayerUIComponent* GetUIComponent() { return UIComponent; }
+
+/*
+	Interact
+*/
+protected:
+	void Interact_Pressed();
+	void Interact_Released();
 	
+
+
 public:
-	/*
-		Session
-	*/
+/*
+	Session
+*/
 	void RegisterSelfToSession(FName SessionName);
 
 	UFUNCTION(Server, Reliable)
@@ -82,18 +93,18 @@ public:
 	FName CurrentSession;
 
 protected:
-	/*
-		Input
-	*/
+/*
+	Input
+*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* MoveClickAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* InteractAction;
 
-	/*
-		Movement
-	*/
+/*
+	Movement
+*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	float ShortPressThreshold;
 
@@ -109,9 +120,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<USkillComponent> SkillComponent;
 
-	/*
-		Classes
-	*/
+/*
+	Classes
+*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Class", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<APawn> PawnClass_GreatSword;
 
