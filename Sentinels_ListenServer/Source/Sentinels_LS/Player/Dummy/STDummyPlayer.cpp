@@ -9,9 +9,16 @@
 #include "GameFramework/PlayerState.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include "EngineUtils.h"
+#include "Engine/Engine.h"
+#include "Components/UI/STPlayerUIComponent.h"
+#include "Materials/Material.h"
+#include "TimerManager.h"
+#include "Sentinels_LS.h"
 
 // Sets default values
-ASTDummyPlayer::ASTDummyPlayer()
+ASTDummyPlayer::ASTDummyPlayer() :
+	bIsShow(false),
+	CurrentClass(ESTClassType::GreatSword)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -34,7 +41,7 @@ void ASTDummyPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// 여기가 아니라 클라이언트가 서버에 접속할 때, 추가를 해줘야 함
+	OnRep_CurrentClass();
 }
 
 // Called every frame
@@ -49,20 +56,14 @@ void ASTDummyPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ASTDummyPlayer, PlayerID);
+	DOREPLIFETIME(ASTDummyPlayer, CurrentClass);
 }
 
-void ASTDummyPlayer::UpdateSkeletalMesh(ESTClassType InClass)
+void ASTDummyPlayer::ServerRPCChangeCurrentClass_Implementation(ESTClassType InClass)
 {
-	ST_LOG(LogSTNetwork, Warning, TEXT("Begin"));
+	CurrentClass = InClass;
 
-	USkeletalMesh** skMesh = SKMap.Find(InClass);
-	TSubclassOf<UAnimInstance>* animInstance = AIMap.Find(InClass);
-
-	if (skMesh == nullptr || animInstance == nullptr)
-		return;
-
-	SKComponent->SetSkeletalMesh(*skMesh);
-	SKComponent->SetAnimInstanceClass(*animInstance);
+	OnRep_CurrentClass();
 }
 
 UTextureRenderTarget2D* ASTDummyPlayer::GetTextureRenderTarget2D()
@@ -70,16 +71,45 @@ UTextureRenderTarget2D* ASTDummyPlayer::GetTextureRenderTarget2D()
 	return CaptureComponent->TextureTarget;
 }
 
-ASTDummyPlayer* ASTDummyPlayer::FindByID(UWorld* World, FUniqueNetIdRepl PlayerID)
+ASTDummyPlayer* ASTDummyPlayer::FindByID(UObject* WorldContextObject, FUniqueNetIdRepl ID)
 {
-	if (!World) return nullptr;
-
-	for (ASTDummyPlayer* dummyPlayer : TActorRange<ASTDummyPlayer>(World))
+	if (!WorldContextObject)
 	{
-		if (dummyPlayer->PlayerID == PlayerID)
+		return nullptr;
+	}
+
+	for (ASTDummyPlayer* dummyPlayer : TActorRange<ASTDummyPlayer>(WorldContextObject->GetWorld()))
+	{
+		if (*dummyPlayer->PlayerID == ID)
 			return dummyPlayer;
 	}
 
 	return nullptr;
+}
+
+void ASTDummyPlayer::OnRep_PlayerID()
+{
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]() {
+
+		ASTPlayerController* pc = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+		if (!pc || !pc->GetLocalPlayer())
+			return;
+
+		pc->GetUIComponent()->UpdateLoadoutUI();
+
+	}, 0.5f, false);
+}
+
+void ASTDummyPlayer::OnRep_CurrentClass()
+{
+	USkeletalMesh** skMesh = SKMap.Find(CurrentClass);
+	TSubclassOf<UAnimInstance>* animInstance = AIMap.Find(CurrentClass);
+
+	if (skMesh == nullptr || animInstance == nullptr)
+		return;
+
+	SKComponent->SetSkeletalMesh(*skMesh);
+	SKComponent->SetAnimInstanceClass(*animInstance);
 }
 

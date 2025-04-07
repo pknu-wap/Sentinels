@@ -29,15 +29,19 @@ protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
+	/*
+		Debug
+	*/
+
+	UFUNCTION(BlueprintCallable)
+	FString GetPlayerIDString(const FUniqueNetIdRepl& ID) { return *ID.ToString(); }
+
+public:
 	UFUNCTION(BlueprintCallable)
 	const bool GetbIsReady() const { return bIsReady; }
 
 	UFUNCTION(BlueprintCallable)
 	const TArray<FUniqueNetIdRepl>& GetPlayerID() const { return PlayerID; }
-
-public:
-	UFUNCTION(BlueprintPure, Category = "Net ID")
-	static FString GetPlayerNetIDString(const FUniqueNetIdRepl& ID) { return ID.IsValid() ? ID->ToString() : TEXT("INVALID"); }
 
 protected:
 	UFUNCTION(Server, Reliable, BlueprintCallable)
@@ -55,13 +59,17 @@ protected:
 	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void ServerRPCUnRegisterPlayerID(const FUniqueNetIdRepl& ID);
 
+public:
+	UFUNCTION(BlueprintCallable)
+	void UpdateLoadoutUI();
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateCharacterSelectUI();
+
+	UFUNCTION(BlueprintCallable)
+	void AddPlayerID(const FUniqueNetIdRepl& ID);
+
 protected:
-	// CLIENT RPC로 만들자
-	void UpdatePlayerID();
-
-	UFUNCTION()
-	void OnRep_PlayerID();
-
 	void RegisterIDToDummyPlayer(const FUniqueNetIdRepl& ID);
 
 
@@ -72,7 +80,6 @@ protected:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Lobby", meta = (AllowPrivateAccess = "true"))
 	ESTClassType STClassType;
 
-	UPROPERTY(ReplicatedUsing = OnRep_PlayerID, EditAnywhere, BlueprintReadOnly, Category = "Lobby", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Lobby", meta = (AllowPrivateAccess = "true"))
 	TArray<FUniqueNetIdRepl> PlayerID;
-	
 };

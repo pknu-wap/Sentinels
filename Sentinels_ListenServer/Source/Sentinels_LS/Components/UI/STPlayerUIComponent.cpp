@@ -14,6 +14,7 @@
 #include "Components/Image.h"
 #include "Player/Dummy/STDummyPlayer.h"
 #include "Engine/TextureRenderTarget2D.h"
+#include "Materials/Material.h"
 
 USTPlayerUIComponent::USTPlayerUIComponent()
 	:bIsReady(false),
@@ -83,15 +84,184 @@ void USTPlayerUIComponent::ClientRPCUnRegisterWidget_Implementation(FGameplayTag
 
 void USTPlayerUIComponent::ServerRPCRegisterPlayerID_Implementation(const FUniqueNetIdRepl& ID)
 {
+	AddPlayerID(ID);
+
+	//RegisterIDToDummyPlayer(ID);
+
+	UpdateLoadoutUI();
+}
+
+void USTPlayerUIComponent::ServerRPCUnRegisterPlayerID_Implementation(const FUniqueNetIdRepl& ID)
+{
+	
+}
+
+void USTPlayerUIComponent::UpdateLoadoutUI()
+{
 	ST_SUBLOG(LogSTNetwork, Warning, TEXT("Begin"));
 
+	USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
+
+	ASTPlayerController* pc = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+
+	if (!pc)
+	{
+		return;
+	}
+
+	for (auto playerIDIter : pc->GetUIComponent()->PlayerID)
+	{
+		if (playerIDIter == pc->PlayerState->GetUniqueId())
+		{
+			continue;
+		}
+		else
+		{
+			ASTDummyPlayer* dummyPlayer = nullptr;
+
+			for (ASTDummyPlayer* dummyPlayerIter : TActorRange<ASTDummyPlayer>(GetWorld()))
+			{
+				if (dummyPlayerIter->GetPlayerID().ToString() == playerIDIter.ToString())
+					dummyPlayer = dummyPlayerIter;
+			}
+
+			if (!dummyPlayer)
+			{
+				ST_SUBLOG(LogSTNetwork, Warning, TEXT("dummyPlayer not found"));
+				return;
+			}
+
+			if (dummyPlayer->GetbIsShow())
+				continue;
+
+			UMaterial* material = dummyPlayer->GetMaterial();
+
+			if (!material)
+			{
+				ST_SUBLOG(LogSTNetwork, Warning, TEXT("Can't find Material!"));
+				return;
+			}
+
+			FGameplayTag widgetTag = FGameplayTag::RequestGameplayTag(FName("Widget.Lobby.Ready"));
+			UUserWidget* widgetInstance = UISubSystem->GetWidget(widgetTag);
+
+			UImage* img_FirstPlayer = Cast<UImage>(widgetInstance->GetWidgetFromName(TEXT("IMG_FirstPlayer")));
+			UImage* img_SecondPlayer = Cast<UImage>(widgetInstance->GetWidgetFromName(TEXT("IMG_SecondPlayer")));
+			UImage* img_ThirdPlayer = Cast<UImage>(widgetInstance->GetWidgetFromName(TEXT("IMG_ThirdPlayer")));
+
+			if (img_FirstPlayer->GetBrush().GetResourceObject() == nullptr)
+			{
+				img_FirstPlayer->SetVisibility(ESlateVisibility::Visible);
+				img_FirstPlayer->SetBrushFromMaterial(material);
+				dummyPlayer->SetbIsShow(true);
+			}
+			else if (img_SecondPlayer->GetBrush().GetResourceObject() == nullptr)
+			{
+				img_SecondPlayer->SetVisibility(ESlateVisibility::Visible);
+				img_SecondPlayer->SetBrushFromMaterial(material);
+				dummyPlayer->SetbIsShow(true);
+			}
+			else if (img_ThirdPlayer->GetBrush().GetResourceObject() == nullptr)
+			{
+				img_ThirdPlayer->SetVisibility(ESlateVisibility::Visible);
+				img_ThirdPlayer->SetBrushFromMaterial(material);
+				dummyPlayer->SetbIsShow(true);
+			}		
+		}
+	}
+
+	ST_SUBLOG(LogSTNetwork, Warning, TEXT("End"));
+}
+
+void USTPlayerUIComponent::UpdateCharacterSelectUI()
+{
+	ST_SUBLOG(LogSTNetwork, Warning, TEXT("Begin"));
+
+	USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
+
+	if (!UISubSystem)
+	{
+		ST_SUBLOG(LogSTNetwork, Warning, TEXT("Can't find UISubSystem!"));
+		return;
+	}
+
+	ASTPlayerController* pc = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+
+	if (!pc || !pc->PlayerState)
+	{
+		ST_SUBLOG(LogSTNetwork, Warning, TEXT("Invalid PlayerController or PlayerState"));
+		return;
+	}
+	else if (!pc->IsLocalPlayerController())
+	{
+		ST_SUBLOG(LogSTNetwork, Warning, TEXT("No Local Player"));
+		return;
+	}
+
+	ASTDummyPlayer* dummyPlayer = nullptr;
+
+	for (ASTDummyPlayer* dummyPlayerIter : TActorRange<ASTDummyPlayer>(GetWorld()))
+	{
+		if (dummyPlayerIter->GetPlayerID().ToString() == pc->PlayerState->GetUniqueId().ToString())
+			dummyPlayer = dummyPlayerIter;
+	}
+
+	if (!dummyPlayer)
+	{
+		ST_SUBLOG(LogSTNetwork, Warning, TEXT("dummyPlayer not found"));
+		return;
+	}
+
+	if (dummyPlayer->GetbIsShow())
+	{
+		ST_SUBLOG(LogSTNetwork, Warning, TEXT("Alreay show"));
+		return;
+	}
+
+	UMaterial* material = dummyPlayer->GetMaterial();
+
+	if (!material)
+	{
+		ST_SUBLOG(LogSTNetwork, Warning, TEXT("Can't find Material!"));
+		return;
+	}
+
+	// remove parent
+	FGameplayTag widgetTag = FGameplayTag::RequestGameplayTag(FName("Widget.Lobby.CharacterSelect"));
+	UUserWidget* widgetInstance = UISubSystem->GetWidget(widgetTag);
+
+	if (!widgetInstance)
+	{
+		ST_SUBLOG(LogSTNetwork, Warning, TEXT("NO WIDGET INSTANCE"));
+		return;
+	}
+
+	UImage* img_LocalPlayer = Cast<UImage>(widgetInstance->GetWidgetFromName(TEXT("IMG_LocalPlayer")));
+
+	if (!img_LocalPlayer)
+	{
+		ST_SUBLOG(LogSTNetwork, Warning, TEXT("no img_LocalPlayer"));
+		return;
+	}
+
+	if (img_LocalPlayer->GetBrush().GetResourceObject() == nullptr)
+	{
+		img_LocalPlayer->SetVisibility(ESlateVisibility::Visible);
+		img_LocalPlayer->SetBrushFromMaterial(material);
+		dummyPlayer->SetbIsShow(true);
+	}
+
+	ST_SUBLOG(LogSTNetwork, Warning, TEXT("End"));
+}
+
+void USTPlayerUIComponent::AddPlayerID(const FUniqueNetIdRepl& ID)
+{
 	ASTPlayerController* serverPC = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
 
-	if (ID != serverPC->PlayerState->GetUniqueId() && !serverPC->GetUIComponent()->PlayerID.Contains(ID))
+	if (!serverPC->GetUIComponent()->PlayerID.Contains(ID))
 	{
 		ST_SUBLOG(LogSTNetwork, Warning, TEXT("ADD"));
 		serverPC->GetUIComponent()->PlayerID.Add(ID);
-		// 서버가 아닌 것이 들어올 때, 여기서 더미 플레이어를 일단 추가하는 방식으로
 	}
 
 	for (ASTPlayerController* playerController : TActorRange<ASTPlayerController>(GetWorld()))
@@ -101,96 +271,35 @@ void USTPlayerUIComponent::ServerRPCRegisterPlayerID_Implementation(const FUniqu
 
 		for (auto iter : serverPC->GetUIComponent()->PlayerID)
 		{
-			if (playerController->PlayerState->GetUniqueId() != iter && !playerController->GetUIComponent()->PlayerID.Contains(iter))
+			if (!playerController->GetUIComponent()->PlayerID.Contains(iter))
 			{
 				playerController->GetUIComponent()->PlayerID.Add(iter);
-				//playerController->GetUIComponent()->RegisterIDToDummyPlayer(ID);
-				//playerController->GetUIComponent()->UpdatePlayerID();
-			}
-				
-		}
-	}
-
-	// 더미 플레이어에게 PlayerID 부착 (서버 포함)
-	//RegisterIDToDummyPlayer(ID);
-
-	//UpdatePlayerID();
-}
-
-void USTPlayerUIComponent::ServerRPCUnRegisterPlayerID_Implementation(const FUniqueNetIdRepl& ID)
-{
-	for (ASTPlayerController* playerController : TActorRange<ASTPlayerController>(GetWorld()))
-	{
-		if (playerController)
-		{
-			USTPlayerUIComponent* uIComponent = playerController->GetUIComponent();
-
-			for (auto iter : PlayerID)
-			{
-				if (!uIComponent->PlayerID.Contains(iter))
-				{
-					ST_SUBLOG(LogSTNetwork, Warning, TEXT("Add ID"));
-					uIComponent->PlayerID.Add(iter);
-				}
 			}
 
 		}
 	}
-}
-
-void USTPlayerUIComponent::UpdatePlayerID()
-{
-	USTUISubSystem* UISubSystem = GetWorld()->GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
-	FGameplayTag widgetTag = FGameplayTag::RequestGameplayTag(FName("Widget.Lobby.Ready"));
-	UUserWidget* widgetInstance = UISubSystem->GetWidget(widgetTag);
-
-	if (!widgetInstance)
-		return;
-
-	UImage* img_FirstPlayer = Cast<UImage>(widgetInstance->GetWidgetFromName(TEXT("IMG_FirstPlayer")));
-	UImage* img_SecondPlayer = Cast<UImage>(widgetInstance->GetWidgetFromName(TEXT("IMG_SecondPlayer")));
-	UImage* img_ThirdPlayer = Cast<UImage>(widgetInstance->GetWidgetFromName(TEXT("IMG_ThirdPlayer")));
-
-	if (!img_FirstPlayer || !img_SecondPlayer || !img_ThirdPlayer)
-		return;
-
-	APlayerController* pc = GetWorld()->GetFirstPlayerController();
-
-	if (!pc)
-		return;
-
-	for (auto iter : PlayerID)
-	{
-		if (iter == pc->PlayerState->GetUniqueId())
-		{
-			continue;
-		}
-		else
-		{
-			ASTDummyPlayer* dummyPlayer = ASTDummyPlayer::FindByID(GetWorld(), iter);
-			UTextureRenderTarget2D* renderTarget2D = dummyPlayer->GetTextureRenderTarget2D();
-
-			FSlateBrush slateBrush;
-			slateBrush.SetResourceObject(renderTarget2D);
-			slateBrush.ImageSize = FVector2D(renderTarget2D->SizeX, renderTarget2D->SizeY);
-			slateBrush.DrawAs = ESlateBrushDrawType::Image;
-		}
-	}
-}
-
-void USTPlayerUIComponent::OnRep_PlayerID()
-{
-	//UpdatePlayerID();
+		
+	RegisterIDToDummyPlayer(ID);
 }
 
 void USTPlayerUIComponent::RegisterIDToDummyPlayer(const FUniqueNetIdRepl& ID)
 {
 	for (ASTDummyPlayer* dummyPlayer : TActorRange<ASTDummyPlayer>(GetWorld()))
 	{
-		if (dummyPlayer->GetPlayerID() != nullptr)
+		if (dummyPlayer->GetPlayerID().IsValid())
 			continue;
-
+		
 		dummyPlayer->SetPlayerID(ID);
+
+		for (ASTPlayerController* playerController : TActorRange<ASTPlayerController>(GetWorld()))
+		{
+			if (playerController->PlayerState->GetUniqueId() == ID)
+			{
+				dummyPlayer->SetOwner(playerController);
+			}
+		}
+
+		break;
 	}
 }
 

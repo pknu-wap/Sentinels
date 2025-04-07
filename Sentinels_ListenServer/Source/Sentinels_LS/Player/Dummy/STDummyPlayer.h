@@ -8,6 +8,7 @@
 #include "STDummyPlayer.generated.h"
 
 class USceneCaptureComponent2D;
+class UMaterial;
 
 UCLASS()
 class SENTINELS_LS_API ASTDummyPlayer : public AActor
@@ -27,18 +28,32 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	UFUNCTION(BlueprintCallable)
-	void UpdateSkeletalMesh(ESTClassType InClass);
-
 public:
 	const FUniqueNetIdRepl GetPlayerID() { return PlayerID; }
 	void SetPlayerID(const FUniqueNetIdRepl& ID) { PlayerID = ID; }
 
+	const bool GetbIsShow() { return bIsShow; }
+
+	UFUNCTION(BlueprintCallable)
+	void SetbIsShow(const bool value) { bIsShow = value; }
+
 	UTextureRenderTarget2D* GetTextureRenderTarget2D();
+
+	UMaterial* GetMaterial() { return Material; }
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Dummy Player")
-	static ASTDummyPlayer* FindByID(UWorld* World, FUniqueNetIdRepl PlayerID);
+	static ASTDummyPlayer* FindByID(UObject* WorldContextObject, FUniqueNetIdRepl PlayerID);
+
+protected:
+	UFUNCTION()
+	void OnRep_PlayerID();
+
+	UFUNCTION()
+	void OnRep_CurrentClass();
+
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void ServerRPCChangeCurrentClass(ESTClassType InClass);
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Capture Component", meta = (AllowPrivateAccess = "true"))
@@ -53,8 +68,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimInstance", meta = (AllowPrivateAccess = "true"))
 	TMap<ESTClassType, TSubclassOf<UAnimInstance>> AIMap;
 
-	// IsValid를 이용해서 이미 누가 가져갔는지 확인해서 할당
-	// ReplicatedUsing을 사용해야할까?
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "PlayerID", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(ReplicatedUsing = OnRep_PlayerID, VisibleAnywhere, BlueprintReadOnly, Category = "PlayerID", meta = (AllowPrivateAccess = "true"))
 	FUniqueNetIdRepl PlayerID;
+
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentClass, VisibleAnywhere, BlueprintReadOnly, Category = "PlayerID", meta = (AllowPrivateAccess = "true"))
+	ESTClassType CurrentClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Material", meta = (AllowPrivateAccess = "true"))
+	UMaterial* Material;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	bool bIsShow;
 };
