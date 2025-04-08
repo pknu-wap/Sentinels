@@ -10,6 +10,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class UInputAction;
 class UInputMappingContext;
+class ASTPlayerController;
 
 UCLASS()
 class SENTINELS_LS_API UCameraMode_TopDown : public UCameraMode
@@ -27,6 +28,9 @@ private:
 
     UPROPERTY()
     UCameraComponent* Camera;
+
+    UPROPERTY()
+    ASTPlayerController* PC;
 
     bool bShouldLerp = false;
 

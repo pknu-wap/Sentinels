@@ -20,9 +20,9 @@ public:
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 
 public:
-	UPROPERTY(EditAnywhere)
-	float MaxDistance_FromPlayer = 3000.f;
-
+	/*
+		if greater than 0, Return to start Location when Out Fram Start Location !
+	*/
 	UPROPERTY(EditAnywhere)
 	float MaxDistance_FromStartLocation = 0.f;
 };

@@ -97,13 +97,18 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 		*/
 		if (StatusComponent && StatusComponent->TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser) <= 0)
 		{
+			// Play Died Montage
 			PlayDiedMontage_Multicast();
 			
+			// Stop Behavior Tree
 			AAIController* AIController = Cast<AAIController>(GetController());
 			if (AIController)
 			{
 				AIController->GetBrainComponent()->StopLogic(FString("Died."));
 			}
+
+			// Delegate Broadcast
+			Delegate_OnEnemyDied.Broadcast(this);
 
 			return ActualDamage;
 		}

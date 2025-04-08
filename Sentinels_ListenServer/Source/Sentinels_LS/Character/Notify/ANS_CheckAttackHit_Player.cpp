@@ -8,7 +8,6 @@
 #include "GameFramework/DamageType.h"
 #include "Perception/AISense_Damage.h"
 
-
 void UANS_CheckAttackHit_Player::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
     Super::NotifyBegin(MeshComp, Animation, TotalDuration);
@@ -41,7 +40,7 @@ void UANS_CheckAttackHit_Player::NotifyTick(USkeletalMeshComponent* MeshComp, UA
             DamagedActors.Add(DamagedActor);
 
             AActor* actor = MeshComp->GetOwner();
-            if (actor)
+            if (actor && !DamagedActor->IsA(ASTPlayerCharacter::StaticClass()))
             {
                 UGameplayStatics::ApplyPointDamage(DamagedActor, Damage, hit.ImpactNormal, hit,
                     actor->GetInstigatorController(), actor, UDamageType::StaticClass());

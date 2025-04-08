@@ -8,6 +8,18 @@ FSTGameplayTags FSTGameplayTags::GameplayTags;
 
 void FSTGameplayTags::InitializeNativeGameplayTags()
 {
+	/*
+		Character
+	*/
+	GameplayTags.Character_Player_State_RepairRift = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Character.Player.State.RepairRift"),
+		FString("Player is Reparing Rift")
+	);
+
+	GameplayTags.Character_Player_State_RescueHostage = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Character.Player.State.RescueHostage"),
+		FString("Player is Rescue Hostage")
+	);
 
 	/*
 		Missions

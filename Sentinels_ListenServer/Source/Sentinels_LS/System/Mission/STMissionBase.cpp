@@ -21,7 +21,7 @@ void USTMissionBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 
 void USTMissionBase::RegisterMission()
 {
-	UE_LOG(LogTemp, Display, TEXT("USTMissionBase::RegisterMission"));
+	UE_LOG(LogTemp, Display, TEXT("USTMissionBase::RegisterMission %s"), *MissionTag.GetTagName().ToString());
 	AActor* Owner = GetTypedOuter<AActor>();
 	for (auto& conditionClass : SubclassOfMissionConditions)
 	{

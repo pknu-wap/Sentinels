@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "GameplayTagContainer.h"
 #include "STCharacterBase.generated.h"
 
 /*
@@ -23,6 +24,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:	
 	// Called every frame
@@ -31,4 +33,13 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+public:
+	void AddTag(const FGameplayTag& TagToAdd) { TagContainer.AddTag(TagToAdd); }
+	void RemoveTag(const FGameplayTag& TagToRemove) { TagContainer.RemoveTag(TagToRemove); }
+	void RemoveTags(const FGameplayTagContainer& TagsToRemove) { TagContainer.RemoveTags(TagsToRemove); }
+	bool HasTag(const FGameplayTag& TagToCheck) { return TagContainer.HasTag(TagToCheck); }
+
+protected:
+	UPROPERTY(Replicated, VisibleAnywhere)
+	FGameplayTagContainer TagContainer;
 };
