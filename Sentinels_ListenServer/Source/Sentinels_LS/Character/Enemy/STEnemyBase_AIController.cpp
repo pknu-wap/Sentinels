@@ -76,8 +76,7 @@ void ASTEnemyBase_AIController::OnTargetDetected(AActor* actor, const FAIStimulu
 		if (Stimulus.WasSuccessfullySensed())
 		{
 			UE_LOG(LogTemp, Warning, TEXT("%s Sight : Player Detected."), *GetName());
-			Blackboard->SetValueAsObject(BBKey_Target, actor);
-			Blackboard->SetValueAsVector(BBKey_TargetLocation, actor->GetActorLocation());
+			SetTarget(actor);
 		}
 	}
 	else if (Stimulus.Type == HearingConfig->GetSenseID())
@@ -85,8 +84,7 @@ void ASTEnemyBase_AIController::OnTargetDetected(AActor* actor, const FAIStimulu
 		if (Stimulus.WasSuccessfullySensed())
 		{
 			UE_LOG(LogTemp, Warning, TEXT("%s Hearing : Player Detected."), *GetName());
-			Blackboard->SetValueAsObject(BBKey_Target, actor);
-			Blackboard->SetValueAsVector(BBKey_TargetLocation, actor->GetActorLocation());
+			SetTarget(actor);
 		}
 	}
 }
@@ -99,30 +97,27 @@ void ASTEnemyBase_AIController::SetTarget(AActor* InTarget)
 		return;
 	}
 
-	if (InTarget->IsA<ASTEnemyBase>())
+	if (!InTarget)
+	{
+		UE_LOG(LogTemp, Display, TEXT("%s Set Target as nullptr"));
+		Blackboard->SetValueAsObject(BBKey_Target, nullptr);
+		return;
+	}
+	else if (InTarget->IsA<ASTEnemyBase>())
 		return;
 
+	// Store Target if New Target is not player
 	AActor* currentTarget = Cast<AActor>(Blackboard->GetValueAsObject(BBKey_Target));
-	if (currentTarget)
+	if (currentTarget && !currentTarget->IsA<ASTPlayerCharacter>())
 	{
-		UE_LOG(LogTemp, Display, TEXT("ASTEnemyBase_AIController::SetTarget"));
-		if (currentTarget->IsA<ASTPlayerCharacter>())
-		{
-			Blackboard->SetValueAsObject(BBKey_Target, InTarget);
-		}
-		else
-		{
-			StoredTarget = currentTarget;
-			Blackboard->SetValueAsObject(BBKey_Target, InTarget);
+		StoredTarget = currentTarget;
+		GetWorldTimerManager().SetTimer(StoreTargetHandle, this, &ASTEnemyBase_AIController::RestoreTarget, 30.f, false);
+	}
 
-			GetWorldTimerManager().SetTimer(StoreTargetHandle, this, &ASTEnemyBase_AIController::RestoreTarget, 30.f, false);
-		}
-	}
-	else
-	{
-		Blackboard->SetValueAsObject(BBKey_Target, InTarget);
-		Blackboard->SetValueAsVector(BBKey_TargetLocation, InTarget->GetActorLocation());
-	}
+	// Set Target
+	UE_LOG(LogTemp, Display, TEXT("%s Set Target as %s"), *(GetName()), *(InTarget->GetName()));
+	Blackboard->SetValueAsObject(BBKey_Target, InTarget);
+	Blackboard->SetValueAsVector(BBKey_TargetLocation, InTarget->GetActorLocation());
 }
 
 void ASTEnemyBase_AIController::RestoreTarget()

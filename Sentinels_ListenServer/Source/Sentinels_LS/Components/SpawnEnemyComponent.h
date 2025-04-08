@@ -6,6 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "SpawnEnemyComponent.generated.h"
 
+struct FNavLocation;
+class ASTEnemyBase;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SENTINELS_LS_API USpawnEnemyComponent : public UActorComponent
@@ -30,9 +32,14 @@ public:
 
 protected:
     void SpawnEnemy();
+    bool GetSpawnNavLocation(FNavLocation& OutLocation) const;
+    void SetTarget(ASTEnemyBase* inEnemy);
+
+    ACharacter* GetRandomPlayerCharacter() const;
 
     UFUNCTION()
     void OnEnemyDied(AActor* DiedEnemy);
+    
 
 protected:
     /*
