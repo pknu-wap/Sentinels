@@ -45,8 +45,6 @@ void ASTPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 void ASTPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
-
-	BindDefaultTopDownInput();
 }
 
 void ASTPlayerController::BindDefaultTopDownInput()

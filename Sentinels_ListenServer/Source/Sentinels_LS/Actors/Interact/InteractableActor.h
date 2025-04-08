@@ -45,6 +45,6 @@ protected:
 	UPROPERTY()
 	UUserWidget* InteractWidget_ForDebug;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(Replicated, VisibleAnywhere)
 	bool bIsInteractable = true;
 };
