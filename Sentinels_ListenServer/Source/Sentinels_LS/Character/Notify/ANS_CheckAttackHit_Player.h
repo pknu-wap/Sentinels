@@ -9,9 +9,8 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "ANS_CheckAttackHit_Player.generated.h"
 
-/**
- * 
- */
+class ASTPlayerCharacter;
+
 UCLASS()
 class SENTINELS_LS_API UANS_CheckAttackHit_Player : public UAnimNotifyState
 {
@@ -39,4 +38,7 @@ public:
 	float Damage = 10.f;
 
 	TArray<AActor*> DamagedActors;
+
+	UPROPERTY()
+	ASTPlayerCharacter* Player;
 };

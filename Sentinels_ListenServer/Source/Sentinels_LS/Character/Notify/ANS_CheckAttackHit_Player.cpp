@@ -11,11 +11,19 @@
 void UANS_CheckAttackHit_Player::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
     Super::NotifyBegin(MeshComp, Animation, TotalDuration);
+
+    Player = Cast<ASTPlayerCharacter>(MeshComp->GetOwner());
 }
 
 void UANS_CheckAttackHit_Player::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference)
 {
     Super::NotifyTick(MeshComp, Animation, FrameDeltaTime);
+
+    if (Player)
+    {
+        if(MeshComp != Player->GetMesh())
+            return;
+    }
 
     TArray<FHitResult> hitResults;
     FVector Start = MeshComp->GetSocketLocation(StartSocket);

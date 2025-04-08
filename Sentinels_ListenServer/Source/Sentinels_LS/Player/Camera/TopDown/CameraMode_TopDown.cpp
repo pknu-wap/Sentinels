@@ -19,7 +19,7 @@ void UCameraMode_TopDown::OnEnter(UCameraModeManagerComponent* Manager)
         Camera = Player->GetComponentByClass<UCameraComponent>();
     }
 
-     PC = Cast<ASTPlayerController>(Player->GetController());
+    PC = Cast<ASTPlayerController>(Player->GetController());
     if (Player && PC)
     {
         Player->BindDefaultTopDownInput();
