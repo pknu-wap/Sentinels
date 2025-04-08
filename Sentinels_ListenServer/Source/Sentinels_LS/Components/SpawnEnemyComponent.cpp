@@ -26,15 +26,8 @@ void USpawnEnemyComponent::StartSpawnEnemy()
 	if (!GetOwner()->HasAuthority())
 		return;
 
-	if (bShouldLoop)
-	{
-		if (!GetWorld()->GetTimerManager().TimerExists(handle))
-			GetWorld()->GetTimerManager().SetTimer(handle, this, &USpawnEnemyComponent::SpawnEnemy, SpawnPeriod, true);
-	}
-	else
-	{
-		SpawnEnemy();
-	}
+	if (!GetWorld()->GetTimerManager().TimerExists(handle))
+		GetWorld()->GetTimerManager().SetTimer(handle, this, &USpawnEnemyComponent::SpawnEnemy, SpawnPeriod, true);
 }
 
 void USpawnEnemyComponent::StopSpawnEnemy()
@@ -54,7 +47,14 @@ void USpawnEnemyComponent::SpawnEnemy()
 	for (int i = 0; i < SpawnRate; i++)
 	{
 		if (CurrentSpawned >= MaxSpawnCount)
+		{
+			if (!bShouldLoop)
+			{
+				GetWorld()->GetTimerManager().ClearTimer(handle);
+			}
+			
 			break;
+		}
 
 		// Check Get NavLocation Success && Check Class is valid 
 		rand = UKismetMathLibrary::RandomIntegerInRange(0, SpawnPawnClasses.Num() - 1);
@@ -123,18 +123,37 @@ void USpawnEnemyComponent::SetTarget(ASTEnemyBase* inEnemy)
 		}
 		else
 		{
-			controller->SetTarget(GetRandomPlayerCharacter());
+			controller->SetTarget(GetRandomPlayerCharacter(inEnemy));
 		}
 	}
 }
 
-ACharacter* USpawnEnemyComponent::GetRandomPlayerCharacter() const
+ACharacter* USpawnEnemyComponent::GetRandomPlayerCharacter(ASTEnemyBase* inEnemy) const
 {
 	ACharacter* player = nullptr;
 
 	int playerNum = UGameplayStatics::GetNumPlayerControllers(this);
-	int rand = UKismetMathLibrary::RandomIntegerInRange(0, playerNum - 1);
-	player = UGameplayStatics::GetPlayerCharacter(this, rand);
+
+	// find near player
+	TArray<ACharacter*> nearPlayers;
+	ACharacter* randomPlayer = nullptr;
+	for (int i = 0; i < playerNum; i++)
+	{
+		randomPlayer = UGameplayStatics::GetPlayerCharacter(this, i);
+		if (randomPlayer)
+		{
+			float dist = FVector::Dist2D(inEnemy->GetActorLocation(), randomPlayer->GetActorLocation());
+			if (dist <= MaxDistanceToPlayer)
+				nearPlayers.Push(randomPlayer);
+		}
+	}
+
+	// Failed to find near player
+	if (nearPlayers.Num() == 0)
+		return nullptr;
+
+	int rand = UKismetMathLibrary::RandomIntegerInRange(0, nearPlayers.Num() - 1);
+	player = nearPlayers[rand];
 
 	return player;
 }
@@ -146,6 +165,11 @@ void USpawnEnemyComponent::OnEnemyDied(AActor* DiedEnemy)
 	{
 		CurrentSpawned--;
 		SpawnedEnemys.Remove(DiedEnemy);
+	}
+
+	if (CurrentSpawned <= 0)
+	{
+		Delegate_OnEnemyAllDied.Broadcast();
 	}
 }
 

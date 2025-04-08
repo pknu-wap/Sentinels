@@ -99,7 +99,7 @@ void ASTEnemyBase_AIController::SetTarget(AActor* InTarget)
 
 	if (!InTarget)
 	{
-		UE_LOG(LogTemp, Display, TEXT("%s Set Target as nullptr"));
+		UE_LOG(LogTemp, Display, TEXT("%s Set Target as nullptr"), *GetName());
 		Blackboard->SetValueAsObject(BBKey_Target, nullptr);
 		return;
 	}
@@ -117,7 +117,6 @@ void ASTEnemyBase_AIController::SetTarget(AActor* InTarget)
 	// Set Target
 	UE_LOG(LogTemp, Display, TEXT("%s Set Target as %s"), *(GetName()), *(InTarget->GetName()));
 	Blackboard->SetValueAsObject(BBKey_Target, InTarget);
-	Blackboard->SetValueAsVector(BBKey_TargetLocation, InTarget->GetActorLocation());
 }
 
 void ASTEnemyBase_AIController::RestoreTarget()

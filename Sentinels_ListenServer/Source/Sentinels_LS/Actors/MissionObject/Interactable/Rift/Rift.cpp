@@ -19,6 +19,13 @@ void ARift::BeginPlay()
 	Super::BeginPlay();
 
 	bIsInteractable = false;
+	SpawnComponent->Delegate_OnEnemyAllDied.AddLambda( 
+		[&]()
+		{
+			UE_LOG(LogTemp, Display, TEXT("ARift : bIsInteractable = true "));
+			bIsInteractable = true; 
+		} 
+	);
 }
 
 void ARift::Interact(UInteractComponent* InteractingComponent)
@@ -81,7 +88,6 @@ void ARift::SpawnInitialEnemy()
 	if (HasAuthority() && SpawnComponent)
 	{
 		SpawnComponent->StartSpawnEnemy();
-		bIsInteractable = true;
 	}
 }
 
