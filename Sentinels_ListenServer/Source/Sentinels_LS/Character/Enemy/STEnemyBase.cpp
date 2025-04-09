@@ -122,7 +122,7 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 		}
 		else
 		{
-			StopAnimMontage();
+			StopCurrentAnimMontage_Multicast();
 			FVector LaunchDir = (GetActorLocation() - DamageCauser->GetActorLocation()).GetSafeNormal2D();
 			LaunchCharacter(LaunchDir * 1500.f, false, false);
 		}
@@ -139,6 +139,11 @@ bool ASTEnemyBase::IsNormalAttackMontage(UAnimMontage* InMontage)
 			return true;
 	}
 	return false;
+}
+
+void ASTEnemyBase::StopCurrentAnimMontage_Multicast_Implementation()
+{
+	StopAnimMontage();
 }
 
 void ASTEnemyBase::ActivateNormalAttack_Server_Implementation()

@@ -29,6 +29,9 @@ public:
 	bool IsNormalAttackMontage(UAnimMontage* InMontage);
 
 public:
+	UFUNCTION(Server, Reliable)
+	void StopCurrentAnimMontage_Multicast();
+
 	// Attack
 	UFUNCTION(Server, Reliable)
 	void ActivateNormalAttack_Server();
