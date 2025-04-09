@@ -3,21 +3,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
-#include "Interfaces/InteractiveInterface.h"
-#include "InteractableActor.generated.h"
+#include "Actors/Interact/InteractableActor.h"
+#include "STDimensionDrift.generated.h"
 
-class UUserWidget;
-class UInteractComponent;
+/**
+ * 
+ */
 
 UCLASS()
-class SENTINELS_LS_API AInteractableActor : public AActor, public IInteractiveInterface
+class SENTINELS_LS_API ASTDimensionDrift : public AInteractableActor
 {
 	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
-	AInteractableActor();
+
+public:
+	ASTDimensionDrift();
 
 protected:
 	// Called when the game starts or when spawned
@@ -27,24 +26,20 @@ protected:
 	/*
 		Interactive Interface
 	*/
+
 protected:
 	virtual void Interact(UInteractComponent* InteractingComponent) override;
 	virtual void Interact_Finish(UInteractComponent* InteractingComponent) override;
 	virtual void ShowInteractiveUI(UInteractComponent* InteractingComponent) override;
 	virtual void HideInteractiveUI(UInteractComponent* InteractingComponent) override;
 
-	virtual bool IsInteractable() override { return bIsInteractable; };
-
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TObjectPtr<class UStaticMeshComponent> Mesh;
+	TObjectPtr<class USkeletalMeshComponent> SKMesh;
 
-	UPROPERTY(EditAnywhere, Category = "Debug")
-	TSubclassOf<UUserWidget> InteractWidgetClass_ForDebug;
+	UPROPERTY(EditAnywhere, Category = "WBP")
+	TSubclassOf<UUserWidget> Widget_LoadoutClass;
 
-	UPROPERTY()
-	UUserWidget* InteractWidget_ForDebug;
-
-	UPROPERTY(Replicated, VisibleAnywhere)
-	bool bIsInteractable = true;
+	UPROPERTY(EditAnywhere, Category = "WBP")
+	TSubclassOf<UUserWidget> Widget_CharacterSelectClass;
 };

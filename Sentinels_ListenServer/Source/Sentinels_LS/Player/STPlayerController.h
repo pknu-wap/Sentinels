@@ -62,14 +62,10 @@ protected:
 	void MoveClick_Released();
 	void AutoRun();
 
-	/*
-		Interact
-	*/
-	void Interact();
-
-	/*
-		UI
-	*/
+/*
+	UI
+*/
+public:
 	USTPlayerUIComponent* GetUIComponent() { return UIComponent; }
 
 /*

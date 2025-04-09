@@ -9,7 +9,6 @@
 #include "EngineUtils.h"
 #include "Player/STPlayerController.h"
 #include "GameFramework/PlayerState.h"
-//
 #include "Kismet/GameplayStatics.h"
 #include "Components/Image.h"
 #include "Player/Dummy/STDummyPlayer.h"
@@ -46,12 +45,94 @@ void USTPlayerUIComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 	DOREPLIFETIME(USTPlayerUIComponent, PlayerID);
 }
 
+void USTPlayerUIComponent::ClientRPCRegisterWidget_Implementation(FGameplayTag WidgetTag, TSubclassOf<UUserWidget> WidgetClass)
+{
+	USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
+	UUserWidget* widget = UISubSystem->GetWidget(WidgetTag);
+
+	ASTPlayerController* pc = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+
+	if (!widget)
+	{
+		widget = CreateWidget<UUserWidget>(pc, WidgetClass);
+		UISubSystem->RegisterWidget(WidgetTag, widget);
+	}
+}
+
+void USTPlayerUIComponent::ClientRPCUnRegisterWidget_Implementation(FGameplayTag WidgetTag)
+{
+	USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
+	UISubSystem->UnRegisterWidget(WidgetTag);
+}
+
+void USTPlayerUIComponent::ClientRPCAddToViewport_Implementation(FGameplayTag WidgetTag)
+{
+	USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
+	UUserWidget* widget = UISubSystem->GetWidget(WidgetTag);
+	
+	if (!widget)
+	{
+		ST_SUBLOG(LogSTNetwork, Warning, TEXT("No Widget"));
+		return;
+	}
+
+	widget->AddToViewport();
+}
+
+void USTPlayerUIComponent::ClientRPCRemoveFromParent_Implementation(FGameplayTag WidgetTag)
+{
+	USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
+	UUserWidget* widget = UISubSystem->GetWidget(WidgetTag);
+
+	if (!widget)
+	{
+		ST_SUBLOG(LogSTNetwork, Warning, TEXT("No Widget"));
+		return;
+	}
+
+	widget->RemoveFromParent();
+}
+
+void USTPlayerUIComponent::ClientRPCUpdateUI_Implementation(FGameplayTag WidgetTag)
+{
+	if (FSTGameplayTags::Get().Widget_Lobby_Loadout == WidgetTag)
+	{
+		UpdateLoadoutUI();
+	}
+
+	
+	/*else if (FSTGameplayTags::Get().Widget_Lobby_CharacterSelect == WidgetTag)
+	{
+		UpdateCharacterSelectUI();
+	}*/
+}
+
+void USTPlayerUIComponent::ServerRPCRegisterPlayerID_Implementation(const FUniqueNetIdRepl& ID)
+{
+	AddPlayerID(ID);
+
+	for (ASTPlayerController* playerController : TActorRange<ASTPlayerController>(GetWorld()))
+	{
+		if (playerController)
+		{
+			playerController->GetUIComponent()->ClientRPCUpdateUI(FSTGameplayTags::Get().Widget_Lobby_Loadout);
+		}
+	}
+
+	UpdateLoadoutUI();
+}
+
+void USTPlayerUIComponent::ServerRPCUnRegisterPlayerID_Implementation(const FUniqueNetIdRepl& ID)
+{
+
+}
+
 void USTPlayerUIComponent::ServerRPCSetbIsReady_Implementation(bool Value)
 {
 	bIsReady = Value;
 }
 
-void USTPlayerUIComponent::ServerRPCChangebIsReady_Implementation(FGameplayTag WidgetTag)
+void USTPlayerUIComponent::ServerRPCCheckbIsReady_Implementation(FGameplayTag WidgetTag)
 {
 	for (ASTPlayerController* playerController : TActorRange<ASTPlayerController>(GetWorld()))
 	{
@@ -59,7 +140,7 @@ void USTPlayerUIComponent::ServerRPCChangebIsReady_Implementation(FGameplayTag W
 		{
 			if (!playerController->GetUIComponent()->GetbIsReady())
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Not Ready"));
+				ST_SUBLOG(LogSTNetwork, Warning, TEXT("Not Ready"));
 				return;
 			}
 		}
@@ -69,37 +150,13 @@ void USTPlayerUIComponent::ServerRPCChangebIsReady_Implementation(FGameplayTag W
 	{
 		if (playerController)
 		{
-			playerController->GetUIComponent()->ClientRPCUnRegisterWidget(WidgetTag);
+			playerController->GetUIComponent()->ClientRPCRemoveFromParent(WidgetTag);
 		}
 	}
-
-	UE_LOG(LogTemp, Warning, TEXT("All Ready"));
-}
-
-void USTPlayerUIComponent::ClientRPCUnRegisterWidget_Implementation(FGameplayTag WidgetTag)
-{
-	USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
-	UISubSystem->UnRegisterWidget(WidgetTag);
-}
-
-void USTPlayerUIComponent::ServerRPCRegisterPlayerID_Implementation(const FUniqueNetIdRepl& ID)
-{
-	AddPlayerID(ID);
-
-	//RegisterIDToDummyPlayer(ID);
-
-	UpdateLoadoutUI();
-}
-
-void USTPlayerUIComponent::ServerRPCUnRegisterPlayerID_Implementation(const FUniqueNetIdRepl& ID)
-{
-	
 }
 
 void USTPlayerUIComponent::UpdateLoadoutUI()
 {
-	ST_SUBLOG(LogSTNetwork, Warning, TEXT("Begin"));
-
 	USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
 
 	ASTPlayerController* pc = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
@@ -142,8 +199,14 @@ void USTPlayerUIComponent::UpdateLoadoutUI()
 				return;
 			}
 
-			FGameplayTag widgetTag = FGameplayTag::RequestGameplayTag(FName("Widget.Lobby.Ready"));
+			FGameplayTag widgetTag = FSTGameplayTags::Get().Widget_Lobby_Loadout;
 			UUserWidget* widgetInstance = UISubSystem->GetWidget(widgetTag);
+
+			if (!widgetInstance)
+			{
+				ST_SUBLOG(LogSTNetwork, Warning, TEXT("Can't find widgetInstance!"));
+				return;
+			}
 
 			UImage* img_FirstPlayer = Cast<UImage>(widgetInstance->GetWidgetFromName(TEXT("IMG_FirstPlayer")));
 			UImage* img_SecondPlayer = Cast<UImage>(widgetInstance->GetWidgetFromName(TEXT("IMG_SecondPlayer")));
@@ -169,14 +232,10 @@ void USTPlayerUIComponent::UpdateLoadoutUI()
 			}		
 		}
 	}
-
-	ST_SUBLOG(LogSTNetwork, Warning, TEXT("End"));
 }
 
 void USTPlayerUIComponent::UpdateCharacterSelectUI()
 {
-	ST_SUBLOG(LogSTNetwork, Warning, TEXT("Begin"));
-
 	USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
 
 	if (!UISubSystem)
@@ -226,8 +285,7 @@ void USTPlayerUIComponent::UpdateCharacterSelectUI()
 		return;
 	}
 
-	// remove parent
-	FGameplayTag widgetTag = FGameplayTag::RequestGameplayTag(FName("Widget.Lobby.CharacterSelect"));
+	FGameplayTag widgetTag = FSTGameplayTags::Get().Widget_Lobby_CharacterSelect;
 	UUserWidget* widgetInstance = UISubSystem->GetWidget(widgetTag);
 
 	if (!widgetInstance)
@@ -250,8 +308,6 @@ void USTPlayerUIComponent::UpdateCharacterSelectUI()
 		img_LocalPlayer->SetBrushFromMaterial(material);
 		dummyPlayer->SetbIsShow(true);
 	}
-
-	ST_SUBLOG(LogSTNetwork, Warning, TEXT("End"));
 }
 
 void USTPlayerUIComponent::AddPlayerID(const FUniqueNetIdRepl& ID)
@@ -286,6 +342,9 @@ void USTPlayerUIComponent::RegisterIDToDummyPlayer(const FUniqueNetIdRepl& ID)
 {
 	for (ASTDummyPlayer* dummyPlayer : TActorRange<ASTDummyPlayer>(GetWorld()))
 	{
+		if (dummyPlayer->GetPlayerID() == ID)
+			return;
+
 		if (dummyPlayer->GetPlayerID().IsValid())
 			continue;
 		
@@ -302,4 +361,5 @@ void USTPlayerUIComponent::RegisterIDToDummyPlayer(const FUniqueNetIdRepl& ID)
 		break;
 	}
 }
+
 

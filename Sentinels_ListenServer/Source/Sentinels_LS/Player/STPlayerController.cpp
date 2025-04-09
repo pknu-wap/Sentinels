@@ -52,7 +52,7 @@ void ASTPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 
-	BindDefaultTopDownInput();
+	//BindDefaultTopDownInput();
 }
 
 void ASTPlayerController::BindDefaultTopDownInput()

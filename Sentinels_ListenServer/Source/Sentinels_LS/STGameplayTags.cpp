@@ -12,9 +12,9 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 		Widget
 	*/
 
-	GameplayTags.Widget_Lobby_Ready = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("Widget.Lobby.Ready"),
-		FString("Ready")
+	GameplayTags.Widget_Lobby_Loadout = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Widget.Lobby.Loadout"),
+		FString("Loadout")
 	);
 
 	GameplayTags.Widget_Lobby_CharacterSelect = UGameplayTagsManager::Get().AddNativeGameplayTag(

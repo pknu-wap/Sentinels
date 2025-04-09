@@ -17,7 +17,7 @@ public:
 	////////// Character /////////
 
 	//////////  Widget   /////////
-	FGameplayTag Widget_Lobby_Ready;
+	FGameplayTag Widget_Lobby_Loadout;
 	FGameplayTag Widget_Lobby_CharacterSelect;
 	FGameplayTag Widget_Lobby_SkillSelect;
 
