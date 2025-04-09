@@ -31,15 +31,10 @@ bool USTRepairRiftCondition::IsSatisfied()
 	return true;
 }
 
-void USTRepairRiftCondition::MissionActivated()
+void USTRepairRiftCondition::MissionRegistered()
 {
 	/*
-		Set Mission
-	*/
-	CurrentMissionTime = 0;
-
-	/*
-		Spawn NPC On Random Point (Get All NPC Spawn Points From World)
+		Spawn Rift On Random Point (Get All Rift Spawn Points From World)
 	*/
 	FVector SpawnLocation; FRotator SpawnRotation;
 
@@ -89,10 +84,29 @@ void USTRepairRiftCondition::MissionActivated()
 			{
 				rift->SetObjectID(RiftInfos[i].RiftID);
 				rift->Delegate_MissionConditionUpdate.AddUObject(this, &USTRepairRiftCondition::ConditionUpdated);
+				SpawnedRifts.Push(rift);
 			}
 		}
 	}
+}
 
+void USTRepairRiftCondition::MissionActivated()
+{
+	/*
+		Set Mission
+	*/
+	CurrentMissionTime = 0;
+
+	/*
+		Spawn Initial Enemy
+	*/
+	for (int i = 0; i < SpawnedRifts.Num(); i++)
+	{
+		if (SpawnedRifts[i])
+		{
+			SpawnedRifts[i]->SpawnInitialEnemy();
+		}
+	}
 
 	/*
 	*	Show Related Widget on Server & Clients

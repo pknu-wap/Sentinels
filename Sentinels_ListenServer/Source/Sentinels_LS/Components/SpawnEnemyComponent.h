@@ -6,6 +6,10 @@
 #include "Components/ActorComponent.h"
 #include "SpawnEnemyComponent.generated.h"
 
+struct FNavLocation;
+class ASTEnemyBase;
+
+DECLARE_MULTICAST_DELEGATE(FOnEnemyAllDied)
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SENTINELS_LS_API USpawnEnemyComponent : public UActorComponent
@@ -20,6 +24,8 @@ public:
     Spawn Enemy
 */
 public:
+    void SetShouldLoop(bool inValue) { bShouldLoop = inValue; }
+
     UFUNCTION(BlueprintCallable)
     void StartSpawnEnemy();
 
@@ -28,9 +34,16 @@ public:
 
 protected:
     void SpawnEnemy();
+    bool GetSpawnNavLocation(FNavLocation& OutLocation) const;
+    void SetTarget(ASTEnemyBase* inEnemy);
+
+    ACharacter* GetRandomPlayerCharacter(ASTEnemyBase* inEnemy) const;
 
     UFUNCTION()
     void OnEnemyDied(AActor* DiedEnemy);
+
+public:
+    FOnEnemyAllDied Delegate_OnEnemyAllDied;
 
 protected:
     /*
@@ -38,6 +51,12 @@ protected:
     */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
     bool bShouldTargetOwner = true;
+
+    /*
+        if Enemy set target as player, Only find player which is not so far 
+    */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
+    float MaxDistanceToPlayer = 3000.f;
 
     /*
         Class Array for Enemy
@@ -48,6 +67,9 @@ protected:
     /*
         Spawn Pawns of SpawnRate per Spawn Period
     */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
+    bool bShouldLoop = true;
+
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
     int SpawnRate = 5;
 
@@ -67,7 +89,7 @@ protected:
         Max Spawnable Num
     */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
-    int MaxSpawnCount = 32;
+    int MaxSpawnCount = 12;
 
     UPROPERTY(VisibleAnywhere)
     int CurrentSpawned = 0;

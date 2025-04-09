@@ -3,6 +3,9 @@
 
 #include "Actors/Interact/NPC/InteractableNPC.h"
 #include "Components/InteractComponent.h"
+#include "GameFramework/PlayerController.h"
+#include "Character/STCharacterBase.h"
+#include "STGameplayTags.h"
 
 void AInteractableNPC::Interact(UInteractComponent* InteractingComponent)
 {
@@ -14,10 +17,21 @@ void AInteractableNPC::Interact(UInteractComponent* InteractingComponent)
 		// Start Rescue
 		GetWorldTimerManager().SetTimer(Handle_Hold, this, &AInteractableNPC::RescueSuccessed, InteractionHoldTime, false);
 
-		// Show Interacting Widget
+		// 1. Show Interacting Widget
+		// 2. Add tag to Player
 		if (InteractedComponent)
 		{
 			InteractedComponent->StartInteractHold_Client(InteractionHoldTime);
+
+			APlayerController* PC = Cast<APlayerController>(InteractedComponent->GetOwner());
+			if (PC)
+			{
+				ASTCharacterBase* Character = Cast<ASTCharacterBase>(PC->GetPawn());
+				if (Character)
+				{
+					Character->AddTag(FSTGameplayTags::Get().Character_Player_State_RescueHostage);
+				}
+			}
 		}
 	}
 }
@@ -29,10 +43,21 @@ void AInteractableNPC::Interact_Finish(UInteractComponent* InteractingComponent)
 		// Clear Timer
 		GetWorldTimerManager().ClearTimer(Handle_Hold);
 
-		// Hide Interacting Widget
+		// 1. Hide Interacting Widget
+		// 2, Remove tag from Player
 		if (InteractedComponent)
 		{
 			InteractedComponent->FinishInteractHold_Client();
+
+			APlayerController* PC = Cast<APlayerController>(InteractedComponent->GetOwner());
+			if (PC)
+			{
+				ASTCharacterBase* Character = Cast<ASTCharacterBase>(PC->GetPawn());
+				if (Character)
+				{
+					Character->AddTag(FSTGameplayTags::Get().Character_Player_State_RescueHostage);
+				}
+			}
 		}
 	}
 }
@@ -43,9 +68,20 @@ void AInteractableNPC::RescueSuccessed()
 
 	Delegate_MissionConditionUpdate.Broadcast(NPCID, true);
 
-	// Hide Interacting Widget On Client
+	// 1. Hide Interacting Widget
+	// 2, Remove tag from Player
 	if (InteractedComponent)
 	{
 		InteractedComponent->FinishInteractHold_Client();
+
+		APlayerController* PC = Cast<APlayerController>(InteractedComponent->GetOwner());
+		if (PC)
+		{
+			ASTCharacterBase* Character = Cast<ASTCharacterBase>(PC->GetPawn());
+			if (Character)
+			{
+				Character->AddTag(FSTGameplayTags::Get().Character_Player_State_RescueHostage);
+			}
+		}
 	}
 }

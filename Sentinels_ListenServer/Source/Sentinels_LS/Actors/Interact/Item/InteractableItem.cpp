@@ -33,7 +33,7 @@ void AInteractableItem::Interact(UInteractComponent* InteractingComponent)
 		UInventoryComponent* InvComp = pawn->GetComponentByClass<UInventoryComponent>();
 		if (InvComp)
 		{
-			bIsInteractable = false;
+			// bIsInteractable = false;
 			InvComp->AddItem_Server(ItemID);
 			UE_LOG(LogTemp, Display, TEXT(" AInteractableItem::Interact!"));
 		}

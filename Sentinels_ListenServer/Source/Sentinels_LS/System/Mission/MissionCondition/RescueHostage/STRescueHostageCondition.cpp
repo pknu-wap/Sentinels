@@ -84,6 +84,7 @@ void USTRescueHostageCondition::MissionActivated()
 
 		if (HostageInfos[i].SubClassOfNPC)
 		{
+			SpawnLocation.Z += 80.f;
 			AInteractableNPC* npc = GetWorld()->SpawnActor<AInteractableNPC>(HostageInfos[i].SubClassOfNPC, SpawnLocation, SpawnRotation);
 			if (npc)
 			{

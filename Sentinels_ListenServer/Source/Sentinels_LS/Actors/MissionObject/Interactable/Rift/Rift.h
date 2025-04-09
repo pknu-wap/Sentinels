@@ -7,11 +7,21 @@
 #include "Rift.generated.h"
 
 class UInteractComponent;
+class ASTEnemyBase;
+class USpawnEnemyComponent;
 
 UCLASS()
 class SENTINELS_LS_API ARift : public AInteractableMissionObject
 {
 	GENERATED_BODY()
+
+	ARift();
+
+/*
+	Actor Interface
+*/
+protected:
+	virtual void BeginPlay() override;
 
 /*
 	Interactive Interface
@@ -19,6 +29,16 @@ class SENTINELS_LS_API ARift : public AInteractableMissionObject
 protected:
 	virtual void Interact(UInteractComponent* InteractingComponent) override;
 	virtual void Interact_Finish(UInteractComponent* InteractingComponent) override;
+
+/*
+	Initial Spawn Enemy when Mission Activated
+*/
+public:
+	void SpawnInitialEnemy();
+	
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<USpawnEnemyComponent> SpawnComponent;
 
 /*
 	Repair Success

@@ -15,6 +15,8 @@ public:
 	///////////  Tags  ///////////
 
 	////////// Character /////////
+	FGameplayTag Character_Player_State_RepairRift;
+	FGameplayTag Character_Player_State_RescueHostage;
 
 	//////////  Widget   /////////
 	FGameplayTag Widget_Lobby_Loadout;

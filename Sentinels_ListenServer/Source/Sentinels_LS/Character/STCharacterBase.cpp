@@ -2,6 +2,7 @@
 
 
 #include "Character/STCharacterBase.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ASTCharacterBase::ASTCharacterBase(const FObjectInitializer& ObjectInitializer)
@@ -17,6 +18,13 @@ void ASTCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
+}
+
+void ASTCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ASTCharacterBase, TagContainer);
 }
 
 // Called every frame
