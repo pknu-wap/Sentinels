@@ -18,7 +18,7 @@
 ASTEnemyBase_AIController::ASTEnemyBase_AIController(const FObjectInitializer& object_initializer)
 	: Super(object_initializer)
 {
-	PrimaryActorTick.bStartWithTickEnabled = false;
+	PrimaryActorTick.bStartWithTickEnabled = true;
 
 	BTComponent = object_initializer.CreateDefaultSubobject<UBehaviorTreeComponent>(this, TEXT("BehaviorComp"));
 	Blackboard = object_initializer.CreateDefaultSubobject<UBlackboardComponent>(this, TEXT("BlackboardComp"));
