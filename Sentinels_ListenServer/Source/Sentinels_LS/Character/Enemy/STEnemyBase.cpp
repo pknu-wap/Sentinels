@@ -131,23 +131,37 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 	return 0.0f;
 }
 
+bool ASTEnemyBase::IsNormalAttackMontage(UAnimMontage* InMontage)
+{
+	for (int i = 0; i < Montage_NormalAttackSet.Num(); i++)
+	{
+		if (Montage_NormalAttackSet[i] == InMontage)
+			return true;
+	}
+	return false;
+}
+
 void ASTEnemyBase::ActivateNormalAttack_Server_Implementation()
 {
-	ActivateNormalAttack_Multicast();
-	PlayNormalAttackMontage();
+	int MontageIdx = UKismetMathLibrary::RandomIntegerInRange(0, Montage_NormalAttackSet.Num() - 1);
+	ActivateNormalAttack_Multicast(MontageIdx);
+	PlayNormalAttackMontage(MontageIdx);
 }
 
-void ASTEnemyBase::ActivateNormalAttack_Multicast_Implementation()
+void ASTEnemyBase::ActivateNormalAttack_Multicast_Implementation(int MontageIdx)
 {
-	PlayNormalAttackMontage();
+	PlayNormalAttackMontage(MontageIdx);
 }
 
-void ASTEnemyBase::PlayNormalAttackMontage()
+void ASTEnemyBase::PlayNormalAttackMontage(int MontageIdx)
 {
+	if (!Montage_NormalAttackSet.IsValidIndex(MontageIdx))
+		return;
+
 	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
 	if (AnimInst)
 	{
-		AnimInst->Montage_Play(Montage_NormalAttack);
+		AnimInst->Montage_Play(Montage_NormalAttackSet[MontageIdx]);
 	}
 }
 
