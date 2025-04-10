@@ -116,7 +116,7 @@ void USTRescueHostageCondition::ConditionUpdated(int ObjectID, bool Success)
 
 		if (HostageInfos[i].Hostage)
 		{
-			// HostageInfos[i].Hostage->StopSpawnEnemy();
+			HostageInfos[i].Hostage->StopSpawnEnemy();
 		}
 	}
 

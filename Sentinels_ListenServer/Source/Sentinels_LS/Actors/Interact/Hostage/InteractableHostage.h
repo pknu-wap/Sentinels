@@ -7,20 +7,33 @@
 #include "Actors/MissionObject/MissionObject.h"
 #include "InteractableHostage.generated.h"
 
-/**
- * 
- */
+class USpawnEnemyComponent;
+
 UCLASS()
 class SENTINELS_LS_API AInteractableHostage : public AInteractableCharacter
 {
 	GENERATED_BODY()
 
 public:
+	AInteractableHostage();
+
+	/*
+		Actor Interface
+	*/
+protected:
+	virtual void BeginPlay() override;
+
+
+	/*
+		Hostage
+	*/
+public:
 	void SetHostageID(int InHostageID) { HostageID = InHostageID; }
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int HostageID = 0;
+
 
 	/*
 		Interactive Interaface
@@ -31,12 +44,22 @@ public:
 
 
 	/*
+		Spawn Enemy
+	*/
+public:
+	void StopSpawnEnemy();
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<USpawnEnemyComponent> SpawnComponent;
+
+
+	/*
 		Rescue Success
 	*/
 protected:
 	void RescueSuccessed();
 
-protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float InteractionHoldTime = 7.5f;
 

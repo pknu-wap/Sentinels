@@ -6,6 +6,20 @@
 #include "GameFramework/PlayerController.h"
 #include "Character/STCharacterBase.h"
 #include "STGameplayTags.h"
+#include "Components/SpawnEnemyComponent.h"
+
+AInteractableHostage::AInteractableHostage()
+{
+	SpawnComponent = CreateDefaultSubobject<USpawnEnemyComponent>(FName("SpawnComponent"));
+}
+
+void AInteractableHostage::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if(SpawnComponent)
+		SpawnComponent->StartSpawnEnemy();
+}
 
 void AInteractableHostage::Interact(UInteractComponent* InteractingComponent)
 {
@@ -62,6 +76,12 @@ void AInteractableHostage::Interact_Finish(UInteractComponent* InteractingCompon
 	}
 }
 
+void AInteractableHostage::StopSpawnEnemy()
+{
+	if(SpawnComponent)
+		SpawnComponent->StopSpawnEnemy();
+}
+
 void AInteractableHostage::RescueSuccessed()
 {
 	bIsInteractable = false;
@@ -80,7 +100,7 @@ void AInteractableHostage::RescueSuccessed()
 			ASTCharacterBase* Character = Cast<ASTCharacterBase>(PC->GetPawn());
 			if (Character)
 			{
-				Character->AddTag(FSTGameplayTags::Get().Character_Player_State_RescueHostage);
+				Character->RemoveTag(FSTGameplayTags::Get().Character_Player_State_RescueHostage);
 			}
 		}
 	}
