@@ -141,6 +141,23 @@ bool ASTEnemyBase::IsNormalAttackMontage(UAnimMontage* InMontage)
 	return false;
 }
 
+int ASTEnemyBase::GetRandomNormalAttackMontageIndex()
+{
+	const int32 NumMontages = Montage_NormalAttackSet.Num();
+
+	if (NumMontages <= 1)
+		return 0; // 하나뿐이면 어쩔 수 없음
+
+	int32 NewIndex;
+	do
+	{
+		NewIndex = FMath::RandRange(0, NumMontages - 1);
+	} while (NewIndex == LastNormalAttackMontageIndex);
+
+	LastNormalAttackMontageIndex = NewIndex;
+	return NewIndex;
+}
+
 void ASTEnemyBase::StopCurrentAnimMontage_Multicast_Implementation()
 {
 	StopAnimMontage();
@@ -148,7 +165,7 @@ void ASTEnemyBase::StopCurrentAnimMontage_Multicast_Implementation()
 
 void ASTEnemyBase::ActivateNormalAttack_Server_Implementation()
 {
-	int MontageIdx = UKismetMathLibrary::RandomIntegerInRange(0, Montage_NormalAttackSet.Num() - 1);
+	int MontageIdx = GetRandomNormalAttackMontageIndex();
 	ActivateNormalAttack_Multicast(MontageIdx);
 	PlayNormalAttackMontage(MontageIdx);
 }

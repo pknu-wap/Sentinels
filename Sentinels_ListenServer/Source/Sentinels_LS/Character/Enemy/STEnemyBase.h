@@ -33,6 +33,8 @@ public:
 	void StopCurrentAnimMontage_Multicast();
 
 	// Attack
+	int GetRandomNormalAttackMontageIndex();
+
 	UFUNCTION(Server, Reliable)
 	void ActivateNormalAttack_Server();
 
@@ -72,4 +74,7 @@ public:
 	
 public:
 	FOnEnemyDied Delegate_OnEnemyDied;
+
+private:
+	int LastNormalAttackMontageIndex;
 };
