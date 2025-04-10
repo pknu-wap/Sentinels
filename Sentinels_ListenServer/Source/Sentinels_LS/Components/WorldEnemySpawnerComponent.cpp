@@ -80,12 +80,12 @@ bool UWorldEnemySpawnerComponent::GetSpawnNavLocation(FNavLocation& OutLocation)
 	UNavigationSystemV1* NavSystem = Cast<UNavigationSystemV1>(GetWorld()->GetNavigationSystem());
 	if (!NavSystem) return false;
 
-	NavSystem->GetRandomReachablePointInRadius(GetOwner()->GetActorLocation(), SpawnableRadius_Outer, OutLocation);
+	NavSystem->GetRandomPointInNavigableRadius(GetOwner()->GetActorLocation(), SpawnableRadius_Outer, OutLocation);
 
 	int maxLoopIdx = 50; int currentLoopIdx = 0;
 	while (FVector::Dist2D(OutLocation.Location, GetOwner()->GetActorLocation()) < SpawnableRadius_Inner && currentLoopIdx <= maxLoopIdx)
 	{
-		NavSystem->GetRandomReachablePointInRadius(GetOwner()->GetActorLocation(), SpawnableRadius_Outer, OutLocation);
+		NavSystem->GetRandomPointInNavigableRadius(GetOwner()->GetActorLocation(), SpawnableRadius_Outer, OutLocation);
 		currentLoopIdx++;
 	}
 
