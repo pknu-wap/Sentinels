@@ -23,6 +23,9 @@ struct FDominationPointInfo
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bIsDominated = false;
+
+	UPROPERTY()
+	ADominationPoint* DominationPoint = nullptr;
 };
 
 UCLASS()

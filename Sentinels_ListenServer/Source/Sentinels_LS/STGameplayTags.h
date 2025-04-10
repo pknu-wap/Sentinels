@@ -34,7 +34,7 @@ public:
 	/////////  SpawnPoint  /////////
 	FGameplayTag SpawnPoint_DefenseCore;
 	FGameplayTag SpawnPoint_DominationPoint;
-	FGameplayTag SpawnPoint_NPC;
+	FGameplayTag SpawnPoint_Hostage;
 	FGameplayTag SpawnPoint_Rift;
 	FGameplayTag SpawnPoint_Spawner;
 	FGameplayTag SpawnPoint_DestructibleObject;

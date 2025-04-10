@@ -6,7 +6,7 @@
 #include "System/Mission/MissionCondition/STMissionConditionBase.h"
 #include "STRescueHostageCondition.generated.h"
 
-class AInteractableNPC;
+class AInteractableHostage;
 class ASpawnPointBase;
 
 USTRUCT(BlueprintType)
@@ -15,13 +15,16 @@ struct FHostageCInfo
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int NPCID = 0;
+	int HostageID = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<AInteractableNPC> SubClassOfNPC;
+	TSubclassOf<AInteractableHostage> SubClassOfHostage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bIsRescued = false;
+
+	UPROPERTY()
+	AInteractableHostage* Hostage;
 };
 
 

@@ -83,9 +83,9 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 		FString("SpawnPoint DominationPoint")
 	);
 
-	GameplayTags.SpawnPoint_NPC = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("SpawnPoint.NPC"),
-		FString("SpawnPoint NPC")
+	GameplayTags.SpawnPoint_Hostage = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("SpawnPoint.Hostage"),
+		FString("SpawnPoint Hostage")
 	);
 
 	GameplayTags.SpawnPoint_Rift = UGameplayTagsManager::Get().AddNativeGameplayTag(

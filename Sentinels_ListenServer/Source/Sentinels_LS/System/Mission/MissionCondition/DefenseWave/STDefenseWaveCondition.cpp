@@ -42,10 +42,10 @@ void USTDefenseWaveCondition::MissionActivated()
 	SpawnLocation = SpawnPoints[Rand]->GetActorLocation();
 	SpawnRotation = SpawnPoints[Rand]->GetActorRotation();
 
-	ADefenseCore* core = GetWorld()->SpawnActor<ADefenseCore>(SubclassOfDefenseCore, SpawnLocation, SpawnRotation);
-	if (core)
+	Core = GetWorld()->SpawnActor<ADefenseCore>(SubclassOfDefenseCore, SpawnLocation, SpawnRotation);
+	if (Core)
 	{
-		core->Delegate_MissionConditionUpdate.AddUObject(this, &USTDefenseWaveCondition::ConditionUpdated);
+		Core->Delegate_MissionConditionUpdate.AddUObject(this, &USTDefenseWaveCondition::ConditionUpdated);
 	}
 }
 
@@ -57,6 +57,12 @@ void USTDefenseWaveCondition::MissionDeactivated(bool IsCleared)
 void USTDefenseWaveCondition::ConditionUpdated(int ObjectID, bool Success)
 {
 	if (Success) return;
+
+	// Stop Spawn Enemy
+	if (Core)
+	{
+		Core->StopSpawnEnemy();
+	}
 
 	// Defense Core is Broken
 	ASTGameState* GameState = Cast<ASTGameState>(GetWorld()->GetGameState());
@@ -72,6 +78,12 @@ void USTDefenseWaveCondition::ConditionUpdated(int ObjectID, bool Success)
 
 void USTDefenseWaveCondition::TimeLimitEnded()
 {
+	// Stop Spawn Enemy
+	if (Core)
+	{
+		Core->StopSpawnEnemy();
+	}
+
 	// Time Limit Success
 	ASTGameState* GameState = Cast<ASTGameState>(GetWorld()->GetGameState());
 	if (GameState)

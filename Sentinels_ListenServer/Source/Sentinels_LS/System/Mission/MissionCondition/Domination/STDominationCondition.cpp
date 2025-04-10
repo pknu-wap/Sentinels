@@ -78,6 +78,7 @@ void USTDominationCondition::MissionActivated()
 		ADominationPoint* DP = GetWorld()->SpawnActor<ADominationPoint>(DominationPointInfos[i].SubClassOfDominationPoint, SpawnLocation, SpawnRotation);
 		if (DP)
 		{
+			DominationPointInfos[i].DominationPoint = DP;
 			DP->SetObjectID(DominationPointInfos[i].DominationPID);
 			DP->Delegate_MissionConditionUpdate.AddUObject(this, &USTDominationCondition::ConditionUpdated);
 		}
@@ -96,6 +97,11 @@ void USTDominationCondition::ConditionUpdated(int ObjectID, bool Success)
 		if (DominationPointInfos[i].DominationPID == ObjectID)
 		{
 			DominationPointInfos[i].bIsDominated = Success;
+		}
+
+		if (DominationPointInfos[i].DominationPoint)
+		{
+			DominationPointInfos[i].DominationPoint->Destroy();
 		}
 	}
 
