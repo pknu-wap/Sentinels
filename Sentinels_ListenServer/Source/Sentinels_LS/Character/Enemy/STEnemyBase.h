@@ -26,14 +26,22 @@ protected:
 	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 public:
+	bool IsNormalAttackMontage(UAnimMontage* InMontage);
+
+public:
+	UFUNCTION(Server, Reliable)
+	void StopCurrentAnimMontage_Multicast();
+
 	// Attack
+	int GetRandomNormalAttackMontageIndex();
+
 	UFUNCTION(Server, Reliable)
 	void ActivateNormalAttack_Server();
 
 	UFUNCTION(NetMulticast, Reliable)
-	void ActivateNormalAttack_Multicast();
+	void ActivateNormalAttack_Multicast(int MontageIdx);
 
-	void PlayNormalAttackMontage();
+	void PlayNormalAttackMontage(int MontageIdx);
 
 	// Hit
 	UFUNCTION(NetMulticast, Reliable)
@@ -53,7 +61,7 @@ protected:
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
-	UAnimMontage* Montage_NormalAttack;
+	TArray<UAnimMontage*> Montage_NormalAttackSet;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
 	UAnimMontage* Montage_Knockback;
@@ -66,4 +74,7 @@ public:
 	
 public:
 	FOnEnemyDied Delegate_OnEnemyDied;
+
+private:
+	int LastNormalAttackMontageIndex;
 };

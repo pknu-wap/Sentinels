@@ -67,7 +67,7 @@ void UBTT_Enemy_NormalAttack::OnIntrruptedCallback(UAnimMontage* Montage, bool I
 	{
 		// Should Check Montage Type ( Don't Stop Task When Interrupted by AttackMontage! )
 		UAnimMontage* CurrentMontage = Enemy->GetCurrentMontage();
-		if (Enemy && CurrentMontage != Enemy->Montage_NormalAttack)
+		if (Enemy && !Enemy->IsNormalAttackMontage(CurrentMontage))
 		{
 			IsMontageIntrrupted = true;
 		}
