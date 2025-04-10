@@ -53,6 +53,7 @@ protected:
 protected:
 	void BindAttackDelegate();
 
+	bool CanDoAttack() const;
 	virtual void NormalAttack_Pressed();
 	void PlayMontage_NormalAttack(int currentCombo);
 
@@ -84,6 +85,8 @@ protected:
 		Skills
 	*/
 protected:
+	bool CanDoSkill() const;
+
 	virtual void Skill_Q_Pressed();
 	void PlayMontage_Skill_Q();
 

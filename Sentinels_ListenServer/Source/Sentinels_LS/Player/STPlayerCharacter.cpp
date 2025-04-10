@@ -240,8 +240,21 @@ void ASTPlayerCharacter::BindAttackDelegate()
 	}
 }
 
+bool ASTPlayerCharacter::CanDoAttack() const
+{
+	if (HasTag(FSTGameplayTags::Get().Character_State_Skill) 
+		|| HasTag(FSTGameplayTags::Get().Character_State_Jump))
+		return false;
+
+	return true;
+}
+
 void ASTPlayerCharacter::NormalAttack_Pressed()
 {
+	if (!CanDoAttack()) return;
+
+	AddTag(FSTGameplayTags::Get().Character_State_Attack);
+
 	if (CurrentCombo == 0)
 	{
 		CurrentCombo++;
@@ -312,6 +325,9 @@ void ASTPlayerCharacter::OnMontageEnded_ResetAttackInfo(UAnimMontage* Montage, b
 	if (bInterrupted && Montage == Montage_NormalAttack)
 		return;
 
+	RemoveTag(FSTGameplayTags::Get().Character_State_Attack);
+	RemoveTag(FSTGameplayTags::Get().Character_State_Skill);
+
 	ResetAttackInfo();
 }
 
@@ -327,13 +343,25 @@ void ASTPlayerCharacter::ResetAttackInfo()
 
 #pragma region Region_Skills
 
+bool ASTPlayerCharacter::CanDoSkill() const
+{
+	if (HasTag(FSTGameplayTags::Get().Character_State_Skill)
+		|| HasTag(FSTGameplayTags::Get().Character_State_Jump))
+		return false;
+
+	return true;
+}
+
 void ASTPlayerCharacter::Skill_Q_Pressed()
 {
+	if (!CanDoSkill()) return;
+
 	USkillComponent* SkillComp = GetController()->GetComponentByClass<USkillComponent>();
 	if (SkillComp && SkillComp->CanActivateSkill(0))
 	{
 		SkillComp->ActivateSkill(0);
 
+		AddTag(FSTGameplayTags::Get().Character_State_Skill);
 		PlayMontage_Skill_Q();
 		Skill_Q_Pressed_Server();
 	}
@@ -363,11 +391,14 @@ void ASTPlayerCharacter::Skill_Q_Pressed_Multicast_Implementation()
 
 void ASTPlayerCharacter::Skill_W_Pressed()
 {
+	if (!CanDoSkill()) return;
+
 	USkillComponent* SkillComp = GetController()->GetComponentByClass<USkillComponent>();
 	if (SkillComp && SkillComp->CanActivateSkill(1))
 	{
 		SkillComp->ActivateSkill(1);
 
+		AddTag(FSTGameplayTags::Get().Character_State_Skill);
 		PlayMontage_Skill_W();
 		Skill_W_Pressed_Server();
 	}
@@ -397,11 +428,14 @@ void ASTPlayerCharacter::Skill_W_Pressed_Multicast_Implementation()
 
 void ASTPlayerCharacter::Skill_E_Pressed()
 {
+	if (!CanDoSkill()) return;
+
 	USkillComponent* SkillComp = GetController()->GetComponentByClass<USkillComponent>();
 	if (SkillComp && SkillComp->CanActivateSkill(2))
 	{
 		SkillComp->ActivateSkill(2);
 
+		AddTag(FSTGameplayTags::Get().Character_State_Skill);
 		PlayMontage_Skill_E();
 		Skill_E_Pressed_Server();
 	}
@@ -431,11 +465,14 @@ void ASTPlayerCharacter::Skill_E_Pressed_Multicast_Implementation()
 
 void ASTPlayerCharacter::Skill_R_Pressed()
 {
+	if (!CanDoSkill()) return;
+
 	USkillComponent* SkillComp = GetController()->GetComponentByClass<USkillComponent>();
 	if (SkillComp && SkillComp->CanActivateSkill(3))
 	{
 		SkillComp->ActivateSkill(3);
 
+		AddTag(FSTGameplayTags::Get().Character_State_Skill);
 		PlayMontage_Skill_R();
 		Skill_R_Pressed_Server();
 	}
