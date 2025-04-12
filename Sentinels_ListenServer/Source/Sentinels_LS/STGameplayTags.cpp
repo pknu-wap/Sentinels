@@ -11,6 +11,21 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 	/*
 		Character
 	*/
+	GameplayTags.Character_State_Jump = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Character.State.Jump"),
+		FString("Character State Jump")
+	);
+
+	GameplayTags.Character_State_Attack = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Character.State.Attack"),
+		FString("Character State Attack")
+	);
+
+	GameplayTags.Character_State_Skill = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Character.State.Skill"),
+		FString("Character State Skill")
+	);
+
 	GameplayTags.Character_Player_State_RepairRift = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Character.Player.State.RepairRift"),
 		FString("Player is Reparing Rift")

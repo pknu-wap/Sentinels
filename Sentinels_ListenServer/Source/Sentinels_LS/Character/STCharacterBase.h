@@ -33,11 +33,18 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+protected:
+	virtual void Jump() override;
+
+	UFUNCTION()
+	void OnCharacterLanded(const FHitResult& Hit);
+
+
 public:
 	void AddTag(const FGameplayTag& TagToAdd) { TagContainer.AddTag(TagToAdd); }
 	void RemoveTag(const FGameplayTag& TagToRemove) { TagContainer.RemoveTag(TagToRemove); }
 	void RemoveTags(const FGameplayTagContainer& TagsToRemove) { TagContainer.RemoveTags(TagsToRemove); }
-	bool HasTag(const FGameplayTag& TagToCheck) { return TagContainer.HasTag(TagToCheck); }
+	bool HasTag(const FGameplayTag& TagToCheck) const { return TagContainer.HasTag(TagToCheck); }
 
 protected:
 	UPROPERTY(Replicated, VisibleAnywhere)
