@@ -34,6 +34,12 @@ protected:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 	/*
+		ACharacter Interface
+	*/
+	virtual void Jump() override;
+
+
+	/*
 		Input	
 	*/
 public:
@@ -53,6 +59,7 @@ protected:
 protected:
 	void BindAttackDelegate();
 
+	bool CanDoAttack() const;
 	virtual void NormalAttack_Pressed();
 	void PlayMontage_NormalAttack(int currentCombo);
 
@@ -84,6 +91,8 @@ protected:
 		Skills
 	*/
 protected:
+	bool CanDoSkill() const;
+
 	virtual void Skill_Q_Pressed();
 	void PlayMontage_Skill_Q();
 

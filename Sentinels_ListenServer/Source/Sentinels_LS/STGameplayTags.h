@@ -15,6 +15,9 @@ public:
 	///////////  Tags  ///////////
 
 	////////// Character /////////
+	FGameplayTag Character_State_Jump;
+	FGameplayTag Character_State_Attack;
+	FGameplayTag Character_State_Skill;
 	FGameplayTag Character_Player_State_RepairRift;
 	FGameplayTag Character_Player_State_RescueHostage;
 	FGameplayTag Character_State_Stunned;
