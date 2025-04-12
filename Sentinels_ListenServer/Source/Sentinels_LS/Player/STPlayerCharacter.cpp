@@ -222,6 +222,14 @@ float ASTPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 	return 0.0f;
 }
 
+void ASTPlayerCharacter::Jump()
+{
+	if (HasTag(FSTGameplayTags::Get().Character_State_Attack) 
+		|| HasTag(FSTGameplayTags::Get().Character_State_Skill)) return;
+
+	Super::Jump();
+}
+
 #pragma region Region_NormalAttack
 
 void ASTPlayerCharacter::BindAttackDelegate()
