@@ -41,9 +41,13 @@ void UBTT_Enemy_NormalAttack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8*
 {
 	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
 
-	if (!IsMontagePlaying || IsMontageIntrrupted)
+	if (!IsMontagePlaying)
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+	}
+	else if (IsMontageIntrrupted)
+	{
+		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 	}
 }
 

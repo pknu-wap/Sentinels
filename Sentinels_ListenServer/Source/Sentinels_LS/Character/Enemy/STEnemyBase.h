@@ -25,6 +25,9 @@ protected:
 protected:
 	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
+private:
+	FTimerHandle Handle_Stunned;
+
 public:
 	bool IsNormalAttackMontage(UAnimMontage* InMontage);
 
