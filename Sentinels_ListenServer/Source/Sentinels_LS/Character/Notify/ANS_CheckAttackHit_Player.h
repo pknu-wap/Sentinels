@@ -7,11 +7,14 @@
 #include "Animation/AnimNotifies/AnimNotifyState.h"
 #include "STEnums.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "DamageType/STDamageTypes.h"
 #include "ANS_CheckAttackHit_Player.generated.h"
 
 class ASTPlayerCharacter;
+class USTPlayerStatusComponent;
 class UDamageType;
 class USTBaseDamageType;
+struct FSTPointDamageEvent;
 
 UCLASS()
 class SENTINELS_LS_API UANS_CheckAttackHit_Player : public UAnimNotifyState
@@ -46,8 +49,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = Damage)
 	float DamagePercent = 1.f;
 
-
-
 private:
 	TArray<AActor*> DamagedActors;
 
@@ -55,5 +56,11 @@ private:
 	ASTPlayerCharacter* Player;
 
 	UPROPERTY()
+	USTPlayerStatusComponent* StatusComp;
+
+	UPROPERTY()
 	float FinalDamage = 10.f;
+
+	UPROPERTY()
+	FSTPointDamageEvent DamageEvent;
 };

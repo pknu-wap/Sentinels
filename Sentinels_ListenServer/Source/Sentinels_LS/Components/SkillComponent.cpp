@@ -3,6 +3,7 @@
 
 #include "Components/SkillComponent.h"
 #include "GameFramework/Character.h"
+#include "Components/STPlayerStatusComponent.h"
 
 // Sets default values for this component's properties
 USkillComponent::USkillComponent()
@@ -68,8 +69,14 @@ bool USkillComponent::CanActivateSkill(int SkillIdx)
 
 void USkillComponent::StartCoolDown(int SkillIdx)
 {
+	AController* Controller = Cast<AController>(GetOwner());
+	APawn* Player = Controller->GetPawn();
+
+	USTPlayerStatusComponent* StatusComp = Player->GetComponentByClass<USTPlayerStatusComponent>();
+	if (!StatusComp) return;
+
 	if (Skill_CoolDowns.IsValidIndex(SkillIdx) && ClassSkills.IsValidIndex(SkillIdx))
-		Skill_CoolDowns[SkillIdx] = ClassSkills[SkillIdx].SkillCoolTime;
+		Skill_CoolDowns[SkillIdx] = ClassSkills[SkillIdx].SkillCoolTime * StatusComp->CDR;
 }
 
 void USkillComponent::Tick_SkillCoolDown(float DeltaTime)
