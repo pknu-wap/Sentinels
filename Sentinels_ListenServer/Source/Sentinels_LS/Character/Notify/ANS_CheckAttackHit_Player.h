@@ -10,6 +10,8 @@
 #include "ANS_CheckAttackHit_Player.generated.h"
 
 class ASTPlayerCharacter;
+class UDamageType;
+class USTBaseDamageType;
 
 UCLASS()
 class SENTINELS_LS_API UANS_CheckAttackHit_Player : public UAnimNotifyState
@@ -20,6 +22,10 @@ public:
 	virtual void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference);
 	virtual void NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference);
 	virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference);
+
+private:
+	void CalculateFinalDamage();
+	TSubclassOf<UDamageType> GetDamageType() const;
 
 public:
 	UPROPERTY(EditAnywhere, Category = Damage)
@@ -35,10 +41,19 @@ public:
 	TEnumAsByte<EDrawDebugTrace::Type> DebugType = EDrawDebugTrace::None;
 
 	UPROPERTY(EditAnywhere, Category = Damage)
-	float Damage = 10.f;
+	TSubclassOf<USTBaseDamageType> DamageType;
 
+	UPROPERTY(EditAnywhere, Category = Damage)
+	float DamagePercent = 1.f;
+
+
+
+private:
 	TArray<AActor*> DamagedActors;
 
 	UPROPERTY()
 	ASTPlayerCharacter* Player;
+
+	UPROPERTY()
+	float FinalDamage = 10.f;
 };

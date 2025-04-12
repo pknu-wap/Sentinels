@@ -20,6 +20,7 @@ public:
 	const FName BBKey_TargetLocation = FName("TargetLocation");
 	const FName BBKey_TargetDistance = FName("TargetDistance");
 	const FName BBKey_Stunned = FName("Stunned");
+	const FName BBKey_Time_Stunned = FName("Time_Stunned");
 	const FName BBKey_bShouldReturn = FName("bShouldReturn");
 	const FName BBKey_StartLocation = FName("StartLocation");
 
@@ -43,8 +44,12 @@ public:
 	UFUNCTION()
 	virtual void OnTargetDetected(AActor* actor, const FAIStimulus Stimulus);
 
+	// Target
 	void SetTarget(AActor* InTarget);
 	void RestoreTarget();
+
+	// Stunned
+	void ApplyStun(float StunTime);
 
 protected:
 	FTimerHandle StoreTargetHandle;

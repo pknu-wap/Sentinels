@@ -40,6 +40,6 @@ public:
 	bool HasTag(const FGameplayTag& TagToCheck) { return TagContainer.HasTag(TagToCheck); }
 
 protected:
-	UPROPERTY(Replicated, VisibleAnywhere)
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly)
 	FGameplayTagContainer TagContainer;
 };
