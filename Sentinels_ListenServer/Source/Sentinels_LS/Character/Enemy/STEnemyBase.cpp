@@ -146,7 +146,7 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 		{
 			StopCurrentAnimMontage_Multicast();
 			FVector LaunchDir = (GetActorLocation() - DamageCauser->GetActorLocation()).GetSafeNormal2D();
-			LaunchCharacter(LaunchDir * 1500.f, false, false);
+			LaunchCharacter(LaunchDir * 750.f, false, false);
 		}
 	}
 
