@@ -22,9 +22,10 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 		FString("Character Select")
 	);
 
-	GameplayTags.Widget_Lobby_SkillSelect = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("Widget.Lobby.SkillSelect"),
-		FString("Skill Select")
+	GameplayTags.Widget_Lobby_LevelSelect = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Widget.Lobby.LevelSelect"),
+		FString("Level Select")
+	);
 
 	/*	
 		Character
@@ -122,5 +123,21 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 		FString("SpawnPoint DestructibleObject")
 	);
 
-	
+	/*
+		Levels
+	*/
+	GameplayTags.Level_Lobby = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Level.Lobby"),
+		FString("Lobby")
+	);
+
+	GameplayTags.Level_AbandonedFactory = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Level.AbandonedFactory"),
+		FString("AbandonedFactory")
+	);
+
+	GameplayTags.Level_EX2 = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Level.EX2"),
+		FString("EX2")
+	);
 }

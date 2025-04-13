@@ -14,6 +14,7 @@
 #include "Materials/Material.h"
 #include "TimerManager.h"
 #include "Sentinels_LS.h"
+#include "Components/SkeletalMeshComponent.h"
 
 // Sets default values
 ASTDummyPlayer::ASTDummyPlayer() :
@@ -25,15 +26,35 @@ ASTDummyPlayer::ASTDummyPlayer() :
 
 	bReplicates = true;
 
-	SKComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMesh Component"));
-	SKComponent->SetIsReplicated(true);
-
-	RootComponent = SKComponent;
+	SKMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Character Mesh"));
+	RootComponent = SKMeshComponent;
+	SKMeshComponent->SetIsReplicated(true);
 
 	CaptureComponent = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("Capture Component"));
-	//CaptureComponent->SetIsReplicated(true); // 위치 고정시킬 거니 뭐.. 굳이?
+	CaptureComponent->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform);
 
-	CaptureComponent->AttachToComponent(SKComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	for (uint8 i = 0; i <= static_cast<uint8>(ESKParts::Feet); i++)
+	{
+		FName componentName = *FString::Printf(TEXT("SkeletalMeshComponent_%d"), i);
+		AddSKComponents(componentName);
+	}
+
+	FName greatSword = *FString::Printf(TEXT("GreatSword"));
+	AddSKComponents(greatSword);
+
+	FName katana = *FString::Printf(TEXT("Katana"));
+	AddSKComponents(katana);
+
+	FName blade_L = *FString::Printf(TEXT("Blade_L"));
+	AddSKComponents(blade_L);
+
+	FName blade_R = *FString::Printf(TEXT("Blade_R"));
+	AddSKComponents(blade_R);
+
+	GetSKMeshComponent(ESKParts::GreatSword)->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("Weapon_R"));
+	GetSKMeshComponent(ESKParts::Katana)->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("Weapon_R"));
+	GetSKMeshComponent(ESKParts::Blade_L)->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("Weapon_L"));
+	GetSKMeshComponent(ESKParts::Blade_R)->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("Weapon_R"));
 }
 
 // Called when the game starts or when spawned
@@ -71,6 +92,11 @@ UTextureRenderTarget2D* ASTDummyPlayer::GetTextureRenderTarget2D()
 	return CaptureComponent->TextureTarget;
 }
 
+USkeletalMeshComponent* ASTDummyPlayer::GetSKMeshComponent(ESKParts partName)
+{
+	return SKMeshComponents[static_cast<uint8>(partName)];
+}
+
 ASTDummyPlayer* ASTDummyPlayer::FindByID(UObject* WorldContextObject, FUniqueNetIdRepl ID)
 {
 	if (!WorldContextObject)
@@ -87,10 +113,18 @@ ASTDummyPlayer* ASTDummyPlayer::FindByID(UObject* WorldContextObject, FUniqueNet
 	return nullptr;
 }
 
+void ASTDummyPlayer::AddSKComponents(FName ComponentName)
+{
+	USkeletalMeshComponent* newComp = CreateDefaultSubobject<USkeletalMeshComponent>(ComponentName);
+	newComp->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	newComp->SetIsReplicated(true);
+	SKMeshComponents.Add(newComp);
+}
+
 void ASTDummyPlayer::OnRep_PlayerID()
 {
-	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]() {
+	FTimerHandle timerHandle;
+	GetWorld()->GetTimerManager().SetTimer(timerHandle, [this]() {
 
 		ASTPlayerController* pc = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
 		if (!pc || !pc->GetLocalPlayer())
@@ -103,13 +137,31 @@ void ASTDummyPlayer::OnRep_PlayerID()
 
 void ASTDummyPlayer::OnRep_CurrentClass()
 {
-	USkeletalMesh** skMesh = SKMap.Find(CurrentClass);
+	USkeletalMesh** weapon = WeaponMap.Find(CurrentClass);
 	TSubclassOf<UAnimInstance>* animInstance = AIMap.Find(CurrentClass);
 
-	if (skMesh == nullptr || animInstance == nullptr)
+	if (weapon == nullptr || animInstance == nullptr)
 		return;
 
-	SKComponent->SetSkeletalMesh(*skMesh);
-	SKComponent->SetAnimInstanceClass(*animInstance);
+	for (int i = static_cast<uint8>(ESKParts::GreatSword); i <= static_cast<uint8>(ESKParts::Blade_R); i++)
+		SKMeshComponents[i]->SetSkeletalMesh(nullptr);
+
+	switch (CurrentClass)
+	{
+	case ESTClassType::GreatSword:
+		GetSKMeshComponent(ESKParts::GreatSword)->SetSkeletalMesh(*weapon);
+		break;
+	case ESTClassType::Katana:
+		GetSKMeshComponent(ESKParts::Katana)->SetSkeletalMesh(*weapon);
+		break;
+	case ESTClassType::DualBlade:
+		GetSKMeshComponent(ESKParts::Blade_L)->SetSkeletalMesh(*weapon);
+		GetSKMeshComponent(ESKParts::Blade_R)->SetSkeletalMesh(*weapon);
+		break;
+	case ESTClassType::Magician:
+		break;
+	}
+
+	SKMeshComponent->SetAnimInstanceClass(*animInstance);
 }
 

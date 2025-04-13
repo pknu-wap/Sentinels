@@ -9,6 +9,7 @@
 
 class USceneCaptureComponent2D;
 class UMaterial;
+class USkeletalMeshComponent;
 
 UCLASS()
 class SENTINELS_LS_API ASTDummyPlayer : public AActor
@@ -41,9 +42,15 @@ public:
 
 	UMaterial* GetMaterial() { return Material; }
 
+	UFUNCTION(BlueprintCallable)
+	USkeletalMeshComponent* GetSKMeshComponent(ESKParts partName);
+
 public:
 	UFUNCTION(BlueprintCallable, Category = "Dummy Player")
 	static ASTDummyPlayer* FindByID(UObject* WorldContextObject, FUniqueNetIdRepl PlayerID);
+
+protected:
+	void AddSKComponents(FName ComponentName);
 
 protected:
 	UFUNCTION()
@@ -59,11 +66,14 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Capture Component", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USceneCaptureComponent2D> CaptureComponent;
 
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "SkeletalMesh Component", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<USkeletalMeshComponent> SKComponent;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "SK Component", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<USkeletalMeshComponent> SKMeshComponent;
+
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "SkeletalMesh Components", meta = (AllowPrivateAccess = "true"))
+	TArray<USkeletalMeshComponent*> SKMeshComponents;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SkeletalMesh", meta = (AllowPrivateAccess = "true"))
-	TMap<ESTClassType, USkeletalMesh*> SKMap;
+	TMap<ESTClassType, USkeletalMesh*> WeaponMap;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimInstance", meta = (AllowPrivateAccess = "true"))
 	TMap<ESTClassType, TSubclassOf<UAnimInstance>> AIMap;

@@ -114,6 +114,8 @@ void ASTPlayerController::UpdatePlayerClass_Implementation(ESTClassType InClass)
 
 	AController* PC = this;
 	GetWorldTimerManager().SetTimerForNextTick([GameMode, PC]() { GameMode->RestartPlayer(PC); });
+
+	//GetWorld()->GetGameInstance()->
 	// GameMode->RestartPlayer(this);
 }
 

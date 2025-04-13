@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Actors/Interact/InteractableActor.h"
+#include "STGameplayTags.h"
 #include "STDimensionDrift.generated.h"
 
 /**
@@ -23,15 +24,19 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
 
-	/*
-		Interactive Interface
-	*/
+public:
+	UFUNCTION(BlueprintCallable)
+	FString GetLevelName(const FGameplayTag LevelTag) { return LevelMap.Find(LevelTag)->GetAssetName(); }
 
 protected:
 	virtual void Interact(UInteractComponent* InteractingComponent) override;
 	virtual void Interact_Finish(UInteractComponent* InteractingComponent) override;
 	virtual void ShowInteractiveUI(UInteractComponent* InteractingComponent) override;
 	virtual void HideInteractiveUI(UInteractComponent* InteractingComponent) override;
+
+private:
+	UFUNCTION()
+	void HandleAllPlayerIsReady(FGameplayTag NewGameLevel);
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -42,4 +47,10 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "WBP")
 	TSubclassOf<UUserWidget> Widget_CharacterSelectClass;
+
+	UPROPERTY(EditAnywhere, Category = "WBP")
+	TSubclassOf<UUserWidget> Widget_LevelSelectClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level", meta = (AllowPrivateAccess = "true"))
+	TMap<FGameplayTag, TSoftObjectPtr<UWorld>> LevelMap;
 };

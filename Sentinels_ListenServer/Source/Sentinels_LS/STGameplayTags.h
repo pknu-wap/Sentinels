@@ -21,7 +21,7 @@ public:
 	//////////  Widget   /////////
 	FGameplayTag Widget_Lobby_Loadout;
 	FGameplayTag Widget_Lobby_CharacterSelect;
-	FGameplayTag Widget_Lobby_SkillSelect;
+	FGameplayTag Widget_Lobby_LevelSelect;
 
 	//////////  Mission  /////////
 	FGameplayTag Mission_Domination;
@@ -41,6 +41,11 @@ public:
 	FGameplayTag SpawnPoint_Rift;
 	FGameplayTag SpawnPoint_Spawner;
 	FGameplayTag SpawnPoint_DestructibleObject;
+
+	/////////  Level  /////////
+	FGameplayTag Level_Lobby;
+	FGameplayTag Level_AbandonedFactory;
+	FGameplayTag Level_EX2;
 
 private:
 	static FSTGameplayTags GameplayTags;

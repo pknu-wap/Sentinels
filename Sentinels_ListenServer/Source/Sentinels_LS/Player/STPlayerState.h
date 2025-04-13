@@ -16,4 +16,5 @@ class SENTINELS_LS_API ASTPlayerState : public APlayerState
 
 public:
 	ASTPlayerState();
+
 };

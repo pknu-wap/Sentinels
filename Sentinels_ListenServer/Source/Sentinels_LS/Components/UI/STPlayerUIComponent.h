@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/UI/STUIComponent_Base.h"
-#include "STEnums.h"
+#include "STGameplayTags.h"
 #include "STPlayerUIComponent.generated.h"
 
 /**
@@ -42,6 +42,12 @@ public:
 	const bool GetbIsReady() const { return bIsReady; }
 
 	UFUNCTION(BlueprintCallable)
+	const FGameplayTag GetCurrentLevelTag();
+
+	UFUNCTION(BlueprintCallable)
+	void SetCurrentLevelTag(FGameplayTag LevelTag);
+
+	UFUNCTION(BlueprintCallable)
 	const TArray<FUniqueNetIdRepl>& GetPlayerID() const { return PlayerID; }
 
 public:
@@ -64,6 +70,9 @@ public:
 	void ClientRPCUpdateUI(FGameplayTag WidgetTag);
 
 	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void ServerRPCUpdateUI(FGameplayTag WidgetTag);
+
+	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void ServerRPCRegisterPlayerID(const FUniqueNetIdRepl& ID);
 
 	UFUNCTION(Server, Reliable, BlueprintCallable)
@@ -83,6 +92,9 @@ public:
 	void UpdateLoadoutUI();
 
 	UFUNCTION(BlueprintCallable)
+	void UpdateCurrentGameLevelUI();
+
+	UFUNCTION(BlueprintCallable)
 	void UpdateCharacterSelectUI();
 
 	/*
@@ -100,15 +112,10 @@ protected:
 	/*
 		Server
 	*/
-	
-
 
 protected:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Lobby", meta = (AllowPrivateAccess = "true"))
 	bool bIsReady;
-
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Lobby", meta = (AllowPrivateAccess = "true"))
-	ESTClassType STClassType;
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Lobby", meta = (AllowPrivateAccess = "true"))
 	TArray<FUniqueNetIdRepl> PlayerID;
