@@ -11,6 +11,7 @@
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Player/STPlayerCharacter.h"
@@ -18,7 +19,7 @@
 ASTEnemyBase_AIController::ASTEnemyBase_AIController(const FObjectInitializer& object_initializer)
 	: Super(object_initializer)
 {
-	PrimaryActorTick.bStartWithTickEnabled = false;
+	PrimaryActorTick.bStartWithTickEnabled = true;
 
 	BTComponent = object_initializer.CreateDefaultSubobject<UBehaviorTreeComponent>(this, TEXT("BehaviorComp"));
 	Blackboard = object_initializer.CreateDefaultSubobject<UBlackboardComponent>(this, TEXT("BlackboardComp"));
@@ -41,6 +42,7 @@ void ASTEnemyBase_AIController::BeginPlay()
 		RunBehaviorTree(BehaviorTree);
 		BTComponent->StartTree(*BehaviorTree);
 		Blackboard->SetValueAsFloat(BBKey_TargetDistance, 10000);
+		Blackboard->SetValueAsFloat(BBKey_Time_Stunned, 1.f);
 	}
 }
 
@@ -123,6 +125,22 @@ void ASTEnemyBase_AIController::RestoreTarget()
 {
 	if(IsValid(StoredTarget) && IsValid(Blackboard))
 		Blackboard->SetValueAsObject(BBKey_Target, StoredTarget);
+}
+
+void ASTEnemyBase_AIController::ApplyStun(float StunTime)
+{
+	if (IsValid(Blackboard))
+	{
+		float currentStunTime = Blackboard->GetValueAsFloat(BBKey_Time_Stunned);
+
+		if (currentStunTime == StunTime)
+		{
+			StunTime += 0.01;
+		}
+
+		Blackboard->SetValueAsFloat(BBKey_Time_Stunned, StunTime);
+		Blackboard->SetValueAsBool(BBKey_Stunned, true);
+	}
 }
 
 void ASTEnemyBase_AIController::SetAIPerception()

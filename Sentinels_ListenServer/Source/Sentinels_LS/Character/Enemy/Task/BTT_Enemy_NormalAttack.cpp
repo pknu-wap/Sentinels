@@ -41,9 +41,13 @@ void UBTT_Enemy_NormalAttack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8*
 {
 	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
 
-	if (!IsMontagePlaying || IsMontageIntrrupted)
+	if (!IsMontagePlaying)
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+	}
+	else if (IsMontageIntrrupted)
+	{
+		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 	}
 }
 
@@ -67,7 +71,7 @@ void UBTT_Enemy_NormalAttack::OnIntrruptedCallback(UAnimMontage* Montage, bool I
 	{
 		// Should Check Montage Type ( Don't Stop Task When Interrupted by AttackMontage! )
 		UAnimMontage* CurrentMontage = Enemy->GetCurrentMontage();
-		if (Enemy && CurrentMontage != Enemy->Montage_NormalAttack)
+		if (Enemy && !Enemy->IsNormalAttackMontage(CurrentMontage))
 		{
 			IsMontageIntrrupted = true;
 		}

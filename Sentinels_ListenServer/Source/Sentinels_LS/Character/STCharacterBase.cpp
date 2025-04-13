@@ -3,6 +3,7 @@
 
 #include "Character/STCharacterBase.h"
 #include "Net/UnrealNetwork.h"
+#include "STGameplayTags.h"
 
 // Sets default values
 ASTCharacterBase::ASTCharacterBase(const FObjectInitializer& ObjectInitializer)
@@ -17,7 +18,8 @@ ASTCharacterBase::ASTCharacterBase(const FObjectInitializer& ObjectInitializer)
 void ASTCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	LandedDelegate.AddDynamic(this, &ASTCharacterBase::OnCharacterLanded);
 }
 
 void ASTCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -39,5 +41,19 @@ void ASTCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+void ASTCharacterBase::Jump()
+{
+	if (HasTag(FSTGameplayTags::Get().Character_State_Jump)) return;
+
+	Super::Jump();
+
+	AddTag(FSTGameplayTags::Get().Character_State_Jump);
+}
+
+void ASTCharacterBase::OnCharacterLanded(const FHitResult& Hit)
+{
+	RemoveTag(FSTGameplayTags::Get().Character_State_Jump);
 }
 

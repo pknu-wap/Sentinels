@@ -15,7 +15,8 @@ public class Sentinels_LS : ModuleRules
             "UMG", "Slate", "SlateCore",
             "OnlineSubsystem", "OnlineSubsystemUtils",
             "GeometryCollectionEngine", "FieldSystemEngine",
-            "AnimationBudgetAllocator"
+            "AnimationBudgetAllocator",
+            "MotionWarping"
          });
 
         PrivateIncludePaths.Add("Sentinels_LS");

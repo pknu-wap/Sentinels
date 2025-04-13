@@ -16,6 +16,8 @@
 #include "SkeletalMeshComponentBudgeted.h"
 #include "IAnimationBudgetAllocator.h"
 #include "BrainComponent.h"
+#include "DamageType/STDamageTypes.h"
+#include "STGameplayTags.h"
 
 ASTEnemyBase::ASTEnemyBase(const FObjectInitializer& object_initializer)
 	: Super(object_initializer.SetDefaultSubobjectClass<USkeletalMeshComponentBudgeted>(ACharacter::MeshComponentName))
@@ -83,13 +85,33 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 
 	if (HasAuthority())
 	{
-		/*
-			Set Target as DamageCauser
-		*/
 		ASTEnemyBase_AIController* controller = Cast<ASTEnemyBase_AIController>(GetController());
+		USTBaseDamageType* STDamageType = Cast<USTBaseDamageType>(DamageEvent.DamageTypeClass.GetDefaultObject());
+		
 		if (controller)
 		{
+			/*
+				Set Target as DamageCauser
+			*/
 			controller->SetTarget(DamageCauser);
+
+			/*
+				Apply DamageType
+			*/
+			if (STDamageType)
+			{
+				if (STDamageType->StunnedTime > 0)
+				{
+					// Apply Stun to Behavior Tree
+					controller->ApplyStun(STDamageType->StunnedTime);
+
+					// Apply Stun to Character (Animation)
+					AddTag(FSTGameplayTags::Get().Character_State_Stunned);
+					GetWorldTimerManager().SetTimer(Handle_Stunned,
+						[&]() { RemoveTag(FSTGameplayTags::Get().Character_State_Stunned); },
+						STDamageType->StunnedTime, false);
+				}
+			}
 		}
 
 		/*
@@ -122,7 +144,7 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 		}
 		else
 		{
-			StopAnimMontage();
+			StopCurrentAnimMontage_Multicast();
 			FVector LaunchDir = (GetActorLocation() - DamageCauser->GetActorLocation()).GetSafeNormal2D();
 			LaunchCharacter(LaunchDir * 1500.f, false, false);
 		}
@@ -131,23 +153,59 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 	return 0.0f;
 }
 
+bool ASTEnemyBase::IsNormalAttackMontage(UAnimMontage* InMontage)
+{
+	for (int i = 0; i < Montage_NormalAttackSet.Num(); i++)
+	{
+		if (Montage_NormalAttackSet[i] == InMontage)
+			return true;
+	}
+	return false;
+}
+
+int ASTEnemyBase::GetRandomNormalAttackMontageIndex()
+{
+	const int32 NumMontages = Montage_NormalAttackSet.Num();
+
+	if (NumMontages <= 1)
+		return 0; // 하나뿐이면 어쩔 수 없음
+
+	int32 NewIndex;
+	do
+	{
+		NewIndex = FMath::RandRange(0, NumMontages - 1);
+	} while (NewIndex == LastNormalAttackMontageIndex);
+
+	LastNormalAttackMontageIndex = NewIndex;
+	return NewIndex;
+}
+
+void ASTEnemyBase::StopCurrentAnimMontage_Multicast_Implementation()
+{
+	StopAnimMontage();
+}
+
 void ASTEnemyBase::ActivateNormalAttack_Server_Implementation()
 {
-	ActivateNormalAttack_Multicast();
-	PlayNormalAttackMontage();
+	int MontageIdx = GetRandomNormalAttackMontageIndex();
+	ActivateNormalAttack_Multicast(MontageIdx);
+	PlayNormalAttackMontage(MontageIdx);
 }
 
-void ASTEnemyBase::ActivateNormalAttack_Multicast_Implementation()
+void ASTEnemyBase::ActivateNormalAttack_Multicast_Implementation(int MontageIdx)
 {
-	PlayNormalAttackMontage();
+	PlayNormalAttackMontage(MontageIdx);
 }
 
-void ASTEnemyBase::PlayNormalAttackMontage()
+void ASTEnemyBase::PlayNormalAttackMontage(int MontageIdx)
 {
+	if (!Montage_NormalAttackSet.IsValidIndex(MontageIdx))
+		return;
+
 	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
 	if (AnimInst)
 	{
-		AnimInst->Montage_Play(Montage_NormalAttack);
+		AnimInst->Montage_Play(Montage_NormalAttackSet[MontageIdx]);
 	}
 }
 
@@ -178,3 +236,4 @@ void ASTEnemyBase::PlayDiedMontage()
 		AnimInst->Montage_Play(Montage_Died);
 	}
 }
+
