@@ -25,6 +25,9 @@ protected:
 public:
 	void FireInDirection(const FVector& ShootDirection);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetHomingTarget(AActor* InTarget);
+
 protected:
 	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
 	TObjectPtr<USphereComponent> CollisionComponent;

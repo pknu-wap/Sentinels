@@ -7,3 +7,8 @@ void USTGRIMAnimInstance::AnimNotify_GrimPrimaryFire()
 {
 	Delegate_GrimPrimaryFire.Broadcast();
 }
+
+void USTGRIMAnimInstance::AnimNotify_GrimUltimateFire()
+{
+	Delegate_GrimUlitmateFire.Broadcast();
+}

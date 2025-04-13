@@ -7,6 +7,7 @@
 #include "STGRIMAnimInstance.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FGrimPrimaryFire)
+DECLARE_MULTICAST_DELEGATE(FGrimUltimateFire)
 
 UCLASS()
 class SENTINELS_LS_API USTGRIMAnimInstance : public USTPlayerAnimInstance
@@ -16,6 +17,10 @@ class SENTINELS_LS_API USTGRIMAnimInstance : public USTPlayerAnimInstance
 	UFUNCTION()
 	void AnimNotify_GrimPrimaryFire();
 
+	UFUNCTION()
+	void AnimNotify_GrimUltimateFire();
+
 public:
 	FGrimPrimaryFire Delegate_GrimPrimaryFire;
+	FGrimUltimateFire Delegate_GrimUlitmateFire;
 };
