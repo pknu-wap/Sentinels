@@ -42,8 +42,10 @@ void UAN_ApplyRadialDamage::Notify(USkeletalMeshComponent* MeshComp, UAnimSequen
 			AActor* DamagedActor = hit.GetActor();
 			AActor* DamageCauser = MeshComp->GetOwner();
 
-			if (DamageCauser && DamagedActor)
+			if (DamageCauser && DamagedActor && !DamagedActors.Contains(DamagedActor))
 			{
+				DamagedActors.Add(DamagedActor);
+
 				UGameplayStatics::ApplyPointDamage(DamagedActor, FinalDamage, hit.ImpactNormal, hit,
 					DamageCauser->GetInstigatorController(), DamageCauser, GetDamageType());
 

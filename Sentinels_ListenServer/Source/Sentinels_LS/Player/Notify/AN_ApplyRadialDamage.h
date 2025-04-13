@@ -40,5 +40,9 @@ protected:
 	float DamagePercent = 1.f;
 
 private:
+	UPROPERTY()
+	TArray<AActor*> DamagedActors;
+
+	UPROPERTY()
 	float FinalDamage = 10.f;
 };

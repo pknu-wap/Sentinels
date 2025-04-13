@@ -50,6 +50,7 @@ public:
 	float DamagePercent = 1.f;
 
 private:
+	UPROPERTY()
 	TArray<AActor*> DamagedActors;
 
 	UPROPERTY()
