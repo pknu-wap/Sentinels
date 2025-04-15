@@ -26,6 +26,12 @@ public:
 	void FireInDirection(const FVector& ShootDirection);
 
 	UFUNCTION(BlueprintImplementableEvent)
+	void SetTarget(AActor* InTarget);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetTargetLocation(FVector InTargetLocation);
+
+	UFUNCTION(BlueprintImplementableEvent)
 	void SetHomingTarget(AActor* InTarget);
 
 protected:

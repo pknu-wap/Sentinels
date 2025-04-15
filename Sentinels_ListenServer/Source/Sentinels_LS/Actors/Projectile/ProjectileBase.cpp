@@ -41,14 +41,3 @@ void AProjectileBase::FireInDirection(const FVector& ShootDirection)
 {
     ProjectileMovementComponent->Velocity = ShootDirection * ProjectileMovementComponent->InitialSpeed;
 }
-
-//void AProjectileBase::SetHomingTarget(AActor* InTarget)
-//{
-//    if (!IsValid(InTarget)) return;
-//
-//    USceneComponent* TargetSceneComp = InTarget->GetComponentByClass<USceneComponent>();
-//
-//    ProjectileMovementComponent->HomingTargetComponent = TargetSceneComp;
-//    ProjectileMovementComponent->bIsHomingProjectile = true;
-//    ProjectileMovementComponent->HomingAccelerationMagnitude = 25000.f;
-//}
