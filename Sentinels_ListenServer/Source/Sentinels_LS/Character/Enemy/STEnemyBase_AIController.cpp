@@ -115,7 +115,7 @@ void ASTEnemyBase_AIController::SetTarget(AActor* InTarget)
 		Blackboard->SetValueAsObject(BBKey_Target, nullptr);
 		return;
 	}
-	else if (InTarget->IsA<ASTEnemyBase>())
+	else if (!InTarget->IsA<ASTPlayerCharacter>())
 		return;
 
 	// Store Target if New Target is not player

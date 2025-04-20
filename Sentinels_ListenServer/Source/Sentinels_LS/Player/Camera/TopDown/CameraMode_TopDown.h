@@ -11,6 +11,7 @@ class UCameraComponent;
 class UInputAction;
 class UInputMappingContext;
 class ASTPlayerController;
+class ASTPlayerCharacter;
 
 UCLASS()
 class SENTINELS_LS_API UCameraMode_TopDown : public UCameraMode
@@ -31,6 +32,9 @@ private:
 
     UPROPERTY()
     ASTPlayerController* PC;
+
+    UPROPERTY()
+    ASTPlayerCharacter* Player;
 
     bool bShouldLerp = false;
 

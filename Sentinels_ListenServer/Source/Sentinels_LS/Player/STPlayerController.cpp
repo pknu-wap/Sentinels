@@ -51,10 +51,7 @@ void ASTPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 void ASTPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
-}
 
-void ASTPlayerController::BindDefaultTopDownInput()
-{
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
 	{
 		EnhancedInputComponent->BindAction(MoveClickAction, ETriggerEvent::Started, this, &ASTPlayerController::MoveClick_Started);
@@ -65,7 +62,10 @@ void ASTPlayerController::BindDefaultTopDownInput()
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &ASTPlayerController::Interact_Pressed);
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, this, &ASTPlayerController::Interact_Released);
 	}
+}
 
+void ASTPlayerController::BindDefaultTopDownInput()
+{
 	FInputModeGameAndUI InputMode;
 	InputMode.SetHideCursorDuringCapture(false);
 	SetInputMode(InputMode);
@@ -75,12 +75,6 @@ void ASTPlayerController::BindDefaultTopDownInput()
 
 void ASTPlayerController::BindDefaultThirdPersonInput()
 {
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
-	{
-		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &ASTPlayerController::Interact_Pressed);
-		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, this, &ASTPlayerController::Interact_Released);
-	}
-
 	FInputModeGameOnly InputMode;
 	SetInputMode(InputMode);
 

@@ -87,7 +87,18 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 	{
 		ASTEnemyBase_AIController* controller = Cast<ASTEnemyBase_AIController>(GetController());
 		USTBaseDamageType* STDamageType = Cast<USTBaseDamageType>(DamageEvent.DamageTypeClass.GetDefaultObject());
-		
+
+		if (DamageEvent.GetTypeID() == FSTPointDamageEvent::ClassID)
+		{
+			const FSTPointDamageEvent& PointDamageEvent = static_cast<const FSTPointDamageEvent&>(DamageEvent);
+			FString Str_DamageType = PointDamageEvent.bIsCritical ? FString("Critical") : FString("Normal");
+			UE_LOG(LogTemp, Warning, TEXT("ASTEnemyBase : %s Damage %f"), *Str_DamageType, Damage);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("ASTEnemyBase : Damage %f"), Damage);
+		}
+
 		if (controller)
 		{
 			/*
