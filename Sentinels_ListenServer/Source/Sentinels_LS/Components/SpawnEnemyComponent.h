@@ -11,50 +11,14 @@ class ASTEnemyBase;
 
 DECLARE_MULTICAST_DELEGATE(FOnEnemyAllDied)
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class SENTINELS_LS_API USpawnEnemyComponent : public UActorComponent
+USTRUCT(BlueprintType)
+struct SENTINELS_LS_API FSpawnInfo 
 {
-	GENERATED_BODY()
-
-public:	
-	// Sets default values for this component's properties
-	USpawnEnemyComponent();
-
-/*
-    Spawn Enemy
-*/
-public:
-    void SetShouldLoop(bool inValue) { bShouldLoop = inValue; }
-
-    UFUNCTION(BlueprintCallable)
-    void StartSpawnEnemy();
-
-    UFUNCTION(BlueprintCallable)
-    void StopSpawnEnemy();
-
-protected:
-    void SpawnEnemy();
-    bool GetSpawnNavLocation(FNavLocation& OutLocation) const;
-    void SetTarget(ASTEnemyBase* inEnemy);
-
-    ACharacter* GetRandomPlayerCharacter(ASTEnemyBase* inEnemy) const;
-
-    UFUNCTION()
-    void OnEnemyDied(AActor* DiedEnemy);
-
-public:
-    FOnEnemyAllDied Delegate_OnEnemyAllDied;
-
-protected:
-    /*
-        Enemy Should Set Target as Owner When Spawned
-    */
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
-    bool bShouldTargetOwner = true;
+    GENERATED_BODY()
 
     /*
-        if Enemy set target as player, Only find player which is not so far 
-    */
+       if Enemy set target as player, Only find player which is not so far
+   */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
     float MaxDistanceToPlayer = 3000.f;
 
@@ -67,9 +31,6 @@ protected:
     /*
         Spawn Pawns of SpawnRate per Spawn Period
     */
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
-    bool bShouldLoop = true;
-
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
     int SpawnRate = 5;
 
@@ -95,8 +56,61 @@ protected:
     int CurrentSpawned = 0;
 
     UPROPERTY()
-    TArray<AActor*> SpawnedEnemys;
+    TSet<AActor*> SpawnedEnemys;
+
+    FTimerHandle TimerHandle;
+};
+
+UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+class SENTINELS_LS_API USpawnEnemyComponent : public UActorComponent
+{
+	GENERATED_BODY()
+
+public:	
+	// Sets default values for this component's properties
+	USpawnEnemyComponent();
+
+/*
+    Spawn Enemy
+*/
+public:
+    void SetShouldLoop(bool inValue) { bShouldLoop = inValue; }
+
+    UFUNCTION(BlueprintCallable)
+    void StartSpawnEnemy();
+
+    UFUNCTION(BlueprintCallable)
+    void StopSpawnEnemy();
 
 protected:
-    FTimerHandle handle;
+    void SpawnEnemy(int InfoIdx);
+    bool GetSpawnNavLocation(int InfoIdx, FNavLocation& OutLocation) const;
+    void SetTarget(int InfoIdx, ASTEnemyBase* inEnemy);
+
+    ACharacter* GetRandomPlayerCharacter(int InfoIdx, ASTEnemyBase* inEnemy) const;
+
+    UFUNCTION()
+    void OnEnemyDied(AActor* DiedEnemy);
+
+public:
+    FOnEnemyAllDied Delegate_OnEnemyAllDied;
+
+protected:
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
+    bool bShouldLoop = true;
+
+    /*
+        Enemy Should Set Target as Owner When Spawned
+    */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
+    bool bShouldTargetOwner = true;
+
+    /*
+        Spawn Informations
+    */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
+    TArray<FSpawnInfo> SpawnInfos;
+
+private:
+    float CurrentSpawned = 0;
 };
