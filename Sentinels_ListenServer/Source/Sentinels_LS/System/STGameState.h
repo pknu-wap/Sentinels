@@ -7,6 +7,8 @@
 #include "STGameplayTags.h"
 #include "STGameState.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAllPlayerIsReady, FGameplayTag, LevelTag);
+
 class USTMissionBase;
 
 USTRUCT(BlueprintType)
@@ -69,11 +71,28 @@ public:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void OnMissionEnded_Multicast(FGameplayTag InMissionTag, bool IsCleared);
-	
+
+public:
+	UFUNCTION(BlueprintCallable)
+	bool CanServerTravel();
+
+	UFUNCTION(BlueprintCallable)
+	void TryServerTravel();
+
 public:
 	USTMissionBase* GetMission(FGameplayTag InMissionTag);
+
+	FGameplayTag GetCurrentLevelTag() { return CurrentLevelTag; }
+	void SetCurrentLevelTag(FGameplayTag NewLevelTag);
 
 private:
 	UPROPERTY(Replicated)
 	TArray<FMissionInfo> Missions;
+
+	UPROPERTY(Replicated)
+	FGameplayTag CurrentLevelTag;
+
+public:
+	UPROPERTY(BlueprintAssignable)
+	FOnAllPlayerIsReady OnAllPlayerIsReady;
 };

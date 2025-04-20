@@ -9,6 +9,25 @@ FSTGameplayTags FSTGameplayTags::GameplayTags;
 void FSTGameplayTags::InitializeNativeGameplayTags()
 {
 	/*
+		Widget
+	*/
+
+	GameplayTags.Widget_Lobby_Loadout = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Widget.Lobby.Loadout"),
+		FString("Loadout")
+	);
+
+	GameplayTags.Widget_Lobby_CharacterSelect = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Widget.Lobby.CharacterSelect"),
+		FString("Character Select")
+	);
+
+	GameplayTags.Widget_Lobby_LevelSelect = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Widget.Lobby.LevelSelect"),
+		FString("Level Select")
+	);
+
+	/*	
 		Character
 	*/
 	GameplayTags.Character_State_Stunned = UGameplayTagsManager::Get().AddNativeGameplayTag(
@@ -44,7 +63,7 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 	/*
 		Missions
 	*/
-
+	
 	GameplayTags.Mission_Domination = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Mission.Domination"),
 		FString("Domination")
@@ -123,5 +142,21 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 		FString("SpawnPoint DestructibleObject")
 	);
 
-	
+	/*
+		Levels
+	*/
+	GameplayTags.Level_Lobby = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Level.Lobby"),
+		FString("Lobby")
+	);
+
+	GameplayTags.Level_AbandonedFactory = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Level.AbandonedFactory"),
+		FString("AbandonedFactory")
+	);
+
+	GameplayTags.Level_EX2 = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Level.EX2"),
+		FString("EX2")
+	);
 }

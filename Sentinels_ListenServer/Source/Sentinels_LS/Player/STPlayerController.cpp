@@ -18,6 +18,9 @@
 #include "OnlineSubsystemTypes.h"
 #include "OnlineSubsystemUtils.h"
 #include "GameFramework/PlayerState.h"
+#include "EngineUtils.h"
+#include "Net/UnrealNetwork.h"
+#include "Components/UI/STPlayerUIComponent.h"
 
 
 ASTPlayerController::ASTPlayerController()
@@ -30,6 +33,9 @@ ASTPlayerController::ASTPlayerController()
 
 	InteractComponent = CreateDefaultSubobject<UInteractComponent>(TEXT("InteractComp"));
 	InteractComponent->SetIsReplicated(true);
+
+	UIComponent = CreateDefaultSubobject<USTPlayerUIComponent>(TEXT("UIComponent"));
+	UIComponent->SetIsReplicated(true);
 }
 
 void ASTPlayerController::Tick(float DeltaTime)
@@ -108,6 +114,8 @@ void ASTPlayerController::UpdatePlayerClass_Implementation(ESTClassType InClass)
 
 	AController* PC = this;
 	GetWorldTimerManager().SetTimerForNextTick([GameMode, PC]() { GameMode->RestartPlayer(PC); });
+
+	//GetWorld()->GetGameInstance()->
 	// GameMode->RestartPlayer(this);
 }
 
