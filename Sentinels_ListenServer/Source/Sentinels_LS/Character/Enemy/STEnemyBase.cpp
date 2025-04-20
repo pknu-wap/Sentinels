@@ -16,6 +16,8 @@
 #include "SkeletalMeshComponentBudgeted.h"
 #include "IAnimationBudgetAllocator.h"
 #include "BrainComponent.h"
+#include "DamageType/STDamageTypes.h"
+#include "STGameplayTags.h"
 
 ASTEnemyBase::ASTEnemyBase(const FObjectInitializer& object_initializer)
 	: Super(object_initializer.SetDefaultSubobjectClass<USkeletalMeshComponentBudgeted>(ACharacter::MeshComponentName))
@@ -83,13 +85,44 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 
 	if (HasAuthority())
 	{
-		/*
-			Set Target as DamageCauser
-		*/
 		ASTEnemyBase_AIController* controller = Cast<ASTEnemyBase_AIController>(GetController());
+		USTBaseDamageType* STDamageType = Cast<USTBaseDamageType>(DamageEvent.DamageTypeClass.GetDefaultObject());
+
+		if (DamageEvent.GetTypeID() == FSTPointDamageEvent::ClassID)
+		{
+			const FSTPointDamageEvent& PointDamageEvent = static_cast<const FSTPointDamageEvent&>(DamageEvent);
+			FString Str_DamageType = PointDamageEvent.bIsCritical ? FString("Critical") : FString("Normal");
+			UE_LOG(LogTemp, Warning, TEXT("ASTEnemyBase : %s Damage %f"), *Str_DamageType, Damage);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("ASTEnemyBase : Damage %f"), Damage);
+		}
+
 		if (controller)
 		{
+			/*
+				Set Target as DamageCauser
+			*/
 			controller->SetTarget(DamageCauser);
+
+			/*
+				Apply DamageType
+			*/
+			if (STDamageType)
+			{
+				if (STDamageType->StunnedTime > 0)
+				{
+					// Apply Stun to Behavior Tree
+					controller->ApplyStun(STDamageType->StunnedTime);
+
+					// Apply Stun to Character (Animation)
+					AddTag(FSTGameplayTags::Get().Character_State_Stunned);
+					GetWorldTimerManager().SetTimer(Handle_Stunned,
+						[&]() { RemoveTag(FSTGameplayTags::Get().Character_State_Stunned); },
+						STDamageType->StunnedTime, false);
+				}
+			}
 		}
 
 		/*
@@ -124,7 +157,7 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 		{
 			StopCurrentAnimMontage_Multicast();
 			FVector LaunchDir = (GetActorLocation() - DamageCauser->GetActorLocation()).GetSafeNormal2D();
-			LaunchCharacter(LaunchDir * 1500.f, false, false);
+			LaunchCharacter(LaunchDir * 750.f, false, false);
 		}
 	}
 
@@ -214,3 +247,4 @@ void ASTEnemyBase::PlayDiedMontage()
 		AnimInst->Montage_Play(Montage_Died);
 	}
 }
+

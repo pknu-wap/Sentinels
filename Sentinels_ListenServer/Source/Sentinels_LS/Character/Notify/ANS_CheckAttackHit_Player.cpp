@@ -7,12 +7,15 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/DamageType.h"
 #include "Perception/AISense_Damage.h"
+#include "Components/STPlayerStatusComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 void UANS_CheckAttackHit_Player::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
     Super::NotifyBegin(MeshComp, Animation, TotalDuration);
 
     Player = Cast<ASTPlayerCharacter>(MeshComp->GetOwner());
+    CalculateFinalDamage();
 }
 
 void UANS_CheckAttackHit_Player::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference)
@@ -24,6 +27,8 @@ void UANS_CheckAttackHit_Player::NotifyTick(USkeletalMeshComponent* MeshComp, UA
         if(MeshComp != Player->GetMesh())
             return;
     }
+
+    if (!StatusComp) return;
 
     TArray<FHitResult> hitResults;
     FVector Start = MeshComp->GetSocketLocation(StartSocket);
@@ -50,12 +55,22 @@ void UANS_CheckAttackHit_Player::NotifyTick(USkeletalMeshComponent* MeshComp, UA
             AActor* actor = MeshComp->GetOwner();
             if (actor && !DamagedActor->IsA(ASTPlayerCharacter::StaticClass()))
             {
-                UGameplayStatics::ApplyPointDamage(DamagedActor, Damage, hit.ImpactNormal, hit,
-                    actor->GetInstigatorController(), actor, UDamageType::StaticClass());
+                // Check Critical
+                bool bIsCritical = UKismetMathLibrary::RandomFloatInRange(0, 1) <= StatusComp->CriticalRate ? true : false;
+                FinalDamage = bIsCritical ? FinalDamage * 1.5 : FinalDamage;
+
+                // Generate Damage Event With Critical
+                DamageEvent = FSTPointDamageEvent(bIsCritical, FinalDamage, hit, hit.ImpactNormal, GetDamageType());
+
+                // Apply Damage
+                DamagedActor->TakeDamage(FinalDamage, DamageEvent, actor->GetInstigatorController(), actor);
+
+               /* UGameplayStatics::ApplyPointDamage(DamagedActor, FinalDamage, hit.ImpactNormal, hit,
+                    actor->GetInstigatorController(), actor, GetDamageType());*/
             }
 
             UAISense_Damage::ReportDamageEvent(DamagedActor, DamagedActor, actor,
-                Damage, DamagedActor->GetActorLocation(), hit.ImpactPoint);
+                FinalDamage, DamagedActor->GetActorLocation(), hit.ImpactPoint);
         }
     }
 }
@@ -63,4 +78,27 @@ void UANS_CheckAttackHit_Player::NotifyTick(USkeletalMeshComponent* MeshComp, UA
 void UANS_CheckAttackHit_Player::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
     DamagedActors.Empty();
+}
+
+void UANS_CheckAttackHit_Player::CalculateFinalDamage()
+{
+    if (Player)
+    {
+        AController* PC = Player->GetController();
+        if (!PC) return;
+
+        StatusComp = Player->GetComponentByClass<USTPlayerStatusComponent>();
+        if (!StatusComp) return;
+
+        FinalDamage = StatusComp->ATK * DamagePercent * (1 + StatusComp->DamageIncreaseRate);
+    }
+}
+
+
+TSubclassOf<UDamageType> UANS_CheckAttackHit_Player::GetDamageType() const
+{
+    if (DamageType)
+        return DamageType;
+
+    return UDamageType::StaticClass();
 }

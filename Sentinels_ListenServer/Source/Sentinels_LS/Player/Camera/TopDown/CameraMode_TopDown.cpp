@@ -12,7 +12,7 @@ void UCameraMode_TopDown::OnEnter(UCameraModeManagerComponent* Manager)
 {
     CameraManager = Manager;
 
-    ASTPlayerCharacter* Player = Cast<ASTPlayerCharacter>(Manager->GetOwner());
+    Player = Cast<ASTPlayerCharacter>(Manager->GetOwner());
     if (Player)
     {
         SpringArm = Player->GetComponentByClass<USpringArmComponent>();
@@ -22,8 +22,7 @@ void UCameraMode_TopDown::OnEnter(UCameraModeManagerComponent* Manager)
     PC = Cast<ASTPlayerController>(Player->GetController());
     if (Player && PC)
     {
-        Player->BindDefaultTopDownInput();
-        PC->BindDefaultTopDownInput();
+        Player->ClearAllMappingContext();
         PC->DisableInput(PC);
         bShouldLerp = true;
     }
@@ -49,6 +48,8 @@ void UCameraMode_TopDown::Tick(float DeltaTime)
             && abs(SpringArm->TargetArmLength - TargetArmLength) < 2.5f)
         {
             bShouldLerp = false;
+            Player->BindDefaultTopDownInput();
+            PC->BindDefaultTopDownInput();
             PC->EnableInput(PC);
         }
     }

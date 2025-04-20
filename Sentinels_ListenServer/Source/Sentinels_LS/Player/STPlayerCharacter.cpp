@@ -96,6 +96,23 @@ void ASTPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(Skill_E_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_E_Pressed);
 		EnhancedInputComponent->BindAction(Skill_R_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_R_Pressed);
 		EnhancedInputComponent->BindAction(NormalAttack_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::NormalAttack_Pressed);
+
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASTPlayerCharacter::Move);
+		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ASTPlayerCharacter::Look);
+
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+	}
+}
+
+void ASTPlayerCharacter::ClearAllMappingContext()
+{
+	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			Subsystem->ClearAllMappings();
+		}
 	}
 }
 
@@ -108,21 +125,6 @@ void ASTPlayerCharacter::BindDefaultTopDownInput()
 			Subsystem->ClearAllMappings();
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
-
-		if (UInputComponent* InputComp = PlayerController->GetComponentByClass<UInputComponent>())
-		{
-			if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComp))
-			{
-				EnhancedInputComponent->BindAction(NormalAttack_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::NormalAttack_Pressed);
-
-				EnhancedInputComponent->BindAction(Skill_Q_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_Q_Pressed);
-				EnhancedInputComponent->BindAction(Skill_W_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_W_Pressed);
-				EnhancedInputComponent->BindAction(Skill_E_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_E_Pressed);
-				EnhancedInputComponent->BindAction(Skill_R_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_R_Pressed);
-
-				EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ASTPlayerCharacter::Jump);
-			}
-		}
 	}
 }
 
@@ -134,25 +136,6 @@ void ASTPlayerCharacter::BindDefaultThirdPersonInput()
 		{
 			Subsystem->ClearAllMappings();
 			Subsystem->AddMappingContext(MappingContext_ThirdPerson, 0);
-		}
-
-		if (UInputComponent* InputComp = PlayerController->GetComponentByClass<UInputComponent>())
-		{
-			if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComp))
-			{
-				EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASTPlayerCharacter::Move);
-				EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ASTPlayerCharacter::Look);
-
-				EnhancedInputComponent->BindAction(NormalAttack_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::NormalAttack_Pressed);
-
-				EnhancedInputComponent->BindAction(Skill_Q_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_Q_Pressed);
-				EnhancedInputComponent->BindAction(Skill_W_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_W_Pressed);
-				EnhancedInputComponent->BindAction(Skill_E_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_E_Pressed);
-				EnhancedInputComponent->BindAction(Skill_R_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_R_Pressed);
-
-				EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-				EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-			}
 		}
 	}
 }
@@ -222,6 +205,14 @@ float ASTPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 	return 0.0f;
 }
 
+void ASTPlayerCharacter::Jump()
+{
+	if (HasTag(FSTGameplayTags::Get().Character_State_Attack) 
+		|| HasTag(FSTGameplayTags::Get().Character_State_Skill)) return;
+
+	Super::Jump();
+}
+
 #pragma region Region_NormalAttack
 
 void ASTPlayerCharacter::BindAttackDelegate()
@@ -240,8 +231,21 @@ void ASTPlayerCharacter::BindAttackDelegate()
 	}
 }
 
+bool ASTPlayerCharacter::CanDoAttack() const
+{
+	if (HasTag(FSTGameplayTags::Get().Character_State_Skill) 
+		|| HasTag(FSTGameplayTags::Get().Character_State_Jump))
+		return false;
+
+	return true;
+}
+
 void ASTPlayerCharacter::NormalAttack_Pressed()
 {
+	if (!CanDoAttack()) return;
+
+	AddTag(FSTGameplayTags::Get().Character_State_Attack);
+
 	if (CurrentCombo == 0)
 	{
 		CurrentCombo++;
@@ -312,6 +316,9 @@ void ASTPlayerCharacter::OnMontageEnded_ResetAttackInfo(UAnimMontage* Montage, b
 	if (bInterrupted && Montage == Montage_NormalAttack)
 		return;
 
+	RemoveTag(FSTGameplayTags::Get().Character_State_Attack);
+	RemoveTag(FSTGameplayTags::Get().Character_State_Skill);
+
 	ResetAttackInfo();
 }
 
@@ -327,13 +334,25 @@ void ASTPlayerCharacter::ResetAttackInfo()
 
 #pragma region Region_Skills
 
+bool ASTPlayerCharacter::CanDoSkill() const
+{
+	if (HasTag(FSTGameplayTags::Get().Character_State_Skill)
+		|| HasTag(FSTGameplayTags::Get().Character_State_Jump))
+		return false;
+
+	return true;
+}
+
 void ASTPlayerCharacter::Skill_Q_Pressed()
 {
+	if (!CanDoSkill()) return;
+
 	USkillComponent* SkillComp = GetController()->GetComponentByClass<USkillComponent>();
 	if (SkillComp && SkillComp->CanActivateSkill(0))
 	{
 		SkillComp->ActivateSkill(0);
 
+		AddTag(FSTGameplayTags::Get().Character_State_Skill);
 		PlayMontage_Skill_Q();
 		Skill_Q_Pressed_Server();
 	}
@@ -363,11 +382,14 @@ void ASTPlayerCharacter::Skill_Q_Pressed_Multicast_Implementation()
 
 void ASTPlayerCharacter::Skill_W_Pressed()
 {
+	if (!CanDoSkill()) return;
+
 	USkillComponent* SkillComp = GetController()->GetComponentByClass<USkillComponent>();
 	if (SkillComp && SkillComp->CanActivateSkill(1))
 	{
 		SkillComp->ActivateSkill(1);
 
+		AddTag(FSTGameplayTags::Get().Character_State_Skill);
 		PlayMontage_Skill_W();
 		Skill_W_Pressed_Server();
 	}
@@ -397,11 +419,14 @@ void ASTPlayerCharacter::Skill_W_Pressed_Multicast_Implementation()
 
 void ASTPlayerCharacter::Skill_E_Pressed()
 {
+	if (!CanDoSkill()) return;
+
 	USkillComponent* SkillComp = GetController()->GetComponentByClass<USkillComponent>();
 	if (SkillComp && SkillComp->CanActivateSkill(2))
 	{
 		SkillComp->ActivateSkill(2);
 
+		AddTag(FSTGameplayTags::Get().Character_State_Skill);
 		PlayMontage_Skill_E();
 		Skill_E_Pressed_Server();
 	}
@@ -431,11 +456,14 @@ void ASTPlayerCharacter::Skill_E_Pressed_Multicast_Implementation()
 
 void ASTPlayerCharacter::Skill_R_Pressed()
 {
+	if (!CanDoSkill()) return;
+
 	USkillComponent* SkillComp = GetController()->GetComponentByClass<USkillComponent>();
 	if (SkillComp && SkillComp->CanActivateSkill(3))
 	{
 		SkillComp->ActivateSkill(3);
 
+		AddTag(FSTGameplayTags::Get().Character_State_Skill);
 		PlayMontage_Skill_R();
 		Skill_R_Pressed_Server();
 	}

@@ -6,9 +6,8 @@
 #include "Animation/AnimInstance.h"
 #include "STCharacterAnimInstanceBase.generated.h"
 
-/**
- * 
- */
+class ASTCharacterBase;
+
 UCLASS()
 class SENTINELS_LS_API USTCharacterAnimInstanceBase : public UAnimInstance
 {
@@ -32,5 +31,6 @@ public:
 	class UCharacterMovementComponent* MovementComp;
 
 protected:
-	class ACharacter* Character;
+	UPROPERTY(BlueprintReadOnly, category = "Character")
+	class ASTCharacterBase* Character;
 };
