@@ -49,18 +49,18 @@ public:
 	// Damage Increase Rate
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 	float MaxDamageIncreaseRate;
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly)
 	float DamageIncreaseRate;
 
 	// CoolDown Reduction
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 	float MaxCDR;
-	UPROPERTY(Replicated, BlueprintReadOnly)
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly)
 	float CDR;
 
 	// Critical
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 	float MaxCriticalRate;
-	UPROPERTY(Replicated, BlueprintReadOnly)
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly)
 	float CriticalRate;
 };

@@ -43,6 +43,7 @@ protected:
 		Input	
 	*/
 public:
+	void ClearAllMappingContext();
 	void BindDefaultTopDownInput();
 	void BindDefaultThirdPersonInput();
 
