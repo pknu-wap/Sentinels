@@ -53,6 +53,8 @@ void UAN_ApplyRadialDamage::Notify(USkeletalMeshComponent* MeshComp, UAnimSequen
 					FinalDamage, DamagedActor->GetActorLocation(), hit.ImpactPoint);
 			}
 		}
+
+		DamagedActors.Empty();
 	}
 }
 
