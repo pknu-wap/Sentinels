@@ -14,8 +14,12 @@ void UANS_CheckAttackHit_Player::NotifyBegin(USkeletalMeshComponent* MeshComp, U
 {
     Super::NotifyBegin(MeshComp, Animation, TotalDuration);
 
+    bTimeDilationApplied = false;
     Player = Cast<ASTPlayerCharacter>(MeshComp->GetOwner());
     CalculateFinalDamage();
+
+    Value_TimeDilation = 0.01f;
+    Duration_TimeDilation = 0.08f;
 }
 
 void UANS_CheckAttackHit_Player::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference)
@@ -65,6 +69,29 @@ void UANS_CheckAttackHit_Player::NotifyTick(USkeletalMeshComponent* MeshComp, UA
                 // Apply Damage
                 DamagedActor->TakeDamage(FinalDamage, DamageEvent, actor->GetInstigatorController(), actor);
 
+                // Apply Time Dilation
+                if (!bTimeDilationApplied)
+                {
+                    ASTPlayerCharacter* player = Cast<ASTPlayerCharacter>(actor);
+                    if (player)
+                    {
+                        player->ApplyCustomTimeDilation(Value_TimeDilation, Duration_TimeDilation);
+                        player->ApplyAttackCameraShake();
+                        bTimeDilationApplied = true;
+                    }
+
+                    /*actor->CustomTimeDilation = Value_TimeDilation;
+                    actor->GetWorldTimerManager().SetTimer(Handle_TimeDilation, 
+                        [actor]() 
+                        {
+                            if (IsValid(actor))
+                            {
+                                actor->CustomTimeDilation = 1.f;
+                            }
+                        }
+                    ,Duration_TimeDilation, false);*/
+                }
+
                /* UGameplayStatics::ApplyPointDamage(DamagedActor, FinalDamage, hit.ImpactNormal, hit,
                     actor->GetInstigatorController(), actor, GetDamageType());*/
             }
@@ -77,6 +104,7 @@ void UANS_CheckAttackHit_Player::NotifyTick(USkeletalMeshComponent* MeshComp, UA
 
 void UANS_CheckAttackHit_Player::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
+    bTimeDilationApplied = false;
     DamagedActors.Empty();
 }
 

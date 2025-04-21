@@ -14,6 +14,7 @@ class ASTPlayerCharacter;
 class UInventoryComponent;
 class USTPlayerStatusComponent;
 class UCameraModeManagerComponent;
+class UCameraShakeBase;
 struct FInputActionValue;
 
 UCLASS()
@@ -87,7 +88,27 @@ protected:
 	bool bShouldDoNextAttack = false;
 
 
+	/*
+		Time Dilation
+	*/
+public:
+	UFUNCTION(Client, Reliable)
+	void ApplyCustomTimeDilation(float inValue, float inDuration);
+
 protected:
+	FTimerHandle Handle_TimeDilation;
+
+	/*
+		Camera Shake
+	*/
+public:
+	UFUNCTION(Client, Reliable)
+	void ApplyAttackCameraShake();
+
+	UPROPERTY(EditAnywhere, Category = Camera)
+	TSubclassOf<UCameraShakeBase> CameraShakeClass_Attack;
+
+
 	/*
 		Skills
 	*/

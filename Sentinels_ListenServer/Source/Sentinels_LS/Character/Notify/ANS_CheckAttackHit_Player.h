@@ -64,4 +64,18 @@ private:
 
 	UPROPERTY()
 	FSTPointDamageEvent DamageEvent;
+
+/*
+	Time Dilation	
+*/
+protected:
+	UPROPERTY(EditAnywhere, Category = Damage)
+	float Value_TimeDilation = 0.5f;
+
+	UPROPERTY(EditAnywhere, Category = Damage)
+	float Duration_TimeDilation = 0.25f;
+
+private:
+	bool bTimeDilationApplied = false;
+	FTimerHandle Handle_TimeDilation;
 };

@@ -331,8 +331,26 @@ void ASTPlayerCharacter::ResetAttackInfo()
 
 #pragma endregion
 
+void ASTPlayerCharacter::ApplyCustomTimeDilation_Implementation(float inValue, float inDuration)
+{
+	CustomTimeDilation = inValue;
+
+	GetWorldTimerManager().SetTimer(Handle_TimeDilation, 
+		[this]() 
+		{ this->CustomTimeDilation = 1.f; },
+		inDuration, false);
+}
+
+void ASTPlayerCharacter::ApplyAttackCameraShake_Implementation()
+{
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		PC->ClientStartCameraShake(CameraShakeClass_Attack, 1.f);
+	}
+}
 
 #pragma region Region_Skills
+
 
 bool ASTPlayerCharacter::CanDoSkill() const
 {
