@@ -32,6 +32,7 @@ enum class ESKParts : uint8
 	MAX UMETA(Hidden)
 };
 
+UENUM(BlueprintType)
 enum class ESTStatusType : uint8
 {
 	None,
