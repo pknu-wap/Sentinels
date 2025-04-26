@@ -19,7 +19,7 @@ void UANS_CheckAttackHit_Player::NotifyBegin(USkeletalMeshComponent* MeshComp, U
     CalculateFinalDamage();
 
     Value_TimeDilation = 0.01f;
-    Duration_TimeDilation = 0.08f;
+    Duration_TimeDilation = 0.025f;
 }
 
 void UANS_CheckAttackHit_Player::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference)
@@ -118,7 +118,8 @@ void UANS_CheckAttackHit_Player::CalculateFinalDamage()
         StatusComp = Player->GetComponentByClass<USTPlayerStatusComponent>();
         if (!StatusComp) return;
 
-        FinalDamage = StatusComp->ATK * DamagePercent * (1 + StatusComp->DamageIncreaseRate);
+        // ATK * DamagePercent * CriticalDamagePercent * DamageIncreaseRate
+        FinalDamage = StatusComp->ATK * DamagePercent * (StatusComp->CriticalDamagePercent) * (1 + StatusComp->DamageIncreaseRate);
     }
 }
 

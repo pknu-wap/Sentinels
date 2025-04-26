@@ -12,3 +12,33 @@ enum class ESTClassType : uint8
 	DualBlade,
 	Magician	
 };
+
+UENUM(BlueprintType)
+enum class ESTStatusType : uint8
+{
+	None,
+	HP,
+	ATK,
+	DEF,
+	MovementSpeed,
+	AttackSpeed,
+	DamageIncreaseRate,
+	CriticalDamagePercent,
+	CriticalRate,
+	CDR,
+};
+
+UENUM(BlueprintType)
+enum class ESTBuffType : uint8
+{
+	None,
+	HP,
+	ATK,
+	DEF,
+	MovementSpeed,
+	AttackSpeed,
+	DamageIncreaseRate,
+	CriticalDamagePercent,
+	CriticalRate,
+	CDR,
+};

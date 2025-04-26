@@ -24,7 +24,7 @@ protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
-	UFUNCTION(Server, Reliable)
+	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void AddItem_Server(int InItemID);
 
 	const TArray<FInvSlotStruct>& GetInventory() const { return Inventory; }

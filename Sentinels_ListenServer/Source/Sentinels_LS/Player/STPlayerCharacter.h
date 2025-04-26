@@ -39,6 +39,12 @@ protected:
 	*/
 	virtual void Jump() override;
 
+	/*
+		
+	*/
+	UFUNCTION()
+	void OnMontageEnded_Callback(UAnimMontage* Montage, bool bInterrupted);
+
 
 	/*
 		Input	
@@ -77,8 +83,6 @@ protected:
 	UFUNCTION()
 	void CheckNextAttack();
 
-	UFUNCTION()
-	void OnMontageEnded_ResetAttackInfo(UAnimMontage* Montage, bool bInterrupted);
 	void ResetAttackInfo();
 
 protected:
@@ -107,6 +111,21 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = Camera)
 	TSubclassOf<UCameraShakeBase> CameraShakeClass_Attack;
+
+	/*
+		Step
+	*/
+protected:
+	bool CanDoStep() const;
+
+	void Step_Pressed();
+	void PlayMontage_Step();
+
+	UFUNCTION(Server, Reliable)
+	virtual void Step_Pressed_Server();
+
+	UFUNCTION(NetMulticast, Reliable)
+	virtual void Step_Pressed_Multicast();
 
 
 	/*
@@ -189,6 +208,9 @@ protected:
 	UInputAction* NormalAttack_Action;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* Step_Action;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* Skill_Q_Action;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -214,6 +236,9 @@ protected:
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* Montage_NormalAttack;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* Montage_Step_F;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* Montage_Skill_Q;
