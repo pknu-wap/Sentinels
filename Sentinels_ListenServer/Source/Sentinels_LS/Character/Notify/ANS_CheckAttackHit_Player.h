@@ -49,6 +49,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = Damage)
 	float DamagePercent = 1.f;
 
+	UPROPERTY(EditAnywhere, Category = Damage)
+	class UParticleSystem* ImpactParticle;
+
 private:
 	UPROPERTY()
 	TArray<AActor*> DamagedActors;
@@ -64,4 +67,18 @@ private:
 
 	UPROPERTY()
 	FSTPointDamageEvent DamageEvent;
+
+/*
+	Time Dilation	
+*/
+protected:
+	UPROPERTY(EditAnywhere, Category = Damage)
+	float Value_TimeDilation = 0.5f;
+
+	UPROPERTY(EditAnywhere, Category = Damage)
+	float Duration_TimeDilation = 0.25f;
+
+private:
+	bool bTimeDilationApplied = false;
+	FTimerHandle Handle_TimeDilation;
 };

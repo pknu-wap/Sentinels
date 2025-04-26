@@ -4,6 +4,8 @@
 #include "Components/CameraModeManagerComponent.h"
 #include "Player/Camera/CameraMode.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values for this component's properties
 UCameraModeManagerComponent::UCameraModeManagerComponent()
@@ -43,6 +45,15 @@ void UCameraModeManagerComponent::TickComponent(float DeltaTime, ELevelTick Tick
 
 void UCameraModeManagerComponent::SetCameraMode(TSubclassOf<UCameraMode> NewModeClass)
 {
+	ACharacter* character = Cast<ACharacter>(GetOwner());
+	if (character) 
+	{
+		if (UCharacterMovementComponent* characterMovement = character->GetCharacterMovement())
+		{
+			characterMovement->StopMovementImmediately();
+		}
+	}
+
 	if (CurrentMode)
 	{
 		CurrentMode->OnExit();

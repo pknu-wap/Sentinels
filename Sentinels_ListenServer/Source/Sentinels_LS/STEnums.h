@@ -31,3 +31,33 @@ enum class ESKParts : uint8
 	Blade_R UMETA(DisplayName = "Blade_R"),
 	MAX UMETA(Hidden)
 };
+
+UENUM(BlueprintType)
+enum class ESTStatusType : uint8
+{
+	None,
+	HP,
+	ATK,
+	DEF,
+	MovementSpeed,
+	AttackSpeed,
+	DamageIncreaseRate,
+	CriticalDamagePercent,
+	CriticalRate,
+	CDR,
+};
+
+UENUM(BlueprintType)
+enum class ESTBuffType : uint8
+{
+	None,
+	HP,
+	ATK,
+	DEF,
+	MovementSpeed,
+	AttackSpeed,
+	DamageIncreaseRate,
+	CriticalDamagePercent,
+	CriticalRate,
+	CDR,
+};
