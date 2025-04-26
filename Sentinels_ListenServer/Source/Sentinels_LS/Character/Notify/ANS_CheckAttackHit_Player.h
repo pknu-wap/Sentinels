@@ -49,6 +49,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = Damage)
 	float DamagePercent = 1.f;
 
+	UPROPERTY(EditAnywhere, Category = Damage)
+	class UParticleSystem* ImpactParticle;
+
 private:
 	UPROPERTY()
 	TArray<AActor*> DamagedActors;

@@ -9,6 +9,7 @@
 #include "Perception/AISense_Damage.h"
 #include "Components/STPlayerStatusComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Particles/ParticleSystem.h"
 
 void UANS_CheckAttackHit_Player::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
@@ -26,9 +27,11 @@ void UANS_CheckAttackHit_Player::NotifyTick(USkeletalMeshComponent* MeshComp, UA
 {
     Super::NotifyTick(MeshComp, Animation, FrameDeltaTime);
 
+    Player = Cast<ASTPlayerCharacter>(MeshComp->GetOwner());
+
     if (Player)
     {
-        if(MeshComp != Player->GetMesh())
+        if(MeshComp != Player->GetMesh() || !Player->HasAuthority())
             return;
     }
 
@@ -68,6 +71,8 @@ void UANS_CheckAttackHit_Player::NotifyTick(USkeletalMeshComponent* MeshComp, UA
 
                 // Apply Damage
                 DamagedActor->TakeDamage(FinalDamage, DamageEvent, actor->GetInstigatorController(), actor);
+                /* UGameplayStatics::ApplyPointDamage(DamagedActor, FinalDamage, hit.ImpactNormal, hit,
+                    actor->GetInstigatorController(), actor, GetDamageType());*/
 
                 // Apply Time Dilation
                 if (!bTimeDilationApplied)
@@ -79,21 +84,11 @@ void UANS_CheckAttackHit_Player::NotifyTick(USkeletalMeshComponent* MeshComp, UA
                         player->ApplyAttackCameraShake();
                         bTimeDilationApplied = true;
                     }
-
-                    /*actor->CustomTimeDilation = Value_TimeDilation;
-                    actor->GetWorldTimerManager().SetTimer(Handle_TimeDilation, 
-                        [actor]() 
-                        {
-                            if (IsValid(actor))
-                            {
-                                actor->CustomTimeDilation = 1.f;
-                            }
-                        }
-                    ,Duration_TimeDilation, false);*/
                 }
 
-               /* UGameplayStatics::ApplyPointDamage(DamagedActor, FinalDamage, hit.ImpactNormal, hit,
-                    actor->GetInstigatorController(), actor, GetDamageType());*/
+                // Spawn Impact Particle Emmiter
+                UGameplayStatics::SpawnEmitterAtLocation(DamagedActor->GetWorld(), ImpactParticle, hit.ImpactPoint);
+               
             }
 
             UAISense_Damage::ReportDamageEvent(DamagedActor, DamagedActor, actor,
