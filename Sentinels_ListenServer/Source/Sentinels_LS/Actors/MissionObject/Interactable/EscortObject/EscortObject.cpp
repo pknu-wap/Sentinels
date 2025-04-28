@@ -81,7 +81,7 @@ void AEscortObject::StopMove()
 	}
 }
 
-void AEscortObject::Interact(UInteractComponent* InteractingComponent)
+void AEscortObject::Interact_Implementation(UInteractComponent* InteractingComponent)
 {
 	if (HasAuthority())
 	{

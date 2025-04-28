@@ -18,15 +18,15 @@ void AInteractableMissionObject::GetLifetimeReplicatedProps(TArray<FLifetimeProp
 	DOREPLIFETIME(AInteractableMissionObject, bIsInteractable)
 }
 
-void AInteractableMissionObject::Interact(UInteractComponent* InteractingComponent)
+void AInteractableMissionObject::Interact_Implementation(UInteractComponent* InteractingComponent)
 {
 }
 
-void AInteractableMissionObject::Interact_Finish(UInteractComponent* InteractingComponent)
+void AInteractableMissionObject::Interact_Finish_Implementation(UInteractComponent* InteractingComponent)
 {
 }
 
-void AInteractableMissionObject::ShowInteractiveUI(UInteractComponent* InteractingComponent)
+void AInteractableMissionObject::ShowInteractiveUI_Implementation(UInteractComponent* InteractingComponent)
 {
 	if (!bIsInteractable)
 		return;
@@ -50,7 +50,7 @@ void AInteractableMissionObject::ShowInteractiveUI(UInteractComponent* Interacti
 	}
 }
 
-void AInteractableMissionObject::HideInteractiveUI(UInteractComponent* InteractingComponent)
+void AInteractableMissionObject::HideInteractiveUI_Implementation(UInteractComponent* InteractingComponent)
 {
 	if (InteractWidget_ForDebug)
 	{

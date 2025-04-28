@@ -17,7 +17,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	virtual void Interact(UInteractComponent* InteractingComponent) override;
+	virtual void Interact_Implementation(UInteractComponent* InteractingComponent) override;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
