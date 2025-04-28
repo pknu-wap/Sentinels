@@ -31,3 +31,8 @@ void USTCharacterAnimInstanceBase::NativeUpdateAnimation(float DeltaSeconds)
 		Angle = rotation.Yaw;
 	}
 }
+
+void USTCharacterAnimInstanceBase::AnimNotify_PrimaryFire()
+{
+	Delegate_PrimaryFire.Broadcast();
+}

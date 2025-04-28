@@ -13,7 +13,7 @@ void ASTGRIM::BeginPlay()
 	USTGRIMAnimInstance* GrimAnimInst = Cast<USTGRIMAnimInstance>(GetMesh()->GetAnimInstance());
 	if (GrimAnimInst)
 	{
-		GrimAnimInst->Delegate_GrimPrimaryFire.AddUObject(this, &ASTGRIM::PrimaryFire);
+		// GrimAnimInst->Delegate_GrimPrimaryFire.AddUObject(this, &ASTGRIM::PrimaryFire);
 		GrimAnimInst->Delegate_GrimUlitmateFire.AddUObject(this, &ASTGRIM::UltimateFire);
 	}
 }

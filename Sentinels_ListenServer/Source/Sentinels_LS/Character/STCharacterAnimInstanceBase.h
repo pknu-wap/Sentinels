@@ -8,6 +8,8 @@
 
 class ASTCharacterBase;
 
+DECLARE_MULTICAST_DELEGATE(FPrimaryFire);
+
 UCLASS()
 class SENTINELS_LS_API USTCharacterAnimInstanceBase : public UAnimInstance
 {
@@ -33,4 +35,11 @@ public:
 protected:
 	UPROPERTY(BlueprintReadOnly, category = "Character")
 	class ASTCharacterBase* Character;
+
+protected:
+	UFUNCTION()
+	void AnimNotify_PrimaryFire();
+
+public:
+	FPrimaryFire Delegate_PrimaryFire;
 };

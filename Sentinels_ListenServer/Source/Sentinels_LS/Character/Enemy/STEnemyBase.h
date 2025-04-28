@@ -7,6 +7,7 @@
 #include "STEnemyBase.generated.h"
 
 class USTEnemyStatusComponent;
+class AProjectileBase;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyDied, AActor*, DiedEnemy);
 
@@ -35,7 +36,10 @@ public:
 	UFUNCTION(Server, Reliable)
 	void StopCurrentAnimMontage_Multicast();
 
-	// Attack
+/*
+	Attack
+*/
+public:
 	int GetRandomNormalAttackMontageIndex();
 
 	UFUNCTION(Server, Reliable)
@@ -46,7 +50,24 @@ public:
 
 	void PlayNormalAttackMontage(int MontageIdx);
 
-	// Hit
+/*
+	Primary Fire	
+*/
+protected:
+	UFUNCTION()
+	virtual void PrimaryFire();
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<AProjectileBase> ProjectileClass_PrimaryFire;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FName SocketName_PrimaryFire;
+
+/*
+	Hit
+*/
+protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void PlayKnockbackMontage_Multicast();
 
