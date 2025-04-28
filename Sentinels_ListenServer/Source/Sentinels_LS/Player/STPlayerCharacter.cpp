@@ -96,6 +96,7 @@ void ASTPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(Skill_E_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_E_Pressed);
 		EnhancedInputComponent->BindAction(Skill_R_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_R_Pressed);
 		EnhancedInputComponent->BindAction(NormalAttack_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::NormalAttack_Pressed);
+		EnhancedInputComponent->BindAction(Step_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Step_Pressed);
 
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASTPlayerCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ASTPlayerCharacter::Look);
@@ -213,6 +214,21 @@ void ASTPlayerCharacter::Jump()
 	Super::Jump();
 }
 
+void ASTPlayerCharacter::OnMontageEnded_Callback(UAnimMontage* Montage, bool bInterrupted)
+{
+	RemoveTag(FSTGameplayTags::Get().Character_State_Skill);
+	RemoveTag(FSTGameplayTags::Get().Character_State_Step);
+
+	if (bInterrupted && Montage == Montage_NormalAttack)
+		return;
+	else
+	{
+		RemoveTag(FSTGameplayTags::Get().Character_State_Attack);
+		ResetAttackInfo();
+	}
+}
+
+
 #pragma region Region_NormalAttack
 
 void ASTPlayerCharacter::BindAttackDelegate()
@@ -220,7 +236,7 @@ void ASTPlayerCharacter::BindAttackDelegate()
 	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
 	if (AnimInst)
 	{
-		AnimInst->OnMontageEnded.AddDynamic(this, &ASTPlayerCharacter::OnMontageEnded_ResetAttackInfo);
+		AnimInst->OnMontageEnded.AddDynamic(this, &ASTPlayerCharacter::OnMontageEnded_Callback);
 	}
 
 	USTPlayerAnimInstance* PAnimInst = Cast<USTPlayerAnimInstance>(AnimInst);
@@ -234,7 +250,8 @@ void ASTPlayerCharacter::BindAttackDelegate()
 bool ASTPlayerCharacter::CanDoAttack() const
 {
 	if (HasTag(FSTGameplayTags::Get().Character_State_Skill) 
-		|| HasTag(FSTGameplayTags::Get().Character_State_Jump))
+		|| HasTag(FSTGameplayTags::Get().Character_State_Jump)
+		|| HasTag(FSTGameplayTags::Get().Character_State_Step))
 		return false;
 
 	return true;
@@ -311,17 +328,6 @@ void ASTPlayerCharacter::CheckNextAttack()
 	}
 }
 
-void ASTPlayerCharacter::OnMontageEnded_ResetAttackInfo(UAnimMontage* Montage, bool bInterrupted)
-{
-	if (bInterrupted && Montage == Montage_NormalAttack)
-		return;
-
-	RemoveTag(FSTGameplayTags::Get().Character_State_Attack);
-	RemoveTag(FSTGameplayTags::Get().Character_State_Skill);
-
-	ResetAttackInfo();
-}
-
 void ASTPlayerCharacter::ResetAttackInfo()
 {
 	CurrentCombo = 0; 
@@ -331,13 +337,79 @@ void ASTPlayerCharacter::ResetAttackInfo()
 
 #pragma endregion
 
+void ASTPlayerCharacter::ApplyCustomTimeDilation_Implementation(float inValue, float inDuration)
+{
+	CustomTimeDilation = inValue;
+
+	GetWorldTimerManager().SetTimer(Handle_TimeDilation, 
+		[this]() 
+		{ this->CustomTimeDilation = 1.f; },
+		inDuration, false);
+}
+
+void ASTPlayerCharacter::ApplyAttackCameraShake_Implementation()
+{
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		PC->ClientStartCameraShake(CameraShakeClass_Attack, 1.f);
+	}
+}
+
+#pragma region Region_Step
+
+bool ASTPlayerCharacter::CanDoStep() const
+{
+	if (HasTag(FSTGameplayTags::Get().Character_State_Skill)
+		|| HasTag(FSTGameplayTags::Get().Character_State_Attack)
+		|| HasTag(FSTGameplayTags::Get().Character_State_Step)
+		|| HasTag(FSTGameplayTags::Get().Character_State_Jump))
+		return false;
+
+	return true;
+}
+
+void ASTPlayerCharacter::Step_Pressed()
+{
+	if (!CanDoStep()) return;
+
+	Step_Pressed_Server();
+	PlayMontage_Step();
+	AddTag(FSTGameplayTags::Get().Character_State_Step);
+}
+
+void ASTPlayerCharacter::PlayMontage_Step()
+{
+	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+	if (AnimInst)
+	{
+		AnimInst->Montage_Play(Montage_Step_F);
+	}
+}
+
+void ASTPlayerCharacter::Step_Pressed_Server_Implementation()
+{
+	Step_Pressed_Multicast();
+}
+
+void ASTPlayerCharacter::Step_Pressed_Multicast_Implementation()
+{
+	if (!IsLocallyControlled())
+	{
+		PlayMontage_Step();
+	}
+}
+
+#pragma endregion
+
+
 
 #pragma region Region_Skills
 
 bool ASTPlayerCharacter::CanDoSkill() const
 {
 	if (HasTag(FSTGameplayTags::Get().Character_State_Skill)
-		|| HasTag(FSTGameplayTags::Get().Character_State_Jump))
+		|| HasTag(FSTGameplayTags::Get().Character_State_Jump)
+		|| HasTag(FSTGameplayTags::Get().Character_State_Step))
 		return false;
 
 	return true;

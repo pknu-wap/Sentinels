@@ -69,10 +69,19 @@ struct SENTINELS_LS_API FItemStruct : public FTableRowBase
 	int DEF = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MovementSpeedIncreaseRate = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float AttackSpeedIncreaseRate = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float DamageIncreaseRate = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float CDR = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float CriticalDamagePercent = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float CriticalRate = 0;
