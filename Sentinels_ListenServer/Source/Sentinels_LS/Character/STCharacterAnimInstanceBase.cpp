@@ -36,3 +36,8 @@ void USTCharacterAnimInstanceBase::AnimNotify_PrimaryFire()
 {
 	Delegate_PrimaryFire.Broadcast();
 }
+
+void USTCharacterAnimInstanceBase::AnimNotify_UltimateFire()
+{
+	Delegate_UltimateFire.Broadcast();
+}

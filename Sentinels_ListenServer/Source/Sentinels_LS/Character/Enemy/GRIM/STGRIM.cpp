@@ -2,7 +2,7 @@
 
 
 #include "Character/Enemy/GRIM/STGRIM.h"
-#include "Character/Enemy/GRIM/STGRIMAnimInstance.h"
+#include "Character/STCharacterAnimInstanceBase.h"
 #include "Character/Enemy/STEnemyBase_AIController.h"
 #include "Actors/Projectile/ProjectileBase.h"
 
@@ -10,11 +10,10 @@ void ASTGRIM::BeginPlay()
 {
 	Super::BeginPlay();
 
-	USTGRIMAnimInstance* GrimAnimInst = Cast<USTGRIMAnimInstance>(GetMesh()->GetAnimInstance());
-	if (GrimAnimInst)
+	USTCharacterAnimInstanceBase* AnimInst = Cast<USTCharacterAnimInstanceBase>(GetMesh()->GetAnimInstance());
+	if (AnimInst)
 	{
-		// GrimAnimInst->Delegate_GrimPrimaryFire.AddUObject(this, &ASTGRIM::PrimaryFire);
-		GrimAnimInst->Delegate_GrimUlitmateFire.AddUObject(this, &ASTGRIM::UltimateFire);
+		AnimInst->Delegate_UltimateFire.AddUObject(this, &ASTGRIM::UltimateFire);
 	}
 }
 

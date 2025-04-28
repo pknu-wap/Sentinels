@@ -23,6 +23,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	UFUNCTION(BlueprintCallable)
 	void FireInDirection(const FVector& ShootDirection);
 
 	UFUNCTION(BlueprintImplementableEvent)
