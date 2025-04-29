@@ -6,9 +6,10 @@
 #include "Character/STCharacterAnimInstanceBase.h"
 #include "STPlayerAnimInstance.generated.h"
 
-
 DECLARE_MULTICAST_DELEGATE(FStartCheckNextInput);
 DECLARE_MULTICAST_DELEGATE(FCheckNextAttack);
+DECLARE_MULTICAST_DELEGATE(FSetWarpTarget_Q);
+DECLARE_MULTICAST_DELEGATE(FSpawnSlash_Q)
 
 UCLASS()
 class SENTINELS_LS_API USTPlayerAnimInstance : public USTCharacterAnimInstanceBase
@@ -22,8 +23,37 @@ protected:
 	UFUNCTION()
 	void AnimNotify_CheckNextAttack();
 
+
 public:
 	FStartCheckNextInput Delegate_StartCheckNextInput;
 	FCheckNextAttack Delegate_CheckNextAttack;
 
+
+	/*
+		GreatSword
+	*/
+protected:
+
+public:
+
+	/*
+		Katana
+	*/
+protected:
+	UFUNCTION()
+	void AnimNotify_SetWarpTarget_Q();
+
+	UFUNCTION()
+	void AnimNotify_SpawnSlash_Q();
+
+public:
+	FSetWarpTarget_Q Delegate_SetWarpTarget_Q;
+	FSpawnSlash_Q Delegate_SpawnSlash_Q;
+
+	/*
+		DualBlade
+	*/
+protected:
+
+public:
 };

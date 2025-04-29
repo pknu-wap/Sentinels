@@ -3,3 +3,6 @@
 
 #include "System/STGameInstance.h"
 
+void USTGameInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+}

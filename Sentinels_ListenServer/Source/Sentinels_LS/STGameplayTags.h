@@ -15,10 +15,18 @@ public:
 	///////////  Tags  ///////////
 
 	////////// Character /////////
+	FGameplayTag Character_State_Jump;
+	FGameplayTag Character_State_Attack;
+	FGameplayTag Character_State_Skill;
+	FGameplayTag Character_State_Step;
 	FGameplayTag Character_Player_State_RepairRift;
 	FGameplayTag Character_Player_State_RescueHostage;
+	FGameplayTag Character_State_Stunned;
 
 	//////////  Widget   /////////
+	FGameplayTag Widget_Lobby_Loadout;
+	FGameplayTag Widget_Lobby_CharacterSelect;
+	FGameplayTag Widget_Lobby_LevelSelect;
 
 	//////////  Mission  /////////
 	FGameplayTag Mission_Domination;
@@ -38,6 +46,11 @@ public:
 	FGameplayTag SpawnPoint_Rift;
 	FGameplayTag SpawnPoint_Spawner;
 	FGameplayTag SpawnPoint_DestructibleObject;
+
+	/////////  Level  /////////
+	FGameplayTag Level_Lobby;
+	FGameplayTag Level_AbandonedFactory;
+	FGameplayTag Level_EX2;
 
 private:
 	static FSTGameplayTags GameplayTags;

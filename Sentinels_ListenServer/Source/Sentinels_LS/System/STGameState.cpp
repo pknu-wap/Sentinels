@@ -7,7 +7,8 @@
 #include "Sentinels_LS.h"
 #include "Kismet/KismetMathLibrary.h"
 
-ASTGameState::ASTGameState()
+ASTGameState::ASTGameState() :
+    CurrentLevelTag(FSTGameplayTags::Get().Level_Lobby)
 {
     bReplicates = true;
     bReplicateUsingRegisteredSubObjectList = true;
@@ -17,6 +18,7 @@ void ASTGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(ASTGameState, Missions);
+    DOREPLIFETIME(ASTGameState, CurrentLevelTag);
 }
 
 void ASTGameState::ActivateRandomMission()
@@ -177,6 +179,22 @@ void ASTGameState::OnMissionEnded_Multicast_Implementation(FGameplayTag InMissio
     }
 }
 
+bool ASTGameState::CanServerTravel()
+{
+    if (CurrentLevelTag == FSTGameplayTags::Get().Level_Lobby)
+    {
+        ST_LOG(LogSTNetwork, Log, TEXT("You must select map(level)!"));
+        return false;
+    }
+
+    return true;
+}
+
+void ASTGameState::TryServerTravel()
+{
+    OnAllPlayerIsReady.Broadcast(CurrentLevelTag);
+}
+
 USTMissionBase* ASTGameState::GetMission(FGameplayTag InMissionTag)
 {
     for (int i = 0; i < Missions.Num(); i++)
@@ -188,4 +206,9 @@ USTMissionBase* ASTGameState::GetMission(FGameplayTag InMissionTag)
     }
 
     return nullptr;
+}
+
+void ASTGameState::SetCurrentLevelTag(FGameplayTag NewLevelTag)
+{
+    CurrentLevelTag = NewLevelTag;
 }

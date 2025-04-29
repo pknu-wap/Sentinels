@@ -7,9 +7,14 @@
 #include "Animation/AnimNotifies/AnimNotifyState.h"
 #include "STEnums.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "DamageType/STDamageTypes.h"
 #include "ANS_CheckAttackHit_Player.generated.h"
 
 class ASTPlayerCharacter;
+class USTPlayerStatusComponent;
+class UDamageType;
+class USTBaseDamageType;
+struct FSTPointDamageEvent;
 
 UCLASS()
 class SENTINELS_LS_API UANS_CheckAttackHit_Player : public UAnimNotifyState
@@ -20,6 +25,10 @@ public:
 	virtual void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference);
 	virtual void NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference);
 	virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference);
+
+private:
+	void CalculateFinalDamage();
+	TSubclassOf<UDamageType> GetDamageType() const;
 
 public:
 	UPROPERTY(EditAnywhere, Category = Damage)
@@ -35,10 +44,41 @@ public:
 	TEnumAsByte<EDrawDebugTrace::Type> DebugType = EDrawDebugTrace::None;
 
 	UPROPERTY(EditAnywhere, Category = Damage)
-	float Damage = 10.f;
+	TSubclassOf<USTBaseDamageType> DamageType;
 
+	UPROPERTY(EditAnywhere, Category = Damage)
+	float DamagePercent = 1.f;
+
+	UPROPERTY(EditAnywhere, Category = Damage)
+	class UParticleSystem* ImpactParticle;
+
+private:
+	UPROPERTY()
 	TArray<AActor*> DamagedActors;
 
 	UPROPERTY()
 	ASTPlayerCharacter* Player;
+
+	UPROPERTY()
+	USTPlayerStatusComponent* StatusComp;
+
+	UPROPERTY()
+	float FinalDamage = 10.f;
+
+	UPROPERTY()
+	FSTPointDamageEvent DamageEvent;
+
+/*
+	Time Dilation	
+*/
+protected:
+	UPROPERTY(EditAnywhere, Category = Damage)
+	float Value_TimeDilation = 0.5f;
+
+	UPROPERTY(EditAnywhere, Category = Damage)
+	float Duration_TimeDilation = 0.25f;
+
+private:
+	bool bTimeDilationApplied = false;
+	FTimerHandle Handle_TimeDilation;
 };

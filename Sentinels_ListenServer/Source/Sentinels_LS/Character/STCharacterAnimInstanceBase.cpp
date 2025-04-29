@@ -2,7 +2,7 @@
 
 
 #include "Character/STCharacterAnimInstanceBase.h"
-#include "GameFramework/Character.h"
+#include "Character/STCharacterBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -14,7 +14,7 @@ void USTCharacterAnimInstanceBase::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
 
-	Character = Cast<ACharacter>(TryGetPawnOwner());
+	Character = Cast<ASTCharacterBase>(TryGetPawnOwner());
 	if (IsValid(Character))
 		MovementComp = Character->GetCharacterMovement();
 }

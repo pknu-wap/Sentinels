@@ -91,3 +91,6 @@ Sentinels_ListenServer/DerivedDataCache/*
 Sentinels_ListenServer/Packaged/*
 Sentinels/DerivedDataCache/*
 Sentinels/Packaged/*
+
+# Rider
+Sentinels_ListenServer/.idea/.idea.Sentinels_LS/.idea/*

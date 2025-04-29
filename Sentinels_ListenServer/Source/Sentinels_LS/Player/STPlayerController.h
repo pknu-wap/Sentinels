@@ -11,11 +11,13 @@
 #include "STPlayerController.generated.h"
 
 class ASTPlayerCharacter;
+class ASTPlayerState;
 class UInputAction;
 class USplineComponent;
 class UInventoryComponent;
 class USkillComponent;
 class UInteractComponent;
+class USTPlayerUIComponent;
 
 class FOnlineSessionSearch;
 class FOnlineSessionSearchResult;
@@ -60,6 +62,11 @@ protected:
 	void MoveClick_Released();
 	void AutoRun();
 
+/*
+	UI
+*/
+public:
+	USTPlayerUIComponent* GetUIComponent() { return UIComponent; }
 
 /*
 	Interact
@@ -126,6 +133,12 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Class", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<APawn> DefaultPlayerClass;
+
+	/*
+		UI
+	*/
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<USTPlayerUIComponent> UIComponent;
 
 private:
 	FTimerHandle Handle_AutoRun;
