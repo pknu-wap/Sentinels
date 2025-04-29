@@ -20,6 +20,9 @@ public:
 protected:
     virtual void BeginPlay() override;
 
+public:
+    void StopSpawnEnemy();
+
     /*
         Box Trigger
     */

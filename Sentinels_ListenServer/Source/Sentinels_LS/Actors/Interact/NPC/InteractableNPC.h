@@ -27,24 +27,4 @@ protected:
 public:
 	virtual void Interact(UInteractComponent* InteractingComponent) override;
 	virtual void Interact_Finish(UInteractComponent* InteractingComponent) override;
-
-
-/*
-	Rescue Success
-*/
-protected:
-	void RescueSuccessed();
-
-protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float InteractionHoldTime = 7.5f;
-
-public:
-	FMissionConditionUpdate Delegate_MissionConditionUpdate;
-
-private:
-	UPROPERTY()
-	UInteractComponent* InteractedComponent;
-
-	FTimerHandle Handle_Hold;
 };
