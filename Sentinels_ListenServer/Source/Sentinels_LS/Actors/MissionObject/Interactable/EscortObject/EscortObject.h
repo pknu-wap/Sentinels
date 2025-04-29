@@ -26,7 +26,7 @@ protected:
         Interactive Interface
     */
 protected:
-    virtual void Interact(UInteractComponent* InteractingComponent) override;
+    virtual void Interact_Implementation(UInteractComponent* InteractingComponent) override;
 
 protected:
     UPROPERTY(EditAnywhere)

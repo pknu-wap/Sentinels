@@ -41,9 +41,13 @@ protected:
 
 
 public:
+	UFUNCTION(BlueprintCallable)
 	void AddTag(const FGameplayTag& TagToAdd) { TagContainer.AddTag(TagToAdd); }
+	UFUNCTION(BlueprintCallable)
 	void RemoveTag(const FGameplayTag& TagToRemove) { TagContainer.RemoveTag(TagToRemove); }
+	UFUNCTION(BlueprintCallable)
 	void RemoveTags(const FGameplayTagContainer& TagsToRemove) { TagContainer.RemoveTags(TagsToRemove); }
+	UFUNCTION(BlueprintCallable)
 	bool HasTag(const FGameplayTag& TagToCheck) const { return TagContainer.HasTag(TagToCheck); }
 
 protected:

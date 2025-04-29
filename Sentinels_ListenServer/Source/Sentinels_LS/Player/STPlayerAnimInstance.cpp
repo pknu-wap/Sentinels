@@ -22,3 +22,8 @@ void USTPlayerAnimInstance::AnimNotify_SpawnSlash_Q()
 {
 	Delegate_SpawnSlash_Q.Broadcast();
 }
+
+void USTPlayerAnimInstance::AnimNotify_ThrowLiftingActor()
+{
+	Delegate_ThrowLiftingActor.Broadcast();
+}

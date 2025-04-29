@@ -21,10 +21,15 @@ class SENTINELS_LS_API IInteractiveInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	virtual void Interact(UInteractComponent* InteractingComponent) = 0;
-	virtual void Interact_Finish(UInteractComponent* InteractingComponent) = 0;
-	virtual void ShowInteractiveUI(UInteractComponent* InteractingComponent) = 0;
-	virtual void HideInteractiveUI(UInteractComponent* InteractingComponent) = 0;
+	UFUNCTION(BlueprintNativeEvent)
+	void Interact(UInteractComponent* InteractingComponent);
+	UFUNCTION(BlueprintNativeEvent)
+	void Interact_Finish(UInteractComponent* InteractingComponent);
+	UFUNCTION(BlueprintNativeEvent)
+	void ShowInteractiveUI(UInteractComponent* InteractingComponent);
+	UFUNCTION(BlueprintNativeEvent)
+	void HideInteractiveUI(UInteractComponent* InteractingComponent);
 
-	virtual bool IsInteractable() = 0;
+	UFUNCTION(BlueprintNativeEvent)
+	bool IsInteractable();
 };

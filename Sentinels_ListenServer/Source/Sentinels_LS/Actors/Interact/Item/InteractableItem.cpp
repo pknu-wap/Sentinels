@@ -23,7 +23,7 @@ void AInteractableItem::BeginPlay()
 	}
 }
 
-void AInteractableItem::Interact(UInteractComponent* InteractingComponent)
+void AInteractableItem::Interact_Implementation(UInteractComponent* InteractingComponent)
 {
 	if (Item_DataRow.DataTable)
 	{

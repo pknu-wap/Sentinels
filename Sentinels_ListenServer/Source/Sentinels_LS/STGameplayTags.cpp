@@ -65,6 +65,10 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 		FString("Player is Rescue Hostage")
 	);
 
+	GameplayTags.Character_Player_State_Lifting = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Character.Player.State.Lifting"),
+		FString("Player is Lifting Anything"));
+
 	/*
 		Missions
 	*/

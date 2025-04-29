@@ -27,6 +27,7 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 /*
 	Interact
@@ -37,6 +38,30 @@ public:
 
 	UFUNCTION(Server, Reliable)
 	void Interact_Finish_Server();
+
+
+/*
+	Lift & Throw
+*/
+public:
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void AttachLiftingActor_Server(AActor* InActor, FName SocketName, FVector RelativeLocation, FRotator RelativeRotation);
+
+	UFUNCTION(Server, Reliable)
+	void PlayThrowMontage_Server();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void PlayThrowMontage_Multicast();
+
+	UFUNCTION()
+	void ThrowLiftingActor();
+
+protected:
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite)
+	AActor* LiftingActor;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UAnimMontage* Montage_Throwing;
 
 
 /*

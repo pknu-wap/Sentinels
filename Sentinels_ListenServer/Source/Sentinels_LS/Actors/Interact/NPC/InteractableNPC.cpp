@@ -7,7 +7,7 @@
 #include "Character/STCharacterBase.h"
 #include "STGameplayTags.h"
 
-void AInteractableNPC::Interact(UInteractComponent* InteractingComponent)
+void AInteractableNPC::Interact_Implementation(UInteractComponent* InteractingComponent)
 {
 	if (HasAuthority())
 	{
@@ -15,7 +15,7 @@ void AInteractableNPC::Interact(UInteractComponent* InteractingComponent)
 	}
 }
 
-void AInteractableNPC::Interact_Finish(UInteractComponent* InteractingComponent)
+void AInteractableNPC::Interact_Finish_Implementation(UInteractComponent* InteractingComponent)
 {
 	if (HasAuthority())
 	{

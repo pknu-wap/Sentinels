@@ -28,7 +28,7 @@ void ARift::BeginPlay()
 	);
 }
 
-void ARift::Interact(UInteractComponent* InteractingComponent)
+void ARift::Interact_Implementation(UInteractComponent* InteractingComponent)
 {
 	if (HasAuthority())
 	{
@@ -57,7 +57,7 @@ void ARift::Interact(UInteractComponent* InteractingComponent)
 	}
 }
 
-void ARift::Interact_Finish(UInteractComponent* InteractingComponent)
+void ARift::Interact_Finish_Implementation(UInteractComponent* InteractingComponent)
 {
 	if (HasAuthority())
 	{
