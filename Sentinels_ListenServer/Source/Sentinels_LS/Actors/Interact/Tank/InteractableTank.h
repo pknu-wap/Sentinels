@@ -47,8 +47,8 @@ protected:
 	Interact Interface
 */
 protected:
-	virtual void Interact(UInteractComponent* InteractingComponent) override;
-	virtual void Interact_Finish(UInteractComponent* InteractingComponent) override;
+	virtual void Interact_Implementation(UInteractComponent* InteractingComponent) override;
+	virtual void Interact_Finish_Implementation(UInteractComponent* InteractingComponent) override;
 
 
 /*

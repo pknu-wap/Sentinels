@@ -21,7 +21,7 @@ void AInteractableHostage::BeginPlay()
 		SpawnComponent->StartSpawnEnemy();
 }
 
-void AInteractableHostage::Interact(UInteractComponent* InteractingComponent)
+void AInteractableHostage::Interact_Implementation(UInteractComponent* InteractingComponent)
 {
 	if (HasAuthority())
 	{
@@ -50,7 +50,7 @@ void AInteractableHostage::Interact(UInteractComponent* InteractingComponent)
 	}
 }
 
-void AInteractableHostage::Interact_Finish(UInteractComponent* InteractingComponent)
+void AInteractableHostage::Interact_Finish_Implementation(UInteractComponent* InteractingComponent)
 {
 	if (HasAuthority())
 	{

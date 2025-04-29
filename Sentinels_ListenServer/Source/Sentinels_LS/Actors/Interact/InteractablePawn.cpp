@@ -37,17 +37,17 @@ void AInteractablePawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 }
 
-void AInteractablePawn::Interact(UInteractComponent* InteractingComponent)
+void AInteractablePawn::Interact_Implementation(UInteractComponent* InteractingComponent)
 {
 
 }
 
-void AInteractablePawn::Interact_Finish(UInteractComponent* InteractingComponent)
+void AInteractablePawn::Interact_Finish_Implementation(UInteractComponent* InteractingComponent)
 {
 
 }
 
-void AInteractablePawn::ShowInteractiveUI(UInteractComponent* InteractingComponent)
+void AInteractablePawn::ShowInteractiveUI_Implementation(UInteractComponent* InteractingComponent)
 {
 	if (!bIsInteractable)
 		return;
@@ -71,7 +71,7 @@ void AInteractablePawn::ShowInteractiveUI(UInteractComponent* InteractingCompone
 	}
 }
 
-void AInteractablePawn::HideInteractiveUI(UInteractComponent* InteractingComponent)
+void AInteractablePawn::HideInteractiveUI_Implementation(UInteractComponent* InteractingComponent)
 {
 	if (InteractWidget_ForDebug)
 	{

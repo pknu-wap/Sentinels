@@ -194,7 +194,7 @@ void AInteractableTank::GetOffFromTank_Server_Implementation()
 	}
 }
 
-void AInteractableTank::Interact(UInteractComponent* InteractingComponent)
+void AInteractableTank::Interact_Implementation(UInteractComponent* InteractingComponent)
 {
 	if (!bIsInteractable) return;
 
@@ -219,6 +219,6 @@ void AInteractableTank::Interact(UInteractComponent* InteractingComponent)
 	}
 }
 
-void AInteractableTank::Interact_Finish(UInteractComponent* InteractingComponent)
+void AInteractableTank::Interact_Finish_Implementation(UInteractComponent* InteractingComponent)
 {
 }
