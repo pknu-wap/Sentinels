@@ -12,6 +12,13 @@
 #include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Components/CapsuleComponent.h"
+
+AInteractableTank::AInteractableTank()
+{
+	GetOffSceneComponent = CreateDefaultSubobject<USceneComponent>(FName("Get Off Position"));
+	GetOffSceneComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+}
 
 void AInteractableTank::BeginPlay()
 {
@@ -66,6 +73,8 @@ void AInteractableTank::PossessedCallback_Multicast_Implementation()
 				EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AInteractableTank::Look);
 				EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &AInteractableTank::Fire_Pressed);
 				EnhancedInputComponent->BindAction(ConvertModeAction, ETriggerEvent::Started, this, &AInteractableTank::ConvertMode_Pressed);
+				EnhancedInputComponent->BindAction(GetOffAction, ETriggerEvent::Started, this, &AInteractableTank::GetOffFromTank);
+
 			}
 		}
 	}
@@ -90,7 +99,10 @@ void AInteractableTank::Move(const FInputActionValue& Value)
 
 		// add movement 
 		AddMovementInput(GetActorForwardVector(), MovementVector.Y);
-		AddMovementInput(GetActorRightVector(), MovementVector.X);
+		
+		FRotator CurrentRotation = GetActorRotation();
+		SetActorRotation(CurrentRotation + FRotator(0, MovementVector.X * 0.3, 0));
+		// AddMovementInput(GetActorRightVector(), MovementVector.X);
 	}
 }
 
@@ -163,18 +175,44 @@ void AInteractableTank::ConvertMode_Pressed()
 	}
 }
 
+void AInteractableTank::GetOffFromTank()
+{
+	GetOffFromTank_Server();
+}
+
+void AInteractableTank::GetOffFromTank_Server_Implementation()
+{
+	if (CachedPC && CachedPlayerPawn)
+	{
+		FVector SpawnLocation = GetActorLocation() + GetOffSceneComponent->GetRelativeLocation();
+		CachedPlayerPawn->SetActorLocation(SpawnLocation);
+		CachedPlayerPawn->SetHidden(false);
+
+		CachedPC->Possess(CachedPlayerPawn);
+
+		bIsInteractable = true;
+	}
+}
+
 void AInteractableTank::Interact(UInteractComponent* InteractingComponent)
 {
 	if (!bIsInteractable) return;
 
-	APlayerController* PC = Cast<APlayerController>(InteractingComponent->GetOwner());
-	if (PC)
+	CachedPC = Cast<APlayerController>(InteractingComponent->GetOwner());
+	if (CachedPC)
 	{
-		PC->Possess(this);
+		CachedPlayerPawn = CachedPC->GetPawn();
+		if (CachedPlayerPawn)
+		{
+			CachedPlayerPawn->SetHidden(true);
+
+		}
+
+		CachedPC->Possess(this);
 
 		if (TankAnimInst)
 		{
-			TankAnimInst->SetController(PC);
+			TankAnimInst->SetController(CachedPC);
 		}
 
 		bIsInteractable = false;

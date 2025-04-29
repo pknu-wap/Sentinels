@@ -25,6 +25,9 @@ class SENTINELS_LS_API AInteractableTank : public AInteractableCharacter
 	GENERATED_BODY()
 
 public:
+	AInteractableTank();
+
+public:
 	virtual void BeginPlay() override;
 
 	// Called to bind functionality to input
@@ -76,6 +79,27 @@ protected:
 	void ConvertMode_Pressed();
 
 
+
+/*
+*	Get Off
+*/
+protected:
+	void GetOffFromTank();
+
+	UFUNCTION(Server, Reliable)
+	void GetOffFromTank_Server();
+
+protected:
+	UPROPERTY(EditAnywhere)
+	USceneComponent* GetOffSceneComponent;
+
+	UPROPERTY()
+	APlayerController* CachedPC;
+
+	UPROPERTY()
+	APawn* CachedPlayerPawn;
+
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* MappingContext_Tank;
@@ -91,6 +115,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* ConvertModeAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* GetOffAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AProjectileBase> RocketSubClass;

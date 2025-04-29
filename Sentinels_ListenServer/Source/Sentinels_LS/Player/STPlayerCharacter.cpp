@@ -206,6 +206,14 @@ float ASTPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 	return 0.0f;
 }
 
+void ASTPlayerCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	if(IsLocallyControlled())
+		BindDefaultThirdPersonInput();
+}
+
 void ASTPlayerCharacter::Jump()
 {
 	if (HasTag(FSTGameplayTags::Get().Character_State_Attack) 
