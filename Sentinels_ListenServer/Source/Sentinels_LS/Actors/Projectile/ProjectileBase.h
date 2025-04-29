@@ -23,7 +23,17 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	UFUNCTION(BlueprintCallable)
 	void FireInDirection(const FVector& ShootDirection);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetTarget(AActor* InTarget);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetTargetLocation(FVector InTargetLocation);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetHomingTarget(AActor* InTarget);
 
 protected:
 	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)

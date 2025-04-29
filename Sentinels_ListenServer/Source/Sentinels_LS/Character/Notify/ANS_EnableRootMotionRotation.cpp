@@ -15,6 +15,7 @@ void UANS_EnableRootMotionRotation::NotifyBegin(USkeletalMeshComponent* MeshComp
 		UCharacterMovementComponent* MovementComp = Character->GetCharacterMovement();
 		if (MovementComp)
 		{
+			Character->bUseControllerRotationYaw = bUseControllerRotationYaw_In;
 			MovementComp->bAllowPhysicsRotationDuringAnimRootMotion = true;
 
 			DefaultRotationRate = MovementComp->RotationRate;
@@ -33,7 +34,8 @@ void UANS_EnableRootMotionRotation::NotifyEnd(USkeletalMeshComponent* MeshComp, 
 		UCharacterMovementComponent* MovementComp = Character->GetCharacterMovement();
 		if (MovementComp)
 		{
-			MovementComp->bAllowPhysicsRotationDuringAnimRootMotion = false;
+			Character->bUseControllerRotationYaw = false;
+			MovementComp->bAllowPhysicsRotationDuringAnimRootMotion = bUseControllerRotationYaw_Out;
 
 			MovementComp->RotationRate = DefaultRotationRate;
 		}

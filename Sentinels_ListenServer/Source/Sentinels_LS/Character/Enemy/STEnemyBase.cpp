@@ -18,6 +18,8 @@
 #include "BrainComponent.h"
 #include "DamageType/STDamageTypes.h"
 #include "STGameplayTags.h"
+#include "Character/STCharacterAnimInstanceBase.h"
+#include "Actors/Projectile/ProjectileBase.h"
 
 ASTEnemyBase::ASTEnemyBase(const FObjectInitializer& object_initializer)
 	: Super(object_initializer.SetDefaultSubobjectClass<USkeletalMeshComponentBudgeted>(ACharacter::MeshComponentName))
@@ -65,6 +67,14 @@ void ASTEnemyBase::BeginPlay()
 			{
 				BBComp->SetValueAsVector(FName("StartLocation"), GetActorLocation());
 			}
+		}
+	}
+
+	if (HasAuthority())
+	{
+		if (USTCharacterAnimInstanceBase* AnimInst = Cast<USTCharacterAnimInstanceBase>(GetMesh()->GetAnimInstance()))
+		{
+			AnimInst->Delegate_PrimaryFire.AddUObject(this, &ASTEnemyBase::PrimaryFire);
 		}
 	}
 }
@@ -135,7 +145,7 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 			
 			// Stop Behavior Tree
 			AAIController* AIController = Cast<AAIController>(GetController());
-			if (AIController)
+			if (AIController && AIController->GetBrainComponent())
 			{
 				AIController->GetBrainComponent()->StopLogic(FString("Died."));
 			}
@@ -217,6 +227,16 @@ void ASTEnemyBase::PlayNormalAttackMontage(int MontageIdx)
 	if (AnimInst)
 	{
 		AnimInst->Montage_Play(Montage_NormalAttackSet[MontageIdx]);
+	}
+}
+
+void ASTEnemyBase::PrimaryFire()
+{
+	FVector SpawnLocation = GetMesh()->GetSocketLocation(SocketName_PrimaryFire);
+	AProjectileBase* projectile = GetWorld()->SpawnActor<AProjectileBase>(ProjectileClass_PrimaryFire, SpawnLocation, GetActorForwardVector().Rotation());
+	if (projectile)
+	{
+		projectile->FireInDirection(GetActorForwardVector());
 	}
 }
 

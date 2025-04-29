@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "SpawnEnemyComponent.h"
 #include "WorldEnemySpawnerComponent.generated.h"
 
 struct FNavLocation;
@@ -29,51 +30,29 @@ public:
     void StopSpawnEnemy();
 
 protected:
-    void SpawnEnemy();
-    bool GetSpawnNavLocation(FNavLocation& OutLocation) const;
-    ACharacter* GetRandomPlayerCharacter() const;
+    void SpawnEnemy(int InfoIdx);
+    bool GetSpawnNavLocation(int infoIdx, FNavLocation& OutLocation) const;
 
 protected:
     UFUNCTION()
     void OnEnemyDied(AActor* DiedEnemy);
 
 protected:
-    /*
-        Class Array for Enemy
-    */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
-    TArray<TSubclassOf<APawn>> SpawnPawnClasses;
+    bool bShouldLoop = true;
 
     /*
-        Spawn Pawns of SpawnRate per Spawn Period
+        Enemy Should Set Target as Owner When Spawned
     */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
-    int SpawnRate = 5;
-
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
-    float SpawnPeriod = 2.f;
+    bool bShouldTargetOwner = true;
 
     /*
-        Spawn Pawn between Outer Circle and Inner Circle
+        Spawn Informations
     */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
-    float SpawnableRadius_Outer = 1000.f;
+    TArray<FSpawnInfo> SpawnInfos;
 
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
-    float SpawnableRadius_Inner = 700.f;
-
-    /*
-        Max Spawnable Num
-    */
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
-    int MaxSpawnCount = 32;
-
-    UPROPERTY(VisibleAnywhere)
-    int CurrentSpawned = 0;
-
-    UPROPERTY()
-    TArray<AActor*> SpawnedEnemys;
-
-protected:
-    FTimerHandle handle;
+private:
+    float CurrentSpawned = 0;
 };

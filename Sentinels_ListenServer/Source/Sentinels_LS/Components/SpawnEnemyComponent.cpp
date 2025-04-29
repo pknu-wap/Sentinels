@@ -29,44 +29,64 @@ void USpawnEnemyComponent::StartSpawnEnemy()
 	if (!GetOwner()->HasAuthority())
 		return;
 
-	if (!GetWorld()->GetTimerManager().TimerExists(handle))
-		GetWorld()->GetTimerManager().SetTimer(handle, this, &USpawnEnemyComponent::SpawnEnemy, SpawnPeriod, true);
+	for (int i = 0; i < SpawnInfos.Num(); i++)
+	{
+		if (!GetWorld()->GetTimerManager().TimerExists(SpawnInfos[i].TimerHandle))
+		{
+			GetWorld()->GetTimerManager().SetTimer(SpawnInfos[i].TimerHandle,
+				[this, i]() 
+				{
+					SpawnEnemy(i);
+				}
+			, SpawnInfos[i].SpawnPeriod, true);
+		}
+	}
 }
 
 void USpawnEnemyComponent::StopSpawnEnemy()
 {
-	GetWorld()->GetTimerManager().ClearTimer(handle);
+	for (int i = 0; i < SpawnInfos.Num(); i++)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(SpawnInfos[i].TimerHandle);
+	}
 }
 
-void USpawnEnemyComponent::SpawnEnemy()
+void USpawnEnemyComponent::SpawnEnemy(int InfoIdx)
 {
-	if (SpawnPawnClasses.Num() == 0)
+	if (!SpawnInfos.IsValidIndex(InfoIdx))
+	{
+		return;
+	}
+
+	FSpawnInfo& Info = SpawnInfos[InfoIdx];
+
+	if (Info.SpawnPawnClasses.Num() == 0)
 	{
 		UE_LOG(LogTemp, Display, TEXT("USpawnEnemyComponent : Pawn Classes are not setted!"));
 		return;
 	}
 
 	int rand; FNavLocation SpawnNavLocation;
-	for (int i = 0; i < SpawnRate; i++)
+	for (int i = 0; i < Info.SpawnRate; i++)
 	{
-		if (CurrentSpawned >= MaxSpawnCount)
+		if (Info.CurrentSpawned >= Info.MaxSpawnCount)
 		{
 			if (!bShouldLoop)
 			{
-				GetWorld()->GetTimerManager().ClearTimer(handle);
+				GetWorld()->GetTimerManager().ClearTimer(Info.TimerHandle);
 			}
-			
+
 			break;
 		}
 
 		// Check Get NavLocation Success && Check Class is valid 
-		rand = UKismetMathLibrary::RandomIntegerInRange(0, SpawnPawnClasses.Num() - 1);
-		if (!GetSpawnNavLocation(SpawnNavLocation) || !SpawnPawnClasses[rand])
+		rand = UKismetMathLibrary::RandomIntegerInRange(0, Info.SpawnPawnClasses.Num() - 1);
+		if (!GetSpawnNavLocation(InfoIdx, SpawnNavLocation) || !Info.SpawnPawnClasses[rand])
 			continue;
 
 		// Spawn Enemy
 		SpawnNavLocation.Location.Z += 75.f;
-		APawn* pawn = UAIBlueprintHelperLibrary::SpawnAIFromClass(this, SpawnPawnClasses[rand], nullptr,
+		APawn* pawn = UAIBlueprintHelperLibrary::SpawnAIFromClass(this, Info.SpawnPawnClasses[rand], nullptr,
 			SpawnNavLocation.Location, GetOwner()->GetActorRotation());
 
 		// Check It is enemy
@@ -74,16 +94,13 @@ void USpawnEnemyComponent::SpawnEnemy()
 		if (Enemy)
 		{
 			// Set Target for enemy
-			SetTarget(Enemy);
-			
-			/*FTimerHandle TargetHandle;
-			GetWorld()->GetTimerManager().SetTimer(TargetHandle, [Enemy, this]() { this->SetTarget(Enemy); }, 1.5f, false);*/
-			
-			
+			SetTarget(InfoIdx, Enemy);
+
 			// Bind Function on Enemy Died!
 			Enemy->Delegate_OnEnemyDied.AddDynamic(this, &USpawnEnemyComponent::OnEnemyDied);
+			Info.CurrentSpawned++;
 			CurrentSpawned++;
-			SpawnedEnemys.Push(Enemy);
+			Info.SpawnedEnemys.Add(Enemy);
 		}
 		else
 		{
@@ -92,18 +109,17 @@ void USpawnEnemyComponent::SpawnEnemy()
 	}
 }
 
-bool USpawnEnemyComponent::GetSpawnNavLocation(FNavLocation& OutLocation) const
+bool USpawnEnemyComponent::GetSpawnNavLocation(int InfoIdx, FNavLocation& OutLocation) const
 {
 	UNavigationSystemV1* NavSystem = Cast<UNavigationSystemV1>(GetWorld()->GetNavigationSystem());
 	if (!NavSystem) return false;
 
-	NavSystem->GetRandomPointInNavigableRadius(GetOwner()->GetActorLocation(), SpawnableRadius_Outer, OutLocation);
+	NavSystem->GetRandomReachablePointInRadius(GetOwner()->GetActorLocation(), SpawnInfos[InfoIdx].SpawnableRadius_Outer, OutLocation);
 
 	int maxLoopIdx = 50; int currentLoopIdx = 0;
-	while (FVector::Dist2D(OutLocation.Location, GetOwner()->GetActorLocation()) < SpawnableRadius_Inner && currentLoopIdx <= maxLoopIdx)
+	while (FVector::Dist2D(OutLocation.Location, GetOwner()->GetActorLocation()) < SpawnInfos[InfoIdx].SpawnableRadius_Inner && currentLoopIdx <= maxLoopIdx)
 	{
-		DrawDebugCapsule(GetWorld(), OutLocation.Location, 50.f, 25.f, FRotator::ZeroRotator.Quaternion(), FColor::Red, false, 3.f);
-		NavSystem->GetRandomPointInNavigableRadius(GetOwner()->GetActorLocation(), SpawnableRadius_Outer, OutLocation);
+		NavSystem->GetRandomReachablePointInRadius(GetOwner()->GetActorLocation(), SpawnInfos[InfoIdx].SpawnableRadius_Outer, OutLocation);
 		currentLoopIdx++;
 	}
 
@@ -116,7 +132,7 @@ bool USpawnEnemyComponent::GetSpawnNavLocation(FNavLocation& OutLocation) const
 	return true;
 }
 
-void USpawnEnemyComponent::SetTarget(ASTEnemyBase* inEnemy)
+void USpawnEnemyComponent::SetTarget(int InfoIdx, ASTEnemyBase* inEnemy)
 {
 	if (!inEnemy)
 		return;
@@ -130,12 +146,12 @@ void USpawnEnemyComponent::SetTarget(ASTEnemyBase* inEnemy)
 		}
 		else
 		{
-			controller->SetTarget(GetRandomPlayerCharacter(inEnemy));
+			controller->SetTarget(GetRandomPlayerCharacter(InfoIdx, inEnemy));
 		}
 	}
 }
 
-ACharacter* USpawnEnemyComponent::GetRandomPlayerCharacter(ASTEnemyBase* inEnemy) const
+ACharacter* USpawnEnemyComponent::GetRandomPlayerCharacter(int InfoIdx, ASTEnemyBase* inEnemy) const
 {
 	ACharacter* player = nullptr;
 
@@ -150,7 +166,7 @@ ACharacter* USpawnEnemyComponent::GetRandomPlayerCharacter(ASTEnemyBase* inEnemy
 		if (randomPlayer)
 		{
 			float dist = FVector::Dist2D(inEnemy->GetActorLocation(), randomPlayer->GetActorLocation());
-			if (dist <= MaxDistanceToPlayer)
+			if (dist <= SpawnInfos[InfoIdx].MaxDistanceToPlayer)
 				nearPlayers.Push(randomPlayer);
 		}
 	}
@@ -170,8 +186,17 @@ void USpawnEnemyComponent::OnEnemyDied(AActor* DiedEnemy)
 	// Called when enemy died
 	if (DiedEnemy)
 	{
+		for (int i = 0; i < SpawnInfos.Num(); i++)
+		{
+			for(auto& SubClass : SpawnInfos[i].SpawnPawnClasses)
+				if (DiedEnemy->GetClass() == SubClass.Get())
+				{
+					SpawnInfos[i].CurrentSpawned--;
+					SpawnInfos[i].SpawnedEnemys.Remove(DiedEnemy);
+				}
+		}
+
 		CurrentSpawned--;
-		SpawnedEnemys.Remove(DiedEnemy);
 	}
 
 	if (CurrentSpawned <= 0)

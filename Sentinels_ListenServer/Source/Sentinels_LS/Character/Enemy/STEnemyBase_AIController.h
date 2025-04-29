@@ -45,6 +45,7 @@ public:
 	virtual void OnTargetDetected(AActor* actor, const FAIStimulus Stimulus);
 
 	// Target
+	AActor* GetCurrentTarget() const;
 	void SetTarget(AActor* InTarget);
 	void RestoreTarget();
 
