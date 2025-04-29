@@ -186,7 +186,7 @@ void AInteractableTank::GetOffFromTank_Server_Implementation()
 	{
 		FVector SpawnLocation = GetActorLocation() + GetOffSceneComponent->GetRelativeLocation();
 		CachedPlayerPawn->SetActorLocation(SpawnLocation);
-		CachedPlayerPawn->SetHidden(false);
+		CachedPlayerPawn->SetActorHiddenInGame(false);
 
 		CachedPC->Possess(CachedPlayerPawn);
 
@@ -204,8 +204,7 @@ void AInteractableTank::Interact_Implementation(UInteractComponent* InteractingC
 		CachedPlayerPawn = CachedPC->GetPawn();
 		if (CachedPlayerPawn)
 		{
-			CachedPlayerPawn->SetHidden(true);
-
+			CachedPlayerPawn->SetActorHiddenInGame(true);
 		}
 
 		CachedPC->Possess(this);
