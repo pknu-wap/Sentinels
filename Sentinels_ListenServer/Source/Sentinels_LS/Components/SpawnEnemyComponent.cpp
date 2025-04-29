@@ -23,9 +23,6 @@ USpawnEnemyComponent::USpawnEnemyComponent()
 
 void USpawnEnemyComponent::StartSpawnEnemy()
 {
-	DrawDebugCircle(GetWorld(), GetOwner()->GetTransform().ToMatrixNoScale(), SpawnableRadius_Outer, 16, FColor::Green, true);
-	DrawDebugCircle(GetWorld(), GetOwner()->GetTransform().ToMatrixNoScale(), SpawnableRadius_Inner, 16, FColor::Green, true);
-
 	if (!GetOwner()->HasAuthority())
 		return;
 
@@ -33,6 +30,9 @@ void USpawnEnemyComponent::StartSpawnEnemy()
 	{
 		if (!GetWorld()->GetTimerManager().TimerExists(SpawnInfos[i].TimerHandle))
 		{
+			DrawDebugCircle(GetWorld(), GetOwner()->GetTransform().ToMatrixNoScale(), SpawnInfos[i].SpawnableRadius_Outer, 16, FColor::Green, true);
+			DrawDebugCircle(GetWorld(), GetOwner()->GetTransform().ToMatrixNoScale(), SpawnInfos[i].SpawnableRadius_Inner, 16, FColor::Green, true);
+
 			GetWorld()->GetTimerManager().SetTimer(SpawnInfos[i].TimerHandle,
 				[this, i]() 
 				{
