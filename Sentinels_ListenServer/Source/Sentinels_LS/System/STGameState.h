@@ -73,13 +73,6 @@ public:
 	void OnMissionEnded_Multicast(FGameplayTag InMissionTag, bool IsCleared);
 
 public:
-	UFUNCTION(BlueprintCallable)
-	bool CanServerTravel();
-
-	UFUNCTION(BlueprintCallable)
-	void TryServerTravel();
-
-public:
 	USTMissionBase* GetMission(FGameplayTag InMissionTag);
 
 	FGameplayTag GetCurrentLevelTag() { return CurrentLevelTag; }
@@ -90,9 +83,40 @@ private:
 	TArray<FMissionInfo> Missions;
 
 	UPROPERTY(Replicated)
-	FGameplayTag CurrentLevelTag;
+	FMissionInfo ActivatedMission;
+
+	/*
+		Sub Mission
+	*/
+public:
+	UFUNCTION(BlueprintCallable)
+	void RegisterSubMissions(const TArray<FRegisterMissionInfo>& InSubMissionInfos);
+
+	UFUNCTION(BlueprintCallable)
+	void RegisterSubMission(FGameplayTag InMissionTag, TSubclassOf<USTMissionBase> SubMissionSubClass);
+
+	UFUNCTION()
+	void OnSubMissionEnded(FGameplayTag InMissionTag, bool IsCleared);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void OnSubMissionEnded_Multicast(FGameplayTag InMissionTag, bool IsCleared);
+
+private:
+	UPROPERTY(Replicated)
+	TArray<FMissionInfo> SubMissions;
+
 
 public:
+	UFUNCTION(BlueprintCallable)
+	bool CanServerTravel();
+
+	UFUNCTION(BlueprintCallable)
+	void TryServerTravel();
+
+public:
+	UPROPERTY(Replicated)
+	FGameplayTag CurrentLevelTag;
+
 	UPROPERTY(BlueprintAssignable)
 	FOnAllPlayerIsReady OnAllPlayerIsReady;
 };
