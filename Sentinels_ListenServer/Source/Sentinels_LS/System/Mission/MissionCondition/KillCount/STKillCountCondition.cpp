@@ -38,9 +38,12 @@ void USTKillCountCondition::ConditionUpdated(int ObjectID, bool Success)
 			KillInfos[i].Current = FMath::Clamp(KillInfos[i].Current + 1, 0, KillInfos[i].Required);
 		}
 	}
+
+	OnRep_KillInfos();
 }
 
 void USTKillCountCondition::OnRep_KillInfos()
 {
 	UE_LOG(LogTemp, Display, TEXT("USTKillCountCondition::OnRep_KillInfos"));
+	Delegate_ConditionUpdated.Broadcast();
 }

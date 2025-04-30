@@ -118,6 +118,11 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 		FString("Final Defense Until Lift Activate")
 	);
 
+	GameplayTags.SubMission_Explosion = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("SubMission.Explosion"),
+		FString("Explosion")
+	);
+
 	/*
 		Spawn Points
 	*/

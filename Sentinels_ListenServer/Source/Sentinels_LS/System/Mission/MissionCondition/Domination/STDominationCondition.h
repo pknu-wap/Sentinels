@@ -44,11 +44,14 @@ public:
 	UFUNCTION()
 	void ConditionUpdated(int ObjectID, bool Success);
 
+	UFUNCTION()
+	void OnRep_DominationPointInfos();
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<ASpawnPointBase> SubclassOfSpawnPoint;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(ReplicatedUsing = OnRep_DominationPointInfos, EditAnywhere, BlueprintReadOnly)
 	TArray<FDominationPointInfo> DominationPointInfos;
 
 	/*

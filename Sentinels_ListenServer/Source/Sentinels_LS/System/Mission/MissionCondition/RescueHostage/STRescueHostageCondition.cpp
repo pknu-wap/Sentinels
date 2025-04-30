@@ -132,9 +132,12 @@ void USTRescueHostageCondition::ConditionUpdated(int ObjectID, bool Success)
 			}
 		}
 	}
+
+	OnRep_HostageInfos();
 }
 
 void USTRescueHostageCondition::OnRep_HostageInfos()
 {
 	UE_LOG(LogTemp, Display, TEXT("USTRescueHostageCondition::OnRep_HostageInfos"));
+	Delegate_ConditionUpdated.Broadcast();
 }

@@ -8,10 +8,13 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Actors/SpawnPoint/SpawnPointBase.h"
 #include "Actors/MissionObject/NonInteractable/DestructibleObject/DestructibleObject.h"
+#include "Net/UnrealNetwork.h"
 
 void USTDestroyObjectCondition::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(USTDestroyObjectCondition, DestructibleObjectInfos);
 }
 
 bool USTDestroyObjectCondition::IsSatisfied()
@@ -109,6 +112,13 @@ void USTDestroyObjectCondition::ConditionUpdated(int ObjectID, bool Success)
 			}
 		}
 	}
+
+	OnRep_DestructibleObjectInfos();
+}
+
+void USTDestroyObjectCondition::OnRep_DestructibleObjectInfos()
+{
+	Delegate_ConditionUpdated.Broadcast();
 }
 
 void USTDestroyObjectCondition::TimeLimitEnded()

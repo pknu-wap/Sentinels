@@ -40,6 +40,8 @@ public:
 	FGameplayTag Mission_RepairRift;
 	FGameplayTag Mission_FinalDefense;
 
+	FGameplayTag SubMission_Explosion;
+
 	/////////  SpawnPoint  /////////
 	FGameplayTag SpawnPoint_DefenseCore;
 	FGameplayTag SpawnPoint_DominationPoint;

@@ -74,6 +74,8 @@ void USTDefenseWaveCondition::ConditionUpdated(int ObjectID, bool Success)
 			Mission->DeactivateMission(false);
 		}
 	}
+
+	Delegate_ConditionUpdated.Broadcast();
 }
 
 void USTDefenseWaveCondition::TimeLimitEnded()

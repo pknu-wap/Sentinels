@@ -18,6 +18,8 @@ void ASTGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(ASTGameState, Missions);
+    DOREPLIFETIME(ASTGameState, ActivatedMission);
+    DOREPLIFETIME(ASTGameState, SubMissions);
     DOREPLIFETIME(ASTGameState, CurrentLevelTag);
 }
 
@@ -33,6 +35,7 @@ void ASTGameState::ActivateRandomMission()
     if (Missions.IsValidIndex(rand))
     {
         ActivateMission(Missions[rand].MissionTag);
+        ActivatedMission = Missions[rand];
     }
 }
 
@@ -49,6 +52,16 @@ void ASTGameState::ActivateMission(FGameplayTag InMissionTag)
     {
         mission->ActivateMission();
     }
+
+    for (int i = 0; i < Missions.Num(); i++)
+    {
+        if (Missions[i].MissionTag == InMissionTag)
+        {
+            ActivatedMission = Missions[i];
+        }
+    }
+
+    OnRep_ActivatedMission();
 }
 
 bool ASTGameState::IsMissionCleared(FGameplayTag InMissionTag)
@@ -300,3 +313,14 @@ void ASTGameState::SetCurrentLevelTag(FGameplayTag NewLevelTag)
 {
     CurrentLevelTag = NewLevelTag;
 }
+
+void ASTGameState::OnRep_ActivatedMission()
+{
+    Delegate_OnRepActivatedMission.Broadcast();
+}
+
+void ASTGameState::OnRep_SubMissions()
+{
+    Delegate_OnRepSubMissions.Broadcast();
+}
+

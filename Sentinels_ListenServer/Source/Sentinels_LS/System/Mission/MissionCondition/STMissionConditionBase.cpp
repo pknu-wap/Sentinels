@@ -5,6 +5,11 @@
 #include "Kismet/GameplayStatics.h"
 #include "Actors/SpawnPoint/SpawnPointBase.h"
 
+FText USTMissionConditionBase::GetConditionDescription_Implementation()
+{
+	return FText();
+}
+
 void USTMissionConditionBase::GetAllSpawnPointsWithTag(FGameplayTag InTag, TArray<ASpawnPointBase*>& OutActors) const
 {
 	TArray<AActor*> actors;

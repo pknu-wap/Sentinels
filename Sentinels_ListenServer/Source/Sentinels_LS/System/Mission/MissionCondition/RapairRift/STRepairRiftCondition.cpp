@@ -139,10 +139,13 @@ void USTRepairRiftCondition::ConditionUpdated(int ObjectID, bool Success)
 			}
 		}
 	}
+
+	OnRep_RiftInfos();
 }
 
 
 void USTRepairRiftCondition::OnRep_RiftInfos()
 {
 	UE_LOG(LogTemp, Display, TEXT("USTRepairRiftCondition::OnRep_RiftInfos"));
+	Delegate_ConditionUpdated.Broadcast();
 }
