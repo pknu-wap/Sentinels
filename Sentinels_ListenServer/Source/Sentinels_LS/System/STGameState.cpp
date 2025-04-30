@@ -222,6 +222,8 @@ void ASTGameState::RegisterSubMissions(const TArray<FRegisterMissionInfo>& InSub
     {
         RegisterSubMission(SubMission.MissionTag, SubMission.MissionSubClass);
     }
+
+    OnRep_SubMissions();
 }
 
 void ASTGameState::RegisterSubMission(FGameplayTag InMissionTag, TSubclassOf<USTMissionBase> SubMissionSubClass)

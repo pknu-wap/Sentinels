@@ -39,6 +39,10 @@ public:
 	virtual bool IsMissionCleared();
 
 protected:
+	UFUNCTION(NetMulticast, Reliable)
+	void MissionEnded_Multicast(bool IsCleared);
+
+protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FName MissionName;
 

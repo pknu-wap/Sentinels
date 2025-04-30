@@ -58,13 +58,18 @@ void USTMissionBase::DeactivateMission(bool IsCleared)
 	UE_LOG(LogTemp, Display, TEXT("USTMissionBase::DeactivateMission"));
 	bIsMisionActivated = false;
 
-	Delegate_MissionEnded.Broadcast(MissionTag, IsCleared);
+	MissionEnded_Multicast(IsCleared);
 
 	for (auto& condition : MissionConditions)
 	{
 		if (condition)
 			condition->MissionDeactivated(IsCleared);
 	}
+}
+
+void USTMissionBase::MissionEnded_Multicast_Implementation(bool IsCleared)
+{
+	Delegate_MissionEnded.Broadcast(MissionTag, IsCleared);
 }
 
 void USTMissionBase::CheckMissionClearable()
