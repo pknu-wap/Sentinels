@@ -157,7 +157,7 @@ void ASTPlayerController::MoveClick_Released()
 			for (const FVector& point : NavPath->PathPoints)
 			{
 				Spline->AddSplinePoint(point, ESplineCoordinateSpace::World);
-				DrawDebugSphere(GetWorld(), point, 10.f, 8, FColor::Green, false, 5.f);
+				// DrawDebugSphere(GetWorld(), point, 10.f, 8, FColor::Green, false, 5.f);
 			}
 
 			GetWorldTimerManager().SetTimer(Handle_AutoRun, this, &ASTPlayerController::AutoRun, GetWorld()->GetDeltaSeconds(), true);

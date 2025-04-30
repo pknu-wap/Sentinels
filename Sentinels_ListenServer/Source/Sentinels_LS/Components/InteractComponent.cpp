@@ -86,7 +86,7 @@ void UInteractComponent::Interact_Server_Implementation()
 		FHitResult hitResult;
 		UKismetSystemLibrary::SphereTraceSingle(character, start, end, Interact_Radius,
 			TraceType, false, IgnoreActors,
-			EDrawDebugTrace::ForOneFrame, hitResult, true);
+			EDrawDebugTrace::None, hitResult, true);
 
 		if (hitResult.bBlockingHit)
 		{
@@ -233,7 +233,7 @@ void UInteractComponent::FindInteractiveActor()
 	FHitResult hitResult;
 	UKismetSystemLibrary::SphereTraceSingle(pawn, start, end, Interact_Radius,
 		TraceType, false, IgnoreActors,
-		EDrawDebugTrace::ForOneFrame, hitResult, true);
+		EDrawDebugTrace::None, hitResult, true);
 
 	if (hitResult.bBlockingHit)
 	{
