@@ -38,6 +38,14 @@ ASTPlayerController::ASTPlayerController()
 	UIComponent->SetIsReplicated(true);
 }
 
+void ASTPlayerController::OnPossess(APawn* aPawn)
+{
+	Super::OnPossess(aPawn);
+
+	if(InteractComponent)
+		InteractComponent->BindDelegates();
+}
+
 void ASTPlayerController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);

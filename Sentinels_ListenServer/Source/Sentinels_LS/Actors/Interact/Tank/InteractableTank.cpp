@@ -69,6 +69,9 @@ void AInteractableTank::PossessedCallback_Multicast_Implementation()
 
 			if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent))
 			{
+				EnhancedInputComponent->ClearAxisBindings();
+				EnhancedInputComponent->ClearBindingsForObject(this);
+
 				EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AInteractableTank::Move);
 				EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AInteractableTank::Look);
 				EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &AInteractableTank::Fire_Pressed);
@@ -177,6 +180,25 @@ void AInteractableTank::ConvertMode_Pressed()
 
 void AInteractableTank::GetOffFromTank()
 {
+	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	{
+		if (CurrentCameraMode == ETankCameraMode::ETC_Focus)
+		{
+			CurrentCameraMode = ETankCameraMode::ETC_Normal;
+
+			if (UCameraComponent* Camera = GetComponentByClass<UCameraComponent>())
+			{
+				Camera->AttachToComponent(GetComponentByClass<USpringArmComponent>(), FAttachmentTransformRules::KeepRelativeTransform);
+				Camera->SetRelativeLocation(CameraLocation_Normal);
+			}
+
+			if (CrossHairWidget)
+			{
+				CrossHairWidget->RemoveFromParent();
+			}
+		}
+	}
+
 	GetOffFromTank_Server();
 }
 

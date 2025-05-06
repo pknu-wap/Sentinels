@@ -35,15 +35,7 @@ void UInteractComponent::BeginPlay()
 		GetWorld()->GetTimerManager().SetTimer(handle, this, &UInteractComponent::FindInteractiveActor, 0.05f, true);
 	}
 
-	ASTCharacterBase* character = Cast<ASTCharacterBase>(controller->GetPawn());
-	if (character)
-	{
-		USTPlayerAnimInstance* animInst = Cast<USTPlayerAnimInstance>(character->GetMesh()->GetAnimInstance());
-		if (animInst)
-		{
-			animInst->Delegate_ThrowLiftingActor.AddUObject(this, &UInteractComponent::ThrowLiftingActor);
-		}
-	}
+	BindDelegates();
 }
 
 void UInteractComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -51,6 +43,24 @@ void UInteractComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(UInteractComponent, LiftingActor);
+}
+
+void UInteractComponent::BindDelegates()
+{
+	AController* controller = Cast<AController>(GetOwner());
+	if (controller)
+	{
+		ASTCharacterBase* character = Cast<ASTCharacterBase>(controller->GetPawn());
+		if (character)
+		{
+			USTPlayerAnimInstance* animInst = Cast<USTPlayerAnimInstance>(character->GetMesh()->GetAnimInstance());
+			if (animInst)
+			{
+				animInst->Delegate_ThrowLiftingActor.RemoveAll(this);
+				animInst->Delegate_ThrowLiftingActor.AddUObject(this, &UInteractComponent::ThrowLiftingActor);
+			}
+		}
+	}
 }
 
 void UInteractComponent::Interact_Server_Implementation()
