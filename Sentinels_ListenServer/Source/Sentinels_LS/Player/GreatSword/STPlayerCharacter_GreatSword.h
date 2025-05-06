@@ -11,6 +11,12 @@ UCLASS()
 class SENTINELS_LS_API ASTPlayerCharacter_GreatSword : public ASTPlayerCharacter
 {
 	GENERATED_BODY()
+
+/*
+	AActor Interface
+*/
+protected:
+	virtual void BeginPlay() override;
 	
 /*
 	Damage (Server)
@@ -24,5 +30,24 @@ public:
 protected:
 	virtual void OnAttackSuccess_Server_Implementation(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
+/*
+	Passive Skill
+*/
+protected:
+	virtual void Skill_Passive_Pressed() override;
+	virtual void Skill_Passive_Pressed_Server_Implementation() override;
 
+	UFUNCTION()
+	void SetWrapTarget_Passive();
+
+protected:
+	UPROPERTY(EditAnywhere, Category = "Skill")
+	float TraceRange_Passive = 200.f;
+
+	UPROPERTY(EditAnywhere, Category = "Skill")
+	float TraceRadius_Passive = 100.f;
+
+private:
+	UPROPERTY()
+	AActor* TargetActor_Passive = nullptr;
 };
