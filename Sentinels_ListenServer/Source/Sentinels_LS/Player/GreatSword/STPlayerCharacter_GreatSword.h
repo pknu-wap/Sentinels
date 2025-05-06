@@ -6,29 +6,23 @@
 #include "Player/STPlayerCharacter.h"
 #include "STPlayerCharacter_GreatSword.generated.h"
 
-/**
- * 
- */
+
 UCLASS()
 class SENTINELS_LS_API ASTPlayerCharacter_GreatSword : public ASTPlayerCharacter
 {
 	GENERATED_BODY()
 	
+/*
+	Damage (Server)
+*/
+public:
+	virtual void AdjustFinalDamage(float& DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor) override;
 
+/*
+	On Attack Success (Passive Skill)
+*/
 protected:
-	/*virtual void Skill_Q_Pressed() override;
-	virtual void Skill_Q_Pressed_Server_Implementation() override;
-	virtual void Skill_Q_Pressed_Multicast_Implementation() override;*/
+	virtual void OnAttackSuccess_Server_Implementation(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
-	/*virtual void Skill_W_Pressed() override;
-	virtual void Skill_W_Pressed_Server_Implementation() override;
-	virtual void Skill_W_Pressed_Multicast_Implementation() override;
 
-	virtual void Skill_E_Pressed() override;
-	virtual void Skill_E_Pressed_Server_Implementation() override;
-	virtual void Skill_E_Pressed_Multicast_Implementation() override;
-
-	virtual void Skill_R_Pressed() override;
-	virtual void Skill_R_Pressed_Server_Implementation() override;
-	virtual void Skill_R_Pressed_Multicast_Implementation() override;*/
 };

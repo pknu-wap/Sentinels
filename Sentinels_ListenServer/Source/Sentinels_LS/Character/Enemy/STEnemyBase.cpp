@@ -95,9 +95,9 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 
 	if (HasAuthority())
 	{
-		ASTEnemyBase_AIController* controller = Cast<ASTEnemyBase_AIController>(GetController());
-		USTBaseDamageType* STDamageType = Cast<USTBaseDamageType>(DamageEvent.DamageTypeClass.GetDefaultObject());
-
+		/*
+			Critical
+		*/
 		if (DamageEvent.GetTypeID() == FSTPointDamageEvent::ClassID)
 		{
 			const FSTPointDamageEvent& PointDamageEvent = static_cast<const FSTPointDamageEvent&>(DamageEvent);
@@ -108,7 +108,14 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 		{
 			UE_LOG(LogTemp, Warning, TEXT("ASTEnemyBase : Damage %f"), Damage);
 		}
+		
 
+		/*
+			Set Target & Apply DamageType
+		*/
+		ASTEnemyBase_AIController* controller = Cast<ASTEnemyBase_AIController>(GetController());
+		USTBaseDamageType* STDamageType = Cast<USTBaseDamageType>(DamageEvent.DamageTypeClass.GetDefaultObject());
+		USTKatanaDamageType* KatanaDamageType = Cast<USTKatanaDamageType>(DamageEvent.DamageTypeClass.GetDefaultObject());
 		if (controller)
 		{
 			/*
@@ -132,6 +139,12 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 						[&]() { RemoveTag(FSTGameplayTags::Get().Character_State_Stunned); },
 						STDamageType->StunnedTime, false);
 				}
+			}
+
+			if (KatanaDamageType)
+			{
+				AddTag(FSTGameplayTags::Get().Character_State_Bleed);
+				UE_LOG(LogTemp, Display, TEXT("Katana Damage Type ! ! !"));
 			}
 		}
 
