@@ -45,7 +45,7 @@ void USTRescueHostageCondition::MissionActivated()
 	FVector SpawnLocation; FRotator SpawnRotation;
 
 	TArray<ASpawnPointBase*> SpawnPoints;
-	GetAllSpawnPointsWithTag(FSTGameplayTags::Get().SpawnPoint_Hostage, SpawnPoints);
+	GetAllSpawnPointsWithTag(FSTGameplayTags::Get().Mission_RescueHostage, SpawnPoints);
 
 	if (SpawnPoints.IsEmpty())
 	{

@@ -40,7 +40,7 @@ void USTDestroyObjectCondition::MissionActivated()
 	FVector SpawnLocation; FRotator SpawnRotation;
 
 	TArray<ASpawnPointBase*> SpawnPoints;
-	GetAllSpawnPointsWithTag(FSTGameplayTags::Get().SpawnPoint_DestructibleObject, SpawnPoints);
+	GetAllSpawnPointsWithTag(FSTGameplayTags::Get().Mission_DestroyObjects, SpawnPoints);
 
 	if (SpawnPoints.IsEmpty())
 	{
