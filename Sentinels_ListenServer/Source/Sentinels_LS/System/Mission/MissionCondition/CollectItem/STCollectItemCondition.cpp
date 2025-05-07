@@ -84,4 +84,5 @@ void USTCollectItemCondition::MissionDeactivated(bool IsCleared)
 void USTCollectItemCondition::OnRep_CollectedItemInfos()
 {
 	UE_LOG(LogTemp, Display, TEXT("USTCollectItemCondition::OnRep_CollectedItemInfos"));
+	Delegate_ConditionUpdated.Broadcast();
 }

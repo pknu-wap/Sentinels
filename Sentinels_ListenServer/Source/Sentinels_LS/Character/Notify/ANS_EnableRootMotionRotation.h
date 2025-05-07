@@ -22,6 +22,12 @@ protected:
 	UPROPERTY(EditAnywhere)
 	FRotator NewRotationRate = FRotator(0.f, 500.f, 0.f);
 
+	UPROPERTY(EditAnywhere)
+	bool bUseControllerRotationYaw_In = false;
+
+	UPROPERTY(EditAnywhere)
+	bool bUseControllerRotationYaw_Out = false;
+
 private:
 	UPROPERTY()
 	ACharacter* Character;

@@ -50,6 +50,11 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 		FString("Character State Skill")
 	);
 
+	GameplayTags.Character_State_Step = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Character.State.Step"),
+		FString("Character State Step")
+	);
+
 	GameplayTags.Character_Player_State_RepairRift = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Character.Player.State.RepairRift"),
 		FString("Player is Reparing Rift")
@@ -59,6 +64,10 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 		FName("Character.Player.State.RescueHostage"),
 		FString("Player is Rescue Hostage")
 	);
+
+	GameplayTags.Character_Player_State_Lifting = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Character.Player.State.Lifting"),
+		FString("Player is Lifting Anything"));
 
 	/*
 		Missions
@@ -109,6 +118,11 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 		FString("Final Defense Until Lift Activate")
 	);
 
+	GameplayTags.SubMission_Explosion = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("SubMission.Explosion"),
+		FString("Explosion")
+	);
+
 	/*
 		Spawn Points
 	*/
@@ -122,9 +136,9 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 		FString("SpawnPoint DominationPoint")
 	);
 
-	GameplayTags.SpawnPoint_NPC = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("SpawnPoint.NPC"),
-		FString("SpawnPoint NPC")
+	GameplayTags.SpawnPoint_Hostage = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("SpawnPoint.Hostage"),
+		FString("SpawnPoint Hostage")
 	);
 
 	GameplayTags.SpawnPoint_Rift = UGameplayTagsManager::Get().AddNativeGameplayTag(

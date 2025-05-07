@@ -35,6 +35,9 @@ protected:
 private:
 	bool bCoreIsDestroyed = false;
 
+	UPROPERTY()
+	ADefenseCore* Core;
+
 	/*
 	*	Time Limit
 	*/

@@ -18,9 +18,11 @@ public:
 	FGameplayTag Character_State_Jump;
 	FGameplayTag Character_State_Attack;
 	FGameplayTag Character_State_Skill;
+	FGameplayTag Character_State_Step;
+	FGameplayTag Character_State_Stunned;
 	FGameplayTag Character_Player_State_RepairRift;
 	FGameplayTag Character_Player_State_RescueHostage;
-	FGameplayTag Character_State_Stunned;
+	FGameplayTag Character_Player_State_Lifting;
 
 	//////////  Widget   /////////
 	FGameplayTag Widget_Lobby_Loadout;
@@ -38,10 +40,12 @@ public:
 	FGameplayTag Mission_RepairRift;
 	FGameplayTag Mission_FinalDefense;
 
+	FGameplayTag SubMission_Explosion;
+
 	/////////  SpawnPoint  /////////
 	FGameplayTag SpawnPoint_DefenseCore;
 	FGameplayTag SpawnPoint_DominationPoint;
-	FGameplayTag SpawnPoint_NPC;
+	FGameplayTag SpawnPoint_Hostage;
 	FGameplayTag SpawnPoint_Rift;
 	FGameplayTag SpawnPoint_Spawner;
 	FGameplayTag SpawnPoint_DestructibleObject;

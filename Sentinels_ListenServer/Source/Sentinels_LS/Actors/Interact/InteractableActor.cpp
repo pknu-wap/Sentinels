@@ -30,15 +30,15 @@ void AInteractableActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	DOREPLIFETIME(AInteractableActor, bIsInteractable);
 }
 
-void AInteractableActor::Interact(UInteractComponent* InteractingComponent)
+void AInteractableActor::Interact_Implementation(UInteractComponent* InteractingComponent)
 {
 }
 
-void AInteractableActor::Interact_Finish(UInteractComponent* InteractingComponent)
+void AInteractableActor::Interact_Finish_Implementation(UInteractComponent* InteractingComponent)
 {
 }
 
-void AInteractableActor::ShowInteractiveUI(UInteractComponent* InteractingComponent)
+void AInteractableActor::ShowInteractiveUI_Implementation(UInteractComponent* InteractingComponent)
 {
 	if (!bIsInteractable)
 		return;
@@ -62,7 +62,7 @@ void AInteractableActor::ShowInteractiveUI(UInteractComponent* InteractingCompon
 	}
 }
 
-void AInteractableActor::HideInteractiveUI(UInteractComponent* InteractingComponent)
+void AInteractableActor::HideInteractiveUI_Implementation(UInteractComponent* InteractingComponent)
 {
 	if (InteractWidget_ForDebug)
 	{

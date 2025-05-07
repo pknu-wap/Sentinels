@@ -57,4 +57,6 @@ void USTEscortCondition::ConditionUpdated(int ObjectID, bool Success)
 			Mission->DeactivateMission(Success);
 		}
 	}
+
+	Delegate_ConditionUpdated.Broadcast();
 }

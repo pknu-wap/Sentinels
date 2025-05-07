@@ -39,13 +39,20 @@ public:
 	virtual bool IsMissionCleared();
 
 protected:
+	UFUNCTION(NetMulticast, Reliable)
+	void MissionEnded_Multicast(bool IsCleared);
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FName MissionName;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FGameplayTag MissionTag;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<TSubclassOf<USTMissionConditionBase>> SubclassOfMissionConditions;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(Replicated, BlueprintReadOnly)
 	TArray<USTMissionConditionBase*> MissionConditions;
 	
 
@@ -55,6 +62,7 @@ protected:
 public:
 	FORCEINLINE bool IsActivated() { return bIsMisionActivated; }
 
+	UPROPERTY(BlueprintAssignable)
 	FOnMissionEnded Delegate_MissionEnded;
 
 

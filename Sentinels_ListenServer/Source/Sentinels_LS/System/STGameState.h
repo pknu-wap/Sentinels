@@ -7,7 +7,9 @@
 #include "STGameplayTags.h"
 #include "STGameState.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnServerTravelReady, FGameplayTag, LevelTag);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAllPlayerIsReady, FGameplayTag, LevelTag);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRepActivatedMission);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRepSubMissions);
 
 class USTMissionBase;
 
@@ -23,15 +25,15 @@ struct FRegisterMissionInfo
 	TSubclassOf<USTMissionBase> MissionSubClass;
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FMissionInfo
 {
 	GENERATED_BODY()
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	FGameplayTag MissionTag;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<USTMissionBase> Mission;
 };
 
@@ -46,6 +48,9 @@ public:
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
 	
+	/*
+		Main Mission
+	*/
 public:
 	UFUNCTION(BlueprintCallable)
 	void ActivateRandomMission();
@@ -73,24 +78,61 @@ public:
 	void OnMissionEnded_Multicast(FGameplayTag InMissionTag, bool IsCleared);
 
 public:
-	UFUNCTION(BlueprintCallable)
-	void TryServerTravel();
-
-public:
 	USTMissionBase* GetMission(FGameplayTag InMissionTag);
 
-	UFUNCTION(BlueprintCallable)
-	void SetCurrentLevelTag(FGameplayTag LevelTag) { CurrentLevelTag = LevelTag; }
 	FGameplayTag GetCurrentLevelTag() { return CurrentLevelTag; }
+	void SetCurrentLevelTag(FGameplayTag NewLevelTag);
+
+protected:
+	UFUNCTION()
+	void OnRep_ActivatedMission();
+
+	UPROPERTY(BlueprintAssignable)
+	FOnRepActivatedMission Delegate_OnRepActivatedMission;
 
 private:
 	UPROPERTY(Replicated)
 	TArray<FMissionInfo> Missions;
 
+	UPROPERTY(ReplicatedUsing = OnRep_ActivatedMission, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	FMissionInfo ActivatedMission;
+
+	/*
+		Sub Mission
+	*/
+public:
+	UFUNCTION(BlueprintCallable)
+	void RegisterSubMissions(const TArray<FRegisterMissionInfo>& InSubMissionInfos);
+
+	UFUNCTION(BlueprintCallable)
+	void RegisterSubMission(FGameplayTag InMissionTag, TSubclassOf<USTMissionBase> SubMissionSubClass);
+
+	UFUNCTION()
+	void OnSubMissionEnded(FGameplayTag InMissionTag, bool IsCleared);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void OnSubMissionEnded_Multicast(FGameplayTag InMissionTag, bool IsCleared);
+
+protected:
+	UFUNCTION()
+	void OnRep_SubMissions();
+
+	UPROPERTY(BlueprintAssignable)
+	FOnRepSubMissions Delegate_OnRepSubMissions;
+
+private:
+	UPROPERTY(ReplicatedUsing = OnRep_SubMissions, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	TArray<FMissionInfo> SubMissions;
+
+
+public:
+	UFUNCTION(BlueprintCallable)
+	void TryServerTravel();
+
+public:
 	UPROPERTY(Replicated)
 	FGameplayTag CurrentLevelTag;
 
-public:
 	UPROPERTY(BlueprintAssignable)
 	FOnServerTravelReady OnServerTravelReady;
 };

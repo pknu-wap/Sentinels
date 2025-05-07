@@ -24,7 +24,11 @@ protected:
 
 private:
 	FDelegateHandle LamdaHandle;
+
+	UPROPERTY()
 	bool IsMontagePlaying = false;
+
+	UPROPERTY()
 	class ASTEnemyBase* Enemy;
 
 protected:

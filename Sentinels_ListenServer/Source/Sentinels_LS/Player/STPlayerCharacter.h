@@ -14,6 +14,7 @@ class ASTPlayerCharacter;
 class UInventoryComponent;
 class USTPlayerStatusComponent;
 class UCameraModeManagerComponent;
+class UCameraShakeBase;
 struct FInputActionValue;
 
 UCLASS()
@@ -32,17 +33,25 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+	virtual void PossessedBy(AController* NewController);
 
 	/*
 		ACharacter Interface
 	*/
 	virtual void Jump() override;
 
+	/*
+		
+	*/
+	UFUNCTION()
+	void OnMontageEnded_Callback(UAnimMontage* Montage, bool bInterrupted);
+
 
 	/*
 		Input	
 	*/
 public:
+	void ClearAllMappingContext();
 	void BindDefaultTopDownInput();
 	void BindDefaultThirdPersonInput();
 
@@ -75,8 +84,6 @@ protected:
 	UFUNCTION()
 	void CheckNextAttack();
 
-	UFUNCTION()
-	void OnMontageEnded_ResetAttackInfo(UAnimMontage* Montage, bool bInterrupted);
 	void ResetAttackInfo();
 
 protected:
@@ -86,7 +93,42 @@ protected:
 	bool bShouldDoNextAttack = false;
 
 
+	/*
+		Time Dilation
+	*/
+public:
+	UFUNCTION(Client, Reliable)
+	void ApplyCustomTimeDilation(float inValue, float inDuration);
+
 protected:
+	FTimerHandle Handle_TimeDilation;
+
+	/*
+		Camera Shake
+	*/
+public:
+	UFUNCTION(Client, Reliable)
+	void ApplyAttackCameraShake();
+
+	UPROPERTY(EditAnywhere, Category = Camera)
+	TSubclassOf<UCameraShakeBase> CameraShakeClass_Attack;
+
+	/*
+		Step
+	*/
+protected:
+	bool CanDoStep() const;
+
+	void Step_Pressed();
+	void PlayMontage_Step();
+
+	UFUNCTION(Server, Reliable)
+	virtual void Step_Pressed_Server();
+
+	UFUNCTION(NetMulticast, Reliable)
+	virtual void Step_Pressed_Multicast();
+
+
 	/*
 		Skills
 	*/
@@ -167,6 +209,9 @@ protected:
 	UInputAction* NormalAttack_Action;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* Step_Action;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* Skill_Q_Action;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -192,6 +237,9 @@ protected:
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* Montage_NormalAttack;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* Montage_Step_F;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* Montage_Skill_Q;

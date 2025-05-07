@@ -51,6 +51,11 @@ ASTDummyPlayer::ASTDummyPlayer() :
 
 	FName blade_R = *FString::Printf(TEXT("Blade_R"));
 	AddSKComponents(blade_R, TEXT("Weapon_R"));
+
+	// GetSKMeshComponent(ESKParts::GreatSword)->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform, TEXT("Weapon_R"));
+	// GetSKMeshComponent(ESKParts::Katana)->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform, TEXT("Weapon_R"));
+	// GetSKMeshComponent(ESKParts::Blade_L)->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform, TEXT("Weapon_L"));
+	// GetSKMeshComponent(ESKParts::Blade_R)->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform, TEXT("Weapon_R"));
 }
 
 // Called when the game starts or when spawned

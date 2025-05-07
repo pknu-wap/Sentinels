@@ -5,10 +5,17 @@
 #include "Components/InventoryComponent.h"
 #include "SubSystem/InventorySubsystem.h"
 #include "Net/UnrealNetwork.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values for this component's properties
 USTPlayerStatusComponent::USTPlayerStatusComponent()
-	: BaseMaxHP(100.f), MaxCDR(0.5f)
+	:	MaxHP(1000.f), BaseMaxHP(100.f), 
+		MaxMovementSpeed(1800.f), BaseMovementSpeed(600.f),
+		MaxAttackSpeed(5.f), BaseAttackSpeed(1.f),
+		MaxCriticalDamagePercent(5.f), BaseCriticalDamagePercent(2.f),
+		MaxCriticalRate(1.0f), BaseCriticalRate(0.1f),
+		MaxDamageIncreaseRate(3.f),
+		MaxCDR(0.5f)
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
@@ -23,8 +30,7 @@ void USTPlayerStatusComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	HP = MaxHP = BaseMaxHP;
-	CDR = MaxCDR;
+	SetDefaultStatus();
 }
 
 void USTPlayerStatusComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -37,20 +43,200 @@ void USTPlayerStatusComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 	DOREPLIFETIME(USTPlayerStatusComponent, MaxHP);
 	DOREPLIFETIME(USTPlayerStatusComponent, HP);
 
+	DOREPLIFETIME(USTPlayerStatusComponent, MaxAttackSpeed);
+	DOREPLIFETIME(USTPlayerStatusComponent, AttackSpeed);
+	DOREPLIFETIME(USTPlayerStatusComponent, BaseAttackSpeed);
+
 	/*
 		Replicate to Only for Owner
 	*/
 	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, ATK, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, DEF, COND_OwnerOnly);
 
+	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, MaxMovementSpeed, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, MovementSpeed, COND_OwnerOnly);
+
+	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, MaxCriticalDamagePercent, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, CriticalDamagePercent, COND_OwnerOnly);
+
+	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, MaxCriticalRate, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, CriticalRate, COND_OwnerOnly);
+
 	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, MaxDamageIncreaseRate, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, DamageIncreaseRate, COND_OwnerOnly);
 
 	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, MaxCDR, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, CDR, COND_OwnerOnly);
+}
 
-	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, MaxCriticalRate, COND_OwnerOnly);
-	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, CriticalRate, COND_OwnerOnly);
+ESTStatusType USTPlayerStatusComponent::GetRelatedStatusType(ESTBuffType inBuffType) const
+{
+	switch (inBuffType)
+	{
+	case ESTBuffType::HP:
+		return ESTStatusType::HP;
+		break;
+	case ESTBuffType::ATK:
+		return ESTStatusType::ATK;
+		break;
+	case ESTBuffType::DEF:
+		return ESTStatusType::DEF;
+		break;
+	case ESTBuffType::MovementSpeed:
+		return ESTStatusType::MovementSpeed;
+		break;
+	case ESTBuffType::AttackSpeed:
+		return ESTStatusType::AttackSpeed;
+		break;
+	case ESTBuffType::DamageIncreaseRate:
+		return ESTStatusType::DamageIncreaseRate;
+		break;
+	case ESTBuffType::CriticalDamagePercent:
+		return ESTStatusType::CriticalDamagePercent;
+		break;
+	case ESTBuffType::CriticalRate:
+		return ESTStatusType::CriticalRate;
+		break;
+	case ESTBuffType::CDR:
+		return ESTStatusType::CDR;
+		break;
+	default:
+		break;
+	}
+
+	return ESTStatusType::None;
+}
+
+void USTPlayerStatusComponent::SetStatus_Server_Implementation(ESTStatusType inType, float inValue, bool forceApply)
+{
+	if (forceApply)
+	{
+		switch (inType)
+		{
+		case ESTStatusType::HP:
+			HP = inValue;
+			break;
+		case ESTStatusType::ATK:
+			ATK = inValue;
+			break;
+		case ESTStatusType::DEF:
+			DEF = inValue;
+			break;
+		case ESTStatusType::MovementSpeed:
+			MovementSpeed = inValue;
+			break;
+		case ESTStatusType::AttackSpeed:
+			AttackSpeed = inValue;
+			break;
+		case ESTStatusType::DamageIncreaseRate:
+			DamageIncreaseRate = inValue;
+			break;
+		case ESTStatusType::CriticalDamagePercent:
+			CriticalDamagePercent = inValue;
+			break;
+		case ESTStatusType::CriticalRate:
+			CriticalRate = inValue;
+			break;
+		case ESTStatusType::CDR:
+			CDR = inValue;
+			break;
+		default:
+			break;
+		}
+
+		return;
+	}
+
+	switch (inType)
+	{
+	case ESTStatusType::HP:
+		HP = FMath::Clamp(inValue, 0.f, MaxHP);
+		break;
+	case ESTStatusType::ATK:
+		ATK = inValue;
+		break;
+	case ESTStatusType::DEF:
+		DEF = inValue;
+		break;
+	case ESTStatusType::MovementSpeed:
+		MovementSpeed = FMath::Clamp(inValue, 0.f, MaxMovementSpeed);
+		break;
+	case ESTStatusType::AttackSpeed:
+		AttackSpeed = FMath::Clamp(inValue, 1.f, AttackSpeed);
+		break;
+	case ESTStatusType::DamageIncreaseRate:
+		DamageIncreaseRate = FMath::Clamp(inValue, 0.f, MaxDamageIncreaseRate);
+		break;
+	case ESTStatusType::CriticalDamagePercent:
+		CriticalDamagePercent = FMath::Clamp(inValue, 0.f, MaxCriticalDamagePercent);
+		break;
+	case ESTStatusType::CriticalRate:
+		CriticalRate = FMath::Clamp(inValue, 0.f, MaxCriticalRate);
+		break;
+	case ESTStatusType::CDR:
+		CDR = FMath::Clamp(inValue, 0.f, MaxCDR);
+		break;
+	default:
+		break;
+	}
+
+	ApplyStatus();
+}
+
+void USTPlayerStatusComponent::ApplyBuff_Server_Implementation(ESTBuffType inType, float inValue, float inDuration)
+{
+	// Already exist buff
+	FSTBuffStruct* appliedBuff = BuffMap.Find(inType);
+	if (appliedBuff)
+	{
+		if (inValue > appliedBuff->Value)
+		{
+			GetWorld()->GetTimerManager().SetTimer(appliedBuff->Handle_Buff,
+				[this, inType]()
+				{
+					this->ClearBuff_Server(inType);
+				},
+				inDuration, false);
+		}
+	}
+	else
+	{
+		FSTBuffStruct newBuff = FSTBuffStruct();
+		BuffMap.Add(inType, FSTBuffStruct(inType, inValue, inDuration));
+
+		appliedBuff = BuffMap.Find(inType);
+		if (appliedBuff)
+		{
+			GetWorld()->GetTimerManager().SetTimer(appliedBuff->Handle_Buff,
+			[this, inType]()
+			{
+				this->ClearBuff_Server(inType);
+			},
+			inDuration, false);
+		}
+	}
+
+	// Recalculate Status
+	CalculateStatus();
+	ApplyStatus();
+}
+
+void USTPlayerStatusComponent::ClearBuff_Server_Implementation(ESTBuffType inType)
+{
+	BuffMap.Remove(inType);
+	CalculateStatus();
+	ApplyStatus();
+}
+
+void USTPlayerStatusComponent::SetDefaultStatus()
+{
+	HP = BaseMaxHP;
+	MovementSpeed = BaseMovementSpeed;
+	AttackSpeed = BaseAttackSpeed;
+	CriticalDamagePercent = BaseCriticalDamagePercent;
+	CriticalRate = BaseCriticalRate;
+	DamageIncreaseRate = 0.f;
+	CDR = 0.f;
 }
 
 void USTPlayerStatusComponent::CalculateStatus()
@@ -62,7 +248,7 @@ void USTPlayerStatusComponent::CalculateStatus()
 		if (!InvComp || !InvSubSystem) return;
 
 		// Reset Status 
-		MaxHP = BaseMaxHP; DEF = 0; DamageIncreaseRate = 0; CDR = 0; CriticalRate = 0;
+		SetDefaultStatus();
 
 		// ReCalculate Status
 		const TArray<FInvSlotStruct>& Inventory = InvComp->GetInventory();
@@ -77,15 +263,87 @@ void USTPlayerStatusComponent::CalculateStatus()
 			if (itemInfo->DEF > 0)
 				DEF += itemInfo->DEF * Slot.Quantity;
 
+			if (itemInfo->MovementSpeedIncreaseRate > 0)
+				MovementSpeed = FMath::Clamp(
+					MovementSpeed * FMath::Pow(1 + itemInfo->MovementSpeedIncreaseRate, Slot.Quantity),
+					0, MaxMovementSpeed);
+
+			if (itemInfo->AttackSpeedIncreaseRate > 0)
+				AttackSpeed = FMath::Clamp(
+					AttackSpeed * FMath::Pow(1 + itemInfo->AttackSpeedIncreaseRate, Slot.Quantity),
+					0, MaxAttackSpeed);
+
 			if (itemInfo->DamageIncreaseRate > 0)
 				DamageIncreaseRate = FMath::Clamp(DamageIncreaseRate + itemInfo->DamageIncreaseRate * Slot.Quantity, 0, MaxDamageIncreaseRate);
 
 			if (itemInfo->CDR > 0)
-				CDR = FMath::Clamp(CDR + itemInfo->CDR * Slot.Quantity, 0, MaxCDR);
+			{
+				if (CDR == 0)
+				{
+					CDR = FMath::Clamp(FMath::Pow(itemInfo->CDR, Slot.Quantity), 0, MaxCDR);
+				}
+				else
+				{
+					CDR = CDR * FMath::Clamp(FMath::Pow(itemInfo->CDR, Slot.Quantity), 0, MaxCDR);
+				}
+			}
+
+			if (itemInfo->CriticalDamagePercent > 0)
+				CriticalDamagePercent = FMath::Clamp(
+					BaseCriticalDamagePercent + FMath::Pow(itemInfo->CriticalDamagePercent, Slot.Quantity),
+					0, MaxCriticalDamagePercent);
 
 			if (itemInfo->CriticalRate > 0)
 				CriticalRate = FMath::Clamp(CriticalRate + itemInfo->CriticalRate * Slot.Quantity, 0, MaxCriticalRate);
 		}
+
+
+		for (auto& pair : BuffMap)
+		{
+			FSTBuffStruct& buff = pair.Value;
+			switch (buff.BuffType)
+			{
+			case ESTBuffType::HP:
+				
+				break;
+			case ESTBuffType::ATK:
+				
+				break;
+			case ESTBuffType::DEF:
+				
+				break;
+			case ESTBuffType::MovementSpeed:
+				MovementSpeed = FMath::Clamp(MovementSpeed * (1 + buff.Value), 0, MaxMovementSpeed);
+				break;
+			case ESTBuffType::AttackSpeed:
+				AttackSpeed = FMath::Clamp(
+					AttackSpeed * (1 + buff.Value),
+					0, MaxAttackSpeed);
+				break;
+			case ESTBuffType::DamageIncreaseRate:
+				DamageIncreaseRate = FMath::Clamp(DamageIncreaseRate + buff.Value, 0, MaxDamageIncreaseRate);
+				break;
+			case ESTBuffType::CriticalDamagePercent:
+				CriticalDamagePercent = FMath::Clamp(CriticalDamagePercent * buff.Value, 0, MaxCriticalDamagePercent);
+				break;
+			case ESTBuffType::CriticalRate:
+				CriticalRate = FMath::Clamp(CriticalRate + buff.Value, 0, MaxCriticalRate);
+				break;
+			case ESTBuffType::CDR:
+				CDR = FMath::Clamp(CDR * buff.Value, 0, MaxCDR);
+				break;
+			default:
+				break;
+			}
+		}
+	}
+}
+
+void USTPlayerStatusComponent::ApplyStatus()
+{
+	if (UCharacterMovementComponent* characterMovement = GetOwner()->GetComponentByClass<UCharacterMovementComponent>())
+	{
+		characterMovement->MaxWalkSpeed = MovementSpeed;
 	}
 }
 

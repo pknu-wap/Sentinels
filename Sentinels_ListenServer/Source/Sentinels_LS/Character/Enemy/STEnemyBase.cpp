@@ -18,6 +18,8 @@
 #include "BrainComponent.h"
 #include "DamageType/STDamageTypes.h"
 #include "STGameplayTags.h"
+#include "Character/STCharacterAnimInstanceBase.h"
+#include "Actors/Projectile/ProjectileBase.h"
 
 ASTEnemyBase::ASTEnemyBase(const FObjectInitializer& object_initializer)
 	: Super(object_initializer.SetDefaultSubobjectClass<USkeletalMeshComponentBudgeted>(ACharacter::MeshComponentName))
@@ -67,6 +69,14 @@ void ASTEnemyBase::BeginPlay()
 			}
 		}
 	}
+
+	if (HasAuthority())
+	{
+		if (USTCharacterAnimInstanceBase* AnimInst = Cast<USTCharacterAnimInstanceBase>(GetMesh()->GetAnimInstance()))
+		{
+			AnimInst->Delegate_PrimaryFire.AddUObject(this, &ASTEnemyBase::PrimaryFire);
+		}
+	}
 }
 
 void ASTEnemyBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -87,7 +97,18 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 	{
 		ASTEnemyBase_AIController* controller = Cast<ASTEnemyBase_AIController>(GetController());
 		USTBaseDamageType* STDamageType = Cast<USTBaseDamageType>(DamageEvent.DamageTypeClass.GetDefaultObject());
-		
+
+		if (DamageEvent.GetTypeID() == FSTPointDamageEvent::ClassID)
+		{
+			const FSTPointDamageEvent& PointDamageEvent = static_cast<const FSTPointDamageEvent&>(DamageEvent);
+			FString Str_DamageType = PointDamageEvent.bIsCritical ? FString("Critical") : FString("Normal");
+			UE_LOG(LogTemp, Warning, TEXT("ASTEnemyBase : %s Damage %f"), *Str_DamageType, Damage);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("ASTEnemyBase : Damage %f"), Damage);
+		}
+
 		if (controller)
 		{
 			/*
@@ -124,7 +145,7 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 			
 			// Stop Behavior Tree
 			AAIController* AIController = Cast<AAIController>(GetController());
-			if (AIController)
+			if (AIController && AIController->GetBrainComponent())
 			{
 				AIController->GetBrainComponent()->StopLogic(FString("Died."));
 			}
@@ -146,7 +167,7 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 		{
 			StopCurrentAnimMontage_Multicast();
 			FVector LaunchDir = (GetActorLocation() - DamageCauser->GetActorLocation()).GetSafeNormal2D();
-			LaunchCharacter(LaunchDir * 1500.f, false, false);
+			LaunchCharacter(LaunchDir * 750.f, false, false);
 		}
 	}
 
@@ -206,6 +227,16 @@ void ASTEnemyBase::PlayNormalAttackMontage(int MontageIdx)
 	if (AnimInst)
 	{
 		AnimInst->Montage_Play(Montage_NormalAttackSet[MontageIdx]);
+	}
+}
+
+void ASTEnemyBase::PrimaryFire()
+{
+	FVector SpawnLocation = GetMesh()->GetSocketLocation(SocketName_PrimaryFire);
+	AProjectileBase* projectile = GetWorld()->SpawnActor<AProjectileBase>(ProjectileClass_PrimaryFire, SpawnLocation, GetActorForwardVector().Rotation());
+	if (projectile)
+	{
+		projectile->FireInDirection(GetActorForwardVector());
 	}
 }
 

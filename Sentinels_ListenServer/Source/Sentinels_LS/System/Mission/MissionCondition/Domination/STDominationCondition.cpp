@@ -8,10 +8,13 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Actors/SpawnPoint/SpawnPointBase.h"
 #include "Actors/MissionObject/NonInteractable/DominationPoint/DominationPoint.h"
+#include "Net/UnrealNetwork.h"
 
 void USTDominationCondition::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(USTDominationCondition, DominationPointInfos);
 }
 
 bool USTDominationCondition::IsSatisfied()
@@ -78,6 +81,7 @@ void USTDominationCondition::MissionActivated()
 		ADominationPoint* DP = GetWorld()->SpawnActor<ADominationPoint>(DominationPointInfos[i].SubClassOfDominationPoint, SpawnLocation, SpawnRotation);
 		if (DP)
 		{
+			DominationPointInfos[i].DominationPoint = DP;
 			DP->SetObjectID(DominationPointInfos[i].DominationPID);
 			DP->Delegate_MissionConditionUpdate.AddUObject(this, &USTDominationCondition::ConditionUpdated);
 		}
@@ -96,6 +100,11 @@ void USTDominationCondition::ConditionUpdated(int ObjectID, bool Success)
 		if (DominationPointInfos[i].DominationPID == ObjectID)
 		{
 			DominationPointInfos[i].bIsDominated = Success;
+
+			if (DominationPointInfos[i].DominationPoint)
+			{
+				DominationPointInfos[i].DominationPoint->Destroy();
+			}
 		}
 	}
 
@@ -111,6 +120,13 @@ void USTDominationCondition::ConditionUpdated(int ObjectID, bool Success)
 			}
 		}
 	}
+
+	OnRep_DominationPointInfos();
+}
+
+void USTDominationCondition::OnRep_DominationPointInfos()
+{
+	Delegate_ConditionUpdated.Broadcast();
 }
 
 void USTDominationCondition::TimeLimitEnded()

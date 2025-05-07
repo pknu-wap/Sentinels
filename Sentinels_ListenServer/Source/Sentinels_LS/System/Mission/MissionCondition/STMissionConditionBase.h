@@ -7,6 +7,8 @@
 #include "GameplayTagContainer.h"
 #include "STMissionConditionBase.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnConditionUpdated);
+
 class ASpawnPointBase;
 
 UCLASS(ABSTRACT)
@@ -21,10 +23,17 @@ public:
 	virtual bool IsSatisfied() { return false; };
 
 public:
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	FText GetConditionDescription();
+
+public:
 	void SetMissionTag(FGameplayTag InTag) { MissionTag = InTag; };
 
 	void GetAllSpawnPointsWithTag(FGameplayTag InTag, TArray<ASpawnPointBase*>& OutActors) const;
 
 protected:
+	UPROPERTY(BlueprintAssignable)
+	FOnConditionUpdated Delegate_ConditionUpdated;
+
 	FGameplayTag MissionTag;
 };

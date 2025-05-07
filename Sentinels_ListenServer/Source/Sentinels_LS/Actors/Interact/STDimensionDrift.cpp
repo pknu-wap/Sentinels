@@ -40,7 +40,7 @@ void ASTDimensionDrift::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 }
 
-void ASTDimensionDrift::Interact(UInteractComponent* InteractingComponent)
+void ASTDimensionDrift::Interact_Implementation(UInteractComponent* InteractingComponent)
 {
 	ASTPlayerController* pc = Cast<ASTPlayerController>(InteractingComponent->GetOwner());
 
@@ -67,16 +67,16 @@ void ASTDimensionDrift::Interact(UInteractComponent* InteractingComponent)
 	}
 }
 
-void ASTDimensionDrift::Interact_Finish(UInteractComponent* InteractingComponent)
+void ASTDimensionDrift::Interact_Finish_Implementation(UInteractComponent* InteractingComponent)
 {
 }
 
-void ASTDimensionDrift::ShowInteractiveUI(UInteractComponent* InteractingComponent)
+void ASTDimensionDrift::ShowInteractiveUI_Implementation(UInteractComponent* InteractingComponent)
 {
 	
 }
 
-void ASTDimensionDrift::HideInteractiveUI(UInteractComponent* InteractingComponent)
+void ASTDimensionDrift::HideInteractiveUI_Implementation(UInteractComponent* InteractingComponent)
 {
 }
 

@@ -39,11 +39,14 @@ public:
 	UFUNCTION()
 	void ConditionUpdated(int ObjectID, bool Success);
 
+	UFUNCTION()
+	void OnRep_DestructibleObjectInfos();
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<ASpawnPointBase> SubclassOfSpawnPoint;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(ReplicatedUsing = OnRep_DestructibleObjectInfos, EditAnywhere, BlueprintReadOnly)
 	TArray<FDestructibleObjectInfo> DestructibleObjectInfos;
 
 	/*

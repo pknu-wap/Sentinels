@@ -91,6 +91,16 @@ void ASTEnemyBase_AIController::OnTargetDetected(AActor* actor, const FAIStimulu
 	}
 }
 
+AActor* ASTEnemyBase_AIController::GetCurrentTarget() const
+{
+	if (IsValid(Blackboard))
+	{
+		return Cast<AActor>(Blackboard->GetValueAsObject(BBKey_Target));
+	}
+
+	return nullptr;
+}
+
 void ASTEnemyBase_AIController::SetTarget(AActor* InTarget)
 {
 	if (!IsValid(Blackboard))
@@ -105,7 +115,7 @@ void ASTEnemyBase_AIController::SetTarget(AActor* InTarget)
 		Blackboard->SetValueAsObject(BBKey_Target, nullptr);
 		return;
 	}
-	else if (InTarget->IsA<ASTEnemyBase>())
+	else if (!InTarget->IsA<ASTPlayerCharacter>())
 		return;
 
 	// Store Target if New Target is not player

@@ -25,8 +25,7 @@ void UCameraMode_ThirdPerson::OnEnter(UCameraModeManagerComponent* Manager)
     PC = Cast<ASTPlayerController>(Player->GetController());
     if (Player && PC)
     {
-        Player->BindDefaultThirdPersonInput();
-        PC->BindDefaultThirdPersonInput();
+        Player->ClearAllMappingContext();
         PC->DisableInput(PC);
         bShouldLerp = true;
     }
@@ -47,30 +46,17 @@ void UCameraMode_ThirdPerson::Tick(float DeltaTime)
         Camera->SetRelativeLocation(FMath::VInterpTo(Camera->GetRelativeLocation(), TargetOffset, DeltaTime, 2.5f));
 
         if (Camera->GetRelativeRotation().Equals(TargetRotation, 1.0f)
-            // && SpringArm->TargetOffset.Equals(TargetOffset, 1.0f)
             && Camera->GetRelativeLocation().Equals(TargetOffset, 1.0f)
             && abs(SpringArm->TargetArmLength - TargetArmLength) < 2.5f)
         {
             bShouldLerp = false;
 
-            if (PC)
+            if (Player && PC)
             {
+                Player->BindDefaultThirdPersonInput();
+                PC->BindDefaultThirdPersonInput();
                 PC->EnableInput(PC);
             }
-        }
-    }
-    else
-    {
-        FVector Velocity = Player->GetVelocity();
-        Velocity.Z = 0.f;
-
-        if (!Velocity.IsNearlyZero())
-        {
-            FRotator TargetRot = Velocity.Rotation();
-            FRotator CurrentRot = SpringArm->GetComponentRotation();
-
-            FRotator NewRot = FMath::RInterpTo(CurrentRot, TargetRot, DeltaTime, 5.f); // 5.f is the lerp speed
-            SpringArm->SetRelativeRotation(NewRot);
         }
     }
 }

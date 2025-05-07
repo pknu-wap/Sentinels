@@ -6,7 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Actors/SpawnPoint/SpawnPointBase.h"
-#include "Actors/Interact/NPC/InteractableNPC.h"
+#include "Actors/Interact/Hostage/InteractableHostage.h"
 #include "Sentinels_LS.h"
 #include "STGameplayTags.h"
 #include "System/STGameState.h"
@@ -33,22 +33,23 @@ bool USTRescueHostageCondition::IsSatisfied()
 }
 
 void USTRescueHostageCondition::MissionActivated()
-{/*
+{
+	/*
 		Set Mission
 	*/
 	CurrentMissionTime = 0;
 
 	/*
-		Spawn NPC On Random Point (Get All NPC Spawn Points From World)
+		Spawn Hostage On Random Point (Get All Hostage Spawn Points From World)
 	*/
 	FVector SpawnLocation; FRotator SpawnRotation;
 
 	TArray<ASpawnPointBase*> SpawnPoints;
-	GetAllSpawnPointsWithTag(FSTGameplayTags::Get().SpawnPoint_NPC, SpawnPoints);
+	GetAllSpawnPointsWithTag(FSTGameplayTags::Get().SpawnPoint_Hostage, SpawnPoints);
 
 	if (SpawnPoints.IsEmpty())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("USTMission_RepairRift::ActivateMission Failed to get SpawnPoints of NPC!"));
+		UE_LOG(LogTemp, Warning, TEXT("USTMission_RepairRift::ActivateMission Failed to get SpawnPoints of Hostage!"));
 		return;
 	}
 
@@ -82,14 +83,14 @@ void USTRescueHostageCondition::MissionActivated()
 		SpawnLocation = SpawnPoints[Rand]->GetActorLocation();
 		SpawnRotation = SpawnPoints[Rand]->GetActorRotation();
 
-		if (HostageInfos[i].SubClassOfNPC)
+		if (HostageInfos[i].SubClassOfHostage)
 		{
 			SpawnLocation.Z += 80.f;
-			AInteractableNPC* npc = GetWorld()->SpawnActor<AInteractableNPC>(HostageInfos[i].SubClassOfNPC, SpawnLocation, SpawnRotation);
-			if (npc)
+			HostageInfos[i].Hostage = GetWorld()->SpawnActor<AInteractableHostage>(HostageInfos[i].SubClassOfHostage, SpawnLocation, SpawnRotation);
+			if (HostageInfos[i].Hostage)
 			{
-				npc->SetNPCID(HostageInfos[i].NPCID);
-				npc->Delegate_MissionConditionUpdate.AddUObject(this, &USTRescueHostageCondition::ConditionUpdated);
+				HostageInfos[i].Hostage->SetHostageID(HostageInfos[i].HostageID);
+				HostageInfos[i].Hostage->Delegate_MissionConditionUpdate.AddUObject(this, &USTRescueHostageCondition::ConditionUpdated);
 			}
 		}
 	}
@@ -108,9 +109,14 @@ void USTRescueHostageCondition::ConditionUpdated(int ObjectID, bool Success)
 {
 	for (int i = 0; i < HostageInfos.Num(); i++)
 	{
-		if (HostageInfos[i].NPCID == ObjectID)
+		if (HostageInfos[i].HostageID == ObjectID)
 		{
 			HostageInfos[i].bIsRescued = true;
+		}
+
+		if (HostageInfos[i].Hostage)
+		{
+			HostageInfos[i].Hostage->StopSpawnEnemy();
 		}
 	}
 
@@ -126,9 +132,12 @@ void USTRescueHostageCondition::ConditionUpdated(int ObjectID, bool Success)
 			}
 		}
 	}
+
+	OnRep_HostageInfos();
 }
 
 void USTRescueHostageCondition::OnRep_HostageInfos()
 {
 	UE_LOG(LogTemp, Display, TEXT("USTRescueHostageCondition::OnRep_HostageInfos"));
+	Delegate_ConditionUpdated.Broadcast();
 }
