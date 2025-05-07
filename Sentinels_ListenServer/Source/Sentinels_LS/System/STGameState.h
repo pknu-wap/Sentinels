@@ -7,7 +7,7 @@
 #include "STGameplayTags.h"
 #include "STGameState.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAllPlayerIsReady, FGameplayTag, LevelTag);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnServerTravelReady, FGameplayTag, LevelTag);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRepActivatedMission);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRepSubMissions);
 
