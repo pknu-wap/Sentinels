@@ -12,16 +12,17 @@
 #include "Player/STPlayerController.h"
 #include "Kismet/GameplayStatics.h"
 #include "System/STGameState.h"
+#include "SubSystem/STGameTravelDataSubsystem.h"
 
 ASentinels_LSGameMode::ASentinels_LSGameMode()
 	: Delegate_RegisterPlayerComplete(FOnRegisterPlayersCompleteDelegate::CreateUObject(this, &ASentinels_LSGameMode::OnRegisterPlayerComplete))
 {
 	// set default pawn class to our Blueprinted character
-	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/ThirdPerson/Blueprints/BP_ThirdPersonCharacter"));
-	if (PlayerPawnBPClass.Class != NULL)
-	{
-		DefaultPawnClass = PlayerPawnBPClass.Class;
-	}
+	//static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/ThirdPerson/Blueprints/BP_ThirdPersonCharacter"));
+	//if (PlayerPawnBPClass.Class != NULL)
+	//{
+	//	DefaultPawnClass = PlayerPawnBPClass.Class;
+	//}
 
 	GameStateClass = ASTGameState::StaticClass();
 }
@@ -48,6 +49,20 @@ void ASentinels_LSGameMode::PostLogin(APlayerController* NewPlayer)
 			SessionInterface->ClearOnRegisterPlayersCompleteDelegate_Handle(Handle_RegisterPlayerComplete);
 		}
 	}
+
+}
+
+void ASentinels_LSGameMode::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
+{
+	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
+
+	ASTPlayerController* playerController = Cast<ASTPlayerController>(NewPlayer);
+
+	USTGameTravelDataSubsystem* gameTravelData = GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
+
+	FPlayerInfo playerInfo = gameTravelData->GetPlayerInfo(NewPlayer->PlayerState->GetUniqueId());
+
+	playerController->UpdatePlayerClass(playerInfo.PlayerClass);
 }
 
 void ASentinels_LSGameMode::OnRegisterPlayerComplete(FName SessionName, const TArray<FUniqueNetIdRef>& players, bool bWasSuccessful)

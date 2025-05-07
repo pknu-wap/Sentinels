@@ -7,7 +7,7 @@
 #include "STGameplayTags.h"
 #include "STGameState.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAllPlayerIsReady, FGameplayTag, LevelTag);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnServerTravelReady, FGameplayTag, LevelTag);
 
 class USTMissionBase;
 
@@ -74,16 +74,14 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable)
-	bool CanServerTravel();
-
-	UFUNCTION(BlueprintCallable)
 	void TryServerTravel();
 
 public:
 	USTMissionBase* GetMission(FGameplayTag InMissionTag);
 
+	UFUNCTION(BlueprintCallable)
+	void SetCurrentLevelTag(FGameplayTag LevelTag) { CurrentLevelTag = LevelTag; }
 	FGameplayTag GetCurrentLevelTag() { return CurrentLevelTag; }
-	void SetCurrentLevelTag(FGameplayTag NewLevelTag);
 
 private:
 	UPROPERTY(Replicated)
@@ -94,5 +92,5 @@ private:
 
 public:
 	UPROPERTY(BlueprintAssignable)
-	FOnAllPlayerIsReady OnAllPlayerIsReady;
+	FOnServerTravelReady OnServerTravelReady;
 };

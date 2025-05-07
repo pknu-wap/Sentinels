@@ -50,7 +50,7 @@ public:
 	static ASTDummyPlayer* FindByID(UObject* WorldContextObject, FUniqueNetIdRepl PlayerID);
 
 protected:
-	void AddSKComponents(FName ComponentName);
+	void AddSKComponents(FName ComponentName, FString SocketName = "");
 
 protected:
 	UFUNCTION()
@@ -60,7 +60,7 @@ protected:
 	void OnRep_CurrentClass();
 
 	UFUNCTION(Server, Reliable, BlueprintCallable)
-	void ServerRPCChangeCurrentClass(ESTClassType InClass);
+	void ServerRPCChangeCurrentClass(FUniqueNetIdRepl playerID, ESTClassType InClass);
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Capture Component", meta = (AllowPrivateAccess = "true"))

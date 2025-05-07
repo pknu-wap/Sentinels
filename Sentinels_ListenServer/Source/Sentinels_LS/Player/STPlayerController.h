@@ -31,6 +31,8 @@ public:
 	ASTPlayerController();
 
 protected:
+	virtual void BeginPlay() override;
+
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -49,6 +51,9 @@ public:
 public:
 	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void UpdatePlayerClass(ESTClassType InClass);
+
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void ServerRPCImportPlayerClass();
 
 	TSubclassOf<APawn> GetDefaultPlayerClass() { return DefaultPlayerClass; }
 
@@ -85,6 +90,9 @@ public:
 
 	UFUNCTION(Server, Reliable)
 	void RegisterSelfToSession_Server(FName SessionName);
+
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void ServerRPCRegisterPlayerInfo(FPlayerInfo PlayerInfo);
 
 	FName CurrentSession;
 

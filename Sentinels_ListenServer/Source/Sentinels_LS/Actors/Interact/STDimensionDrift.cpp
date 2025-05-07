@@ -31,7 +31,7 @@ void ASTDimensionDrift::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GetWorld()->GetGameState<ASTGameState>()->OnAllPlayerIsReady.AddDynamic(this, &ASTDimensionDrift::HandleAllPlayerIsReady);
+	GetWorld()->GetGameState<ASTGameState>()->OnServerTravelReady.AddDynamic(this, &ASTDimensionDrift::HandleAllPlayerIsReady);
 }
 
 void ASTDimensionDrift::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -59,7 +59,7 @@ void ASTDimensionDrift::Interact(UInteractComponent* InteractingComponent)
 	if (pc->IsLocalController())
 	{
 		uiComponent->AddPlayerID(pc->PlayerState->GetUniqueId());
-		uiComponent->UpdateLoadoutUI();
+		uiComponent->UpdatePlayerWeaponLayer();
 	}
 	else
 	{
@@ -82,5 +82,5 @@ void ASTDimensionDrift::HideInteractiveUI(UInteractComponent* InteractingCompone
 
 void ASTDimensionDrift::HandleAllPlayerIsReady(FGameplayTag NewGameLevel)
 {
-	GetWorld()->ServerTravel(GetLevelName(NewGameLevel));
+	GetWorld()->ServerTravel(GetLevelName(NewGameLevel), true);
 }

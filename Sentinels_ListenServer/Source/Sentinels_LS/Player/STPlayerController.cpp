@@ -21,7 +21,7 @@
 #include "EngineUtils.h"
 #include "Net/UnrealNetwork.h"
 #include "Components/UI/STPlayerUIComponent.h"
-
+#include "SubSystem/STGameTravelDataSubsystem.h"
 
 ASTPlayerController::ASTPlayerController()
 {
@@ -36,6 +36,11 @@ ASTPlayerController::ASTPlayerController()
 
 	UIComponent = CreateDefaultSubobject<USTPlayerUIComponent>(TEXT("UIComponent"));
 	UIComponent->SetIsReplicated(true);
+}
+
+void ASTPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
 }
 
 void ASTPlayerController::Tick(float DeltaTime)
@@ -114,9 +119,18 @@ void ASTPlayerController::UpdatePlayerClass_Implementation(ESTClassType InClass)
 
 	AController* PC = this;
 	GetWorldTimerManager().SetTimerForNextTick([GameMode, PC]() { GameMode->RestartPlayer(PC); });
+}
 
-	//GetWorld()->GetGameInstance()->
-	// GameMode->RestartPlayer(this);
+void ASTPlayerController::ServerRPCImportPlayerClass_Implementation()
+{
+	//USTGameInstance* gameInstance = Cast<USTGameInstance>(GetWorld()->GetGameInstance());
+
+	ESTClassType inClass = ESTClassType::GreatSword;
+
+	//if (gameInstance->PlayerInfos.Contains(PlayerState->GetUniqueId()))
+	//	inClass = gameInstance->PlayerInfos.Find(PlayerState->GetUniqueId())->PlayerClass;
+
+	UpdatePlayerClass(inClass);
 }
 
 void ASTPlayerController::MoveClick_Started()
@@ -226,6 +240,23 @@ void ASTPlayerController::RegisterSelfToSession(FName SessionName)
 	}
 
 	RegisterSelfToSession_Server(SessionName);
+}
+
+void ASTPlayerController::ServerRPCRegisterPlayerInfo_Implementation(FPlayerInfo PlayerInfo)
+{
+	//USTGameInstance* gameInstance = Cast<USTGameInstance>(GetWorld()->GetGameInstance());
+
+	FUniqueNetIdRepl playerID = PlayerState->GetUniqueId();
+
+	//if (gameInstance->PlayerInfos.Find(playerID) != nullptr || !playerID.IsValid())
+	//{
+	//	gameInstance->PlayerInfos.Find(playerID)->PlayerClass = PlayerInfo.PlayerClass;
+	//}
+	//else
+	//{
+	//	ESTClassType playerClass = ESTClassType::GreatSword;
+	//	gameInstance->PlayerInfos.Add(playerID, {playerClass});
+	//}
 }
 
 void ASTPlayerController::RegisterSelfToSession_Server_Implementation(FName SessionName)

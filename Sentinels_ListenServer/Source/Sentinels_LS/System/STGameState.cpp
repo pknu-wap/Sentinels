@@ -179,20 +179,9 @@ void ASTGameState::OnMissionEnded_Multicast_Implementation(FGameplayTag InMissio
     }
 }
 
-bool ASTGameState::CanServerTravel()
-{
-    if (CurrentLevelTag == FSTGameplayTags::Get().Level_Lobby)
-    {
-        ST_LOG(LogSTNetwork, Log, TEXT("You must select map(level)!"));
-        return false;
-    }
-
-    return true;
-}
-
 void ASTGameState::TryServerTravel()
 {
-    OnAllPlayerIsReady.Broadcast(CurrentLevelTag);
+    OnServerTravelReady.Broadcast(CurrentLevelTag);
 }
 
 USTMissionBase* ASTGameState::GetMission(FGameplayTag InMissionTag)
@@ -206,9 +195,4 @@ USTMissionBase* ASTGameState::GetMission(FGameplayTag InMissionTag)
     }
 
     return nullptr;
-}
-
-void ASTGameState::SetCurrentLevelTag(FGameplayTag NewLevelTag)
-{
-    CurrentLevelTag = NewLevelTag;
 }

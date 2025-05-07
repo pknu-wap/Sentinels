@@ -42,41 +42,31 @@ public:
 	const bool GetbIsReady() const { return bIsReady; }
 
 	UFUNCTION(BlueprintCallable)
-	const FGameplayTag GetCurrentLevelTag();
-
-	UFUNCTION(BlueprintCallable)
-	void SetCurrentLevelTag(FGameplayTag LevelTag);
-
-	UFUNCTION(BlueprintCallable)
 	const TArray<FUniqueNetIdRepl>& GetPlayerID() const { return PlayerID; }
 
 public:
 	/*
 		RPC
 	*/
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void ServerRPCRegisterPlayerID(const FUniqueNetIdRepl& ID);
+
 	UFUNCTION(Client, Reliable, BlueprintCallable)
 	void ClientRPCRegisterWidget(FGameplayTag WidgetTag, TSubclassOf<UUserWidget> WidgetClass);
+
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void ServerRPCUnRegisterPlayerID(const FUniqueNetIdRepl& ID);
 
 	UFUNCTION(Client, Reliable, BlueprintCallable)
 	void ClientRPCUnRegisterWidget(FGameplayTag WidgetTag);
 
-	UFUNCTION(Client, UnReliable, BlueprintCallable)
-	void ClientRPCAddToViewport(FGameplayTag WidgetTag);
-
-	UFUNCTION(Client, UnReliable, BlueprintCallable)
-	void ClientRPCRemoveFromParent(FGameplayTag WidgetTag);
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void ServerRPCUpdateUI(FGameplayTag WidgetTag);
 
 	UFUNCTION(Client, UnReliable, BlueprintCallable)
 	void ClientRPCUpdateUI(FGameplayTag WidgetTag);
 
-	UFUNCTION(Server, Reliable, BlueprintCallable)
-	void ServerRPCUpdateUI(FGameplayTag WidgetTag);
-
-	UFUNCTION(Server, Reliable, BlueprintCallable)
-	void ServerRPCRegisterPlayerID(const FUniqueNetIdRepl& ID);
-
-	UFUNCTION(Server, Reliable, BlueprintCallable)
-	void ServerRPCUnRegisterPlayerID(const FUniqueNetIdRepl& ID);
+	//
 
 	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void ServerRPCSetbIsReady(bool Value);
@@ -84,15 +74,23 @@ public:
 	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void ServerRPCCheckbIsReady(FGameplayTag WidgetTag);
 
+	//
+
+	UFUNCTION(Client, UnReliable, BlueprintCallable)
+	void ClientRPCAddToViewport(FGameplayTag WidgetTag);
+
+	UFUNCTION(Client, UnReliable, BlueprintCallable)
+	void ClientRPCRemoveFromParent(FGameplayTag WidgetTag);
+
 public:
 	/*
 		Local
 	*/
 	UFUNCTION(BlueprintCallable)
-	void UpdateLoadoutUI();
+	void UpdatePlayerWeaponLayer();
 
 	UFUNCTION(BlueprintCallable)
-	void UpdateCurrentGameLevelUI();
+	void UpdateCurrentGameLevelLayer();
 
 	UFUNCTION(BlueprintCallable)
 	void UpdateCharacterSelectUI();
