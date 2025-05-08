@@ -10,6 +10,7 @@
 #include "Character/Enemy/STEnemyBase_AIController.h"
 #include "Character/Enemy/STEnemyBase.h"
 #include "Kismet/GameplayStatics.h"
+#include "Actors/ObjectPool/CharacterObjectPool.h"
 
 // Sets default values for this component's properties
 USpawnEnemyComponent::USpawnEnemyComponent()
@@ -19,6 +20,28 @@ USpawnEnemyComponent::USpawnEnemyComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 
 	// ...
+}
+
+void USpawnEnemyComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	for (auto& SpawnInfo : SpawnInfos)
+	{
+		SpawnInfo.ObjectPools.Reserve(SpawnInfo.SpawnPawnClasses.Num());
+
+		for (int i = 0; i < SpawnInfo.SpawnPawnClasses.Num(); i++)
+		{
+			ACharacterObjectPool* ObjectPool =
+				GetWorld()->SpawnActor<ACharacterObjectPool>(ACharacterObjectPool::StaticClass());
+			
+			if (ObjectPool)
+			{
+				ObjectPool->InitPool(SpawnInfo.SpawnPawnClasses[i], SpawnInfo.MaxSpawnCount);
+				SpawnInfo.ObjectPools.Add(ObjectPool);
+			}
+		}
+	}
 }
 
 void USpawnEnemyComponent::StartSpawnEnemy()
@@ -83,26 +106,29 @@ void USpawnEnemyComponent::SpawnEnemy(int InfoIdx)
 
 		// Spawn Enemy
 		SpawnNavLocation.Location.Z += 75.f;
-		APawn* pawn = UAIBlueprintHelperLibrary::SpawnAIFromClass(this, Info.SpawnPawnClasses[rand], nullptr,
-			SpawnNavLocation.Location, GetOwner()->GetActorRotation());
 
-		// Check It is enemy
-		ASTEnemyBase* Enemy = Cast<ASTEnemyBase>(pawn);
-		if (Enemy)
+		if (Info.ObjectPools[rand])
 		{
-			// Set Target for enemy
-			SetTarget(InfoIdx, Enemy);
+			// Check It is enemy
+			ASTEnemyBase* Enemy = Info.ObjectPools[rand]->GetCharacter<ASTEnemyBase>(SpawnNavLocation.Location);
+			if (Enemy)
+			{
+				// Set Target for enemy
+				SetTarget(InfoIdx, Enemy);
 
-			// Bind Function on Enemy Died!
-			Enemy->Delegate_OnEnemyDied.AddDynamic(this, &USpawnEnemyComponent::OnEnemyDied);
-			Info.CurrentSpawned++;
-			CurrentSpawned++;
-			Info.SpawnedEnemys.Add(Enemy);
+				// Bind Function on Enemy Died!
+				Enemy->Delegate_OnEnemyDied.RemoveDynamic(this, &USpawnEnemyComponent::OnEnemyDied);
+				Enemy->Delegate_OnEnemyDied.AddDynamic(this, &USpawnEnemyComponent::OnEnemyDied);
+				Info.CurrentSpawned++;
+				CurrentSpawned++;
+			}
+			else
+			{
+				DrawDebugCapsule(GetWorld(), SpawnNavLocation.Location, 50.f, 25.f, FRotator::ZeroRotator.Quaternion(), FColor::Red, true);
+			}
 		}
-		else
-		{
-			DrawDebugCapsule(GetWorld(), SpawnNavLocation.Location, 50.f, 25.f, FRotator::ZeroRotator.Quaternion(), FColor::Red, true);
-		}
+
+		
 	}
 }
 
@@ -186,7 +212,7 @@ void USpawnEnemyComponent::OnEnemyDied(AActor* DiedEnemy)
 				if (DiedEnemy->GetClass() == SubClass.Get())
 				{
 					SpawnInfos[i].CurrentSpawned--;
-					SpawnInfos[i].SpawnedEnemys.Remove(DiedEnemy);
+					// SpawnInfos[i].SpawnedEnemys.Remove(DiedEnemy);
 				}
 		}
 
