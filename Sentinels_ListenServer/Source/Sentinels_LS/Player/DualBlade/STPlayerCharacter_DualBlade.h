@@ -29,6 +29,13 @@ public:
 public:
 	virtual void OnAttackSuccess_Server_Implementation(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
+/*
+	Passive Skill
+*/
+protected:
+	virtual void Skill_Passive_Pressed() override;
+	virtual void Skill_Passive_Pressed_Server_Implementation() override;
+
 protected:
 	UFUNCTION()
 	void OnRep_CurrentComboStack();

@@ -34,3 +34,20 @@ void ASTPlayerCharacter_DualBlade::OnAttackSuccess_Server_Implementation(float D
 void ASTPlayerCharacter_DualBlade::OnRep_CurrentComboStack()
 {
 }
+
+void ASTPlayerCharacter_DualBlade::Skill_Passive_Pressed()
+{
+	if (!CanDoSkill()) return;
+
+	Skill_Passive_Pressed_Server();
+}
+
+void ASTPlayerCharacter_DualBlade::Skill_Passive_Pressed_Server_Implementation()
+{
+	if (CurrentComboStack >= 30)
+	{
+		CurrentComboStack = FMath::Clamp(CurrentComboStack - 30, 0, MaxComboStack);
+		Skill_Passive_Pressed_Multicast();
+		PlayMontage_Skill_Passive();
+	}
+}
