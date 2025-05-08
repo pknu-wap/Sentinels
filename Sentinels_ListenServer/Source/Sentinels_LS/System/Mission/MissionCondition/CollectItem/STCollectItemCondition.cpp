@@ -41,7 +41,7 @@ void USTCollectItemCondition::MissionActivated()
 	FVector SpawnLocation; FRotator SpawnRotation;
 
 	TArray<ASpawnPointBase*> SpawnPoints;
-	GetAllSpawnPointsWithTag(FSTGameplayTags::Get().SpawnPoint_Spawner, SpawnPoints);
+	GetAllSpawnPointsWithTag(FSTGameplayTags::Get().Mission_Collect_QuestItems, SpawnPoints);
 
 	if (SpawnPoints.IsEmpty())
 	{

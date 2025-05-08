@@ -30,7 +30,7 @@ void USTDefenseWaveCondition::MissionActivated()
 	FVector SpawnLocation; FRotator SpawnRotation;
 
 	TArray<ASpawnPointBase*> SpawnPoints;
-	GetAllSpawnPointsWithTag(FSTGameplayTags::Get().SpawnPoint_DefenseCore, SpawnPoints);
+	GetAllSpawnPointsWithTag(FSTGameplayTags::Get().Mission_DefenseWave, SpawnPoints);
 
 	if (SpawnPoints.IsEmpty())
 	{

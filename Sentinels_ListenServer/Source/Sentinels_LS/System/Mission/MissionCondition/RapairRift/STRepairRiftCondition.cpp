@@ -39,7 +39,7 @@ void USTRepairRiftCondition::MissionRegistered()
 	FVector SpawnLocation; FRotator SpawnRotation;
 
 	TArray<ASpawnPointBase*> SpawnPoints;
-	GetAllSpawnPointsWithTag(FSTGameplayTags::Get().SpawnPoint_Rift, SpawnPoints);
+	GetAllSpawnPointsWithTag(FSTGameplayTags::Get().Mission_RepairRift, SpawnPoints);
 
 	if (SpawnPoints.IsEmpty())
 	{

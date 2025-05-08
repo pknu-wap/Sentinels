@@ -40,7 +40,7 @@ void USTDominationCondition::MissionActivated()
 	FVector SpawnLocation; FRotator SpawnRotation;
 
 	TArray<ASpawnPointBase*> SpawnPoints;
-	GetAllSpawnPointsWithTag(FSTGameplayTags::Get().SpawnPoint_DominationPoint, SpawnPoints);
+	GetAllSpawnPointsWithTag(FSTGameplayTags::Get().Mission_Domination, SpawnPoints);
 
 	if (SpawnPoints.IsEmpty())
 	{
