@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Character/STCharacterBase.h"
+#include "Character/STPoolableCharacter.h"
 #include "STEnemyBase.generated.h"
 
 class USTEnemyStatusComponent;
@@ -12,7 +12,7 @@ class AProjectileBase;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyDied, AActor*, DiedEnemy);
 
 UCLASS()
-class SENTINELS_LS_API ASTEnemyBase : public ASTCharacterBase
+class SENTINELS_LS_API ASTEnemyBase : public ASTPoolableCharacter
 {
 	GENERATED_BODY()
 
@@ -28,6 +28,14 @@ protected:
 
 private:
 	FTimerHandle Handle_Stunned;
+	FTimerHandle Handle_Deactivate;
+
+/*
+	AI Logic
+*/
+public:
+	virtual void Activate(const FVector ActivateLocation = FVector::ZeroVector, const FRotator ActivateRotation = FRotator::ZeroRotator) override;
+	virtual void Deactivate() override;
 
 public:
 	bool IsNormalAttackMontage(UAnimMontage* InMontage);
@@ -72,8 +80,18 @@ protected:
 	void PlayKnockbackMontage_Multicast();
 
 	void PlayKnockbackMontage();
+/*
+	Die
+*/
+	UFUNCTION(BlueprintImplementableEvent)
+	void DissolveStart();
 
-	// Die
+	UFUNCTION(BlueprintImplementableEvent)
+	void DissolveReverseStart();
+
+	UFUNCTION(BlueprintCallable)
+	void DissolveEnded();
+
 	UFUNCTION(NetMulticast, Reliable)
 	void PlayDiedMontage_Multicast();
 

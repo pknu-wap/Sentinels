@@ -59,15 +59,7 @@ void ASTEnemyBase::BeginPlay()
 
 	if (HasAuthority())
 	{
-		AAIController* AIController = Cast<AAIController>(GetController());
-		if (AIController)
-		{
-			UBlackboardComponent* BBComp = AIController->GetBlackboardComponent();
-			if (BBComp)
-			{
-				BBComp->SetValueAsVector(FName("StartLocation"), GetActorLocation());
-			}
-		}
+		Activate(GetActorLocation(), GetActorRotation());
 	}
 
 	if (HasAuthority())
@@ -75,6 +67,7 @@ void ASTEnemyBase::BeginPlay()
 		if (USTCharacterAnimInstanceBase* AnimInst = Cast<USTCharacterAnimInstanceBase>(GetMesh()->GetAnimInstance()))
 		{
 			AnimInst->Delegate_PrimaryFire.AddUObject(this, &ASTEnemyBase::PrimaryFire);
+			AnimInst->Delegate_DissolveStart.AddUObject(this, &ASTEnemyBase::DissolveStart);
 		}
 	}
 }
@@ -154,6 +147,12 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 		if (StatusComponent && StatusComponent->TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser) <= 0)
 		{
 			// Play Died Montage
+			GetWorld()->GetTimerManager().SetTimer(Handle_Deactivate,
+				[this]()
+				{
+					this->Deactivate();
+				}, 5.f, false);
+
 			PlayDiedMontage_Multicast();
 			
 			// Stop Behavior Tree
@@ -185,6 +184,20 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 	}
 
 	return 0.0f;
+}
+
+void ASTEnemyBase::Activate(const FVector ActivateLocation, const FRotator ActivateRotation)
+{
+	Super::Activate(ActivateLocation, ActivateRotation);
+
+	DissolveReverseStart();
+	StopAnimMontage();
+	StatusComponent->InitStatus();
+}
+
+void ASTEnemyBase::Deactivate()
+{
+	Super::Deactivate();
 }
 
 bool ASTEnemyBase::IsNormalAttackMontage(UAnimMontage* InMontage)
@@ -264,6 +277,15 @@ void ASTEnemyBase::PlayKnockbackMontage()
 	if (AnimInst)
 	{
 		AnimInst->Montage_Play(Montage_Knockback);
+	}
+}
+
+void ASTEnemyBase::DissolveEnded()
+{
+	if (HasAuthority())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(Handle_Deactivate);
+		Deactivate();
 	}
 }
 
