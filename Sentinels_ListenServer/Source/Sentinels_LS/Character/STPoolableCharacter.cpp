@@ -5,6 +5,7 @@
 #include "Character/Enemy/STEnemyBase_AIController.h"
 #include "BrainComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 ASTPoolableCharacter::ASTPoolableCharacter(const FObjectInitializer& object_initializer)
 	: Super(object_initializer)
@@ -14,6 +15,11 @@ ASTPoolableCharacter::ASTPoolableCharacter(const FObjectInitializer& object_init
 void ASTPoolableCharacter::Activate(const FVector ActivateLocation, const FRotator ActivateRotation)
 {
 	bIsActivated = true;
+
+	// Enable Tick
+	GetMesh()->SetComponentTickEnabled(true);
+	GetCharacterMovement()->SetComponentTickEnabled(true);
+	SetActorTickEnabled(true);
 
 	GetMesh()->SetEnableGravity(true);
 	if (UCapsuleComponent* CapsuleComp = GetComponentByClass<UCapsuleComponent>())
@@ -29,19 +35,26 @@ void ASTPoolableCharacter::Activate(const FVector ActivateLocation, const FRotat
 
 	SetActorHiddenInGame(false);
 	SetActorEnableCollision(true);
-	SetActorTickEnabled(true);
 }
 
 void ASTPoolableCharacter::Deactivate()
 {
 	bIsActivated = false;
 
+	// Disable Tick
+	// GetMesh()->SetAnimationMode(EAnimationMode::AnimationCustomMode);
+	GetMesh()->SetComponentTickEnabled(false);
+	GetCharacterMovement()->SetComponentTickEnabled(false);
+	SetActorTickEnabled(false);
+
+	// Disable Gravity
 	GetMesh()->SetEnableGravity(false);
 	if (UCapsuleComponent* CapsuleComp = GetComponentByClass<UCapsuleComponent>())
 	{
 		CapsuleComp->SetEnableGravity(false);
 	}
 
+	// Disable Behavior Tree
 	ASTEnemyBase_AIController* AIController = Cast<ASTEnemyBase_AIController>(GetController());
 	if (AIController)
 	{
@@ -50,7 +63,9 @@ void ASTPoolableCharacter::Deactivate()
 			brainComponnet->StopLogic(FString("Deactivated"));
 	}
 
-	SetActorHiddenInGame(true);
+	// Disable Collision
 	SetActorEnableCollision(false);
-	SetActorTickEnabled(false);
+
+	// Disable Visibility
+	SetActorHiddenInGame(true);
 }

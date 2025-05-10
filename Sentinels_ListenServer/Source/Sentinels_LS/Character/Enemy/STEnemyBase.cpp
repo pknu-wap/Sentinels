@@ -228,7 +228,8 @@ void ASTEnemyBase::ActivateNormalAttack_Server_Implementation()
 
 void ASTEnemyBase::ActivateNormalAttack_Multicast_Implementation(int MontageIdx)
 {
-	PlayNormalAttackMontage(MontageIdx);
+	if(!HasAuthority())
+		PlayNormalAttackMontage(MontageIdx);
 }
 
 void ASTEnemyBase::PlayNormalAttackMontage(int MontageIdx)

@@ -1,0 +1,38 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Character/Enemy/STEnemyBase.h"
+#include "STEliteBase.generated.h"
+
+/**
+ * 
+ */
+UCLASS()
+class SENTINELS_LS_API ASTEliteBase : public ASTEnemyBase
+{
+	GENERATED_BODY()
+
+	/*
+		Elite Atack
+	*/
+public:
+	int GetRandomEliteAttackMontageIndex();
+	bool IsEliteAttackMontage(const UAnimMontage* InMontage) const;
+
+	UFUNCTION(Server, Reliable)
+	void ActivateEliteAttack_Server();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void ActivateEliteAttack_Multicast(int MontageIdx);
+
+	void PlayEliteAttackMontage(int MontageIdx);
+	
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
+	TArray<UAnimMontage*> Montage_EliteAttackSet;
+
+private:
+	int LastEliteAttackMontageIndex;
+};
