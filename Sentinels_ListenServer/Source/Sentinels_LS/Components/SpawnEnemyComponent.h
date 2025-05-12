@@ -8,8 +8,10 @@
 
 struct FNavLocation;
 class ASTEnemyBase;
+class ASTPoolableCharacter;
+class ACharacterObjectPool;
 
-DECLARE_MULTICAST_DELEGATE(FOnEnemyAllDied)
+DECLARE_MULTICAST_DELEGATE(FOnEnemyAllDied);
 
 USTRUCT(BlueprintType)
 struct SENTINELS_LS_API FSpawnInfo 
@@ -26,7 +28,7 @@ struct SENTINELS_LS_API FSpawnInfo
         Class Array for Enemy
     */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
-    TArray<TSubclassOf<APawn>> SpawnPawnClasses;
+    TArray<TSubclassOf<ASTPoolableCharacter>> SpawnPawnClasses;
 
     /*
         Spawn Pawns of SpawnRate per Spawn Period
@@ -56,7 +58,7 @@ struct SENTINELS_LS_API FSpawnInfo
     int CurrentSpawned = 0;
 
     UPROPERTY()
-    TSet<AActor*> SpawnedEnemys;
+    TArray<ACharacterObjectPool*> ObjectPools;
 
     FTimerHandle TimerHandle;
 };
@@ -69,6 +71,9 @@ class SENTINELS_LS_API USpawnEnemyComponent : public UActorComponent
 public:	
 	// Sets default values for this component's properties
 	USpawnEnemyComponent();
+
+protected:
+    virtual void BeginPlay() override;
 
 /*
     Spawn Enemy

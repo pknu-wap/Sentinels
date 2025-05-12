@@ -19,7 +19,13 @@ void USTEnemyStatusComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	InitStatus();
+}
+
+void USTEnemyStatusComponent::InitStatus()
+{
 	CurrentHP = MaxHP;
+	bIsDied = false;
 }
 
 float USTEnemyStatusComponent::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)

@@ -40,6 +40,12 @@ protected:
 	class UAISenseConfig_Sight* SightConfig;
 	class UAISenseConfig_Hearing* HearingConfig;
 
+/*
+	AI Logic
+*/
+public:
+	void StartAILogic(const FVector StartLocation = FVector::ZeroVector, const FRotator StartRotation = FRotator::ZeroRotator);
+
 public:
 	UFUNCTION()
 	virtual void OnTargetDetected(AActor* actor, const FAIStimulus Stimulus);
