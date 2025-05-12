@@ -6,6 +6,7 @@
 #include "SubSystem/InventorySubsystem.h"
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Player/Inventory/ItemObject.h"
 
 // Sets default values for this component's properties
 USTPlayerStatusComponent::USTPlayerStatusComponent()
@@ -31,6 +32,17 @@ void USTPlayerStatusComponent::BeginPlay()
 	Super::BeginPlay();
 
 	SetDefaultStatus();
+
+	if (GetOwner() && GetOwner()->HasAuthority())
+	{
+		FTimerHandle HPRegenHandle;
+		GetWorld()->GetTimerManager().SetTimer(HPRegenHandle, 
+			[&]()
+			{
+				HP = FMath::Clamp(HP + HPRegen, 0, MaxHP);
+			},
+			1.f, true);
+	}
 }
 
 void USTPlayerStatusComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -50,6 +62,8 @@ void USTPlayerStatusComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 	/*
 		Replicate to Only for Owner
 	*/
+	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, HPRegen, COND_OwnerOnly);
+
 	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, ATK, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, DEF, COND_OwnerOnly);
 
@@ -67,44 +81,6 @@ void USTPlayerStatusComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 
 	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, MaxCDR, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, CDR, COND_OwnerOnly);
-}
-
-ESTStatusType USTPlayerStatusComponent::GetRelatedStatusType(ESTBuffType inBuffType) const
-{
-	switch (inBuffType)
-	{
-	case ESTBuffType::HP:
-		return ESTStatusType::HP;
-		break;
-	case ESTBuffType::ATK:
-		return ESTStatusType::ATK;
-		break;
-	case ESTBuffType::DEF:
-		return ESTStatusType::DEF;
-		break;
-	case ESTBuffType::MovementSpeed:
-		return ESTStatusType::MovementSpeed;
-		break;
-	case ESTBuffType::AttackSpeed:
-		return ESTStatusType::AttackSpeed;
-		break;
-	case ESTBuffType::DamageIncreaseRate:
-		return ESTStatusType::DamageIncreaseRate;
-		break;
-	case ESTBuffType::CriticalDamagePercent:
-		return ESTStatusType::CriticalDamagePercent;
-		break;
-	case ESTBuffType::CriticalRate:
-		return ESTStatusType::CriticalRate;
-		break;
-	case ESTBuffType::CDR:
-		return ESTStatusType::CDR;
-		break;
-	default:
-		break;
-	}
-
-	return ESTStatusType::None;
 }
 
 void USTPlayerStatusComponent::SetStatus_Server_Implementation(ESTStatusType inType, float inValue, bool forceApply)
@@ -254,49 +230,11 @@ void USTPlayerStatusComponent::CalculateStatus()
 		const TArray<FInvSlotStruct>& Inventory = InvComp->GetInventory();
 		for (auto& Slot : Inventory)
 		{
-			const FItemStruct* itemInfo = InvSubSystem->GetItemInfo(Slot.ItemID);
-			if (!itemInfo) continue;
-
-			if (itemInfo->MaxHP > 0)
-				MaxHP += itemInfo->MaxHP * Slot.Quantity;
-
-			if (itemInfo->DEF > 0)
-				DEF += itemInfo->DEF * Slot.Quantity;
-
-			if (itemInfo->MovementSpeedIncreaseRate > 0)
-				MovementSpeed = FMath::Clamp(
-					MovementSpeed * FMath::Pow(1 + itemInfo->MovementSpeedIncreaseRate, Slot.Quantity),
-					0, MaxMovementSpeed);
-
-			if (itemInfo->AttackSpeedIncreaseRate > 0)
-				AttackSpeed = FMath::Clamp(
-					AttackSpeed * FMath::Pow(1 + itemInfo->AttackSpeedIncreaseRate, Slot.Quantity),
-					0, MaxAttackSpeed);
-
-			if (itemInfo->DamageIncreaseRate > 0)
-				DamageIncreaseRate = FMath::Clamp(DamageIncreaseRate + itemInfo->DamageIncreaseRate * Slot.Quantity, 0, MaxDamageIncreaseRate);
-
-			if (itemInfo->CDR > 0)
+			if (Slot.ItemObject)
 			{
-				if (CDR == 0)
-				{
-					CDR = FMath::Clamp(FMath::Pow(itemInfo->CDR, Slot.Quantity), 0, MaxCDR);
-				}
-				else
-				{
-					CDR = CDR * FMath::Clamp(FMath::Pow(itemInfo->CDR, Slot.Quantity), 0, MaxCDR);
-				}
+				Slot.ItemObject->CalculateStatus(GetOwner());
 			}
-
-			if (itemInfo->CriticalDamagePercent > 0)
-				CriticalDamagePercent = FMath::Clamp(
-					BaseCriticalDamagePercent + FMath::Pow(itemInfo->CriticalDamagePercent, Slot.Quantity),
-					0, MaxCriticalDamagePercent);
-
-			if (itemInfo->CriticalRate > 0)
-				CriticalRate = FMath::Clamp(CriticalRate + itemInfo->CriticalRate * Slot.Quantity, 0, MaxCriticalRate);
 		}
-
 
 		for (auto& pair : BuffMap)
 		{
@@ -337,6 +275,8 @@ void USTPlayerStatusComponent::CalculateStatus()
 			}
 		}
 	}
+
+	ApplyStatus();
 }
 
 void USTPlayerStatusComponent::ApplyStatus()

@@ -41,8 +41,10 @@ USTRUCT(BlueprintType)
 struct SENTINELS_LS_API FInvSlotStruct : public FTableRowBase
 {
 	GENERATED_BODY()
+
 	FInvSlotStruct() {};
-	FInvSlotStruct(int InItemID, int InQuantity) : ItemID(InItemID), Quantity(InQuantity)
+	FInvSlotStruct(int InItemID, int InQuantity, class UItemObject* InItemObject)
+		: ItemID(InItemID), Quantity(InQuantity), ItemObject(InItemObject)
 	{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -50,6 +52,9 @@ struct SENTINELS_LS_API FInvSlotStruct : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int Quantity = 0;
+
+	UPROPERTY()
+	class UItemObject* ItemObject;
 };
 
 USTRUCT(BlueprintType)
@@ -63,26 +68,8 @@ struct SENTINELS_LS_API FItemStruct : public FTableRowBase
 	int ItemID = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float MaxHP = 0;
+	TSubclassOf<class UItemObject> ItemClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int DEF = 0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float MovementSpeedIncreaseRate = 0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float AttackSpeedIncreaseRate = 0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float DamageIncreaseRate = 0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float CDR = 0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float CriticalDamagePercent = 0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float CriticalRate = 0;
+	UTexture2D* Icon;
 };

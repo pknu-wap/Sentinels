@@ -37,6 +37,7 @@ enum class ESTStatusType : uint8
 {
 	None,
 	HP,
+	HPRegen,
 	ATK,
 	DEF,
 	MovementSpeed,
@@ -52,6 +53,7 @@ enum class ESTBuffType : uint8
 {
 	None,
 	HP,
+	HPRegen,
 	ATK,
 	DEF,
 	MovementSpeed,

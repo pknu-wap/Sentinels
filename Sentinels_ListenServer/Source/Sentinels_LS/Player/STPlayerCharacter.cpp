@@ -20,8 +20,10 @@
 #include "Components/STPlayerStatusComponent.h"
 #include "Components/CameraModeManagerComponent.h"
 #include "Components/InteractComponent.h"
+#include "Components/STEnemyStatusComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "STGameplayTags.h"
+#include "Player/Inventory/ItemObject.h"
 
 ASTPlayerCharacter::ASTPlayerCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<USTCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
@@ -612,12 +614,46 @@ void ASTPlayerCharacter::Skill_Passive_Pressed_Multicast_Implementation()
 void ASTPlayerCharacter::AdjustFinalDamage(float& DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor)
 {
 	if (!HasAuthority()) return;
+
+	// Item (Combo Amplifier)
+	const FInvSlotStruct& ItemInfo_CA = InventoryComponent->GetItem(8);
+	if (ItemInfo_CA.ItemID != 0 && ItemInfo_CA.Quantity > 0)
+	{
+		if (ItemInfo_CA.ItemObject)
+		{
+			DamageAmount = ItemInfo_CA.ItemObject->AdjustFinalDamage(DamageAmount, DamageEvent, DamagedActor);
+		}
+	}
 }
 
 
-void ASTPlayerCharacter::OnAttackSuccess_Server_Implementation(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+void ASTPlayerCharacter::OnAttackSuccess_Server_Implementation(float DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor)
 {
 	OnAttackSuccess_Client();
+
+	USTEnemyStatusComponent* EnemyStatusComp = DamagedActor->GetComponentByClass<USTEnemyStatusComponent>();
+	if (!EnemyStatusComp) return;
+
+	// Item (Severance Matrix)
+	const FInvSlotStruct& ItemInfo_SM = InventoryComponent->GetItem(7);
+	if (ItemInfo_SM.ItemID != 0 && ItemInfo_SM.Quantity > 0)
+	{
+		if ((DamageAmount / EnemyStatusComp->GetMaxHP()) > 0.5f)
+		{
+			DamagedActor->TakeDamage(5.f * ItemInfo_SM.Quantity, DamageEvent, GetController(), this);
+		}
+	}
+
+	// Item (Combo Amplifier)
+	const FInvSlotStruct& ItemInfo_CA = InventoryComponent->GetItem(8);
+	if (ItemInfo_CA.ItemID != 0 && ItemInfo_CA.Quantity > 0)
+	{
+		if(ItemInfo_CA.ItemObject)
+		{
+			ItemInfo_CA.ItemObject->OnAttackSuccess(DamageAmount, DamageEvent, DamagedActor);
+		}
+	}
+
 }
 
 void ASTPlayerCharacter::OnAttackSuccess_Client_Implementation()

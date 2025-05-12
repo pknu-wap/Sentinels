@@ -27,7 +27,7 @@ public:
 	On Attack Success (Passive Skill)
 */
 protected:
-	virtual void OnAttackSuccess_Server_Implementation(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	virtual void OnAttackSuccess_Server_Implementation(float DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor) override;
 
 /*
 	Passive Skill

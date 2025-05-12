@@ -34,11 +34,9 @@ void ASTPlayerCharacter_Katana::AdjustFinalDamage(float& DamageAmount, FDamageEv
 	Super::AdjustFinalDamage(DamageAmount, DamageEvent, DamagedActor);
 }
 
-void ASTPlayerCharacter_Katana::OnAttackSuccess_Server_Implementation(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+void ASTPlayerCharacter_Katana::OnAttackSuccess_Server_Implementation(float DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor) 
 {
-	Super::OnAttackSuccess_Server_Implementation(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-
-
+	Super::OnAttackSuccess_Server_Implementation(DamageAmount, DamageEvent, DamagedActor);
 }
 
 void ASTPlayerCharacter_Katana::Skill_Passive_Pressed()
