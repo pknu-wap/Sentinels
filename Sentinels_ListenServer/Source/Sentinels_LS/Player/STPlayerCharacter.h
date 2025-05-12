@@ -229,6 +229,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated)
 	TObjectPtr<USTPlayerStatusComponent> StatusComponent;
 
+	/*
+		Data
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UDataTable* DataTable_Skill;
+
 	/* 
 		Input 
 	*/

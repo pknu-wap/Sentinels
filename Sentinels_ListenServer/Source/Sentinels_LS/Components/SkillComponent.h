@@ -26,13 +26,13 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
+	void InitSkillInfos(UDataTable* InDataTable);
 	void ActivateSkill(int SkillIdx);
 	bool CanActivateSkill(int SkillIdx);
 
 private:
 	void StartCoolDown(int SkillIdx);
 	void Tick_SkillCoolDown(float DeltaTime);
-
 
 private:
 	TArray<FSkillStruct> ClassSkills;

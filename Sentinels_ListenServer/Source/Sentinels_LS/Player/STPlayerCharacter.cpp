@@ -83,6 +83,11 @@ void ASTPlayerCharacter::BeginPlay()
 		{
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
+
+		if (USkillComponent* SkillComp = PlayerController->GetComponentByClass<USkillComponent>())
+		{
+			SkillComp->InitSkillInfos(DataTable_Skill);
+		}
 	}
 
 	BindAttackDelegate();
