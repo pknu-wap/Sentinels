@@ -2,6 +2,7 @@
 
 
 #include "Actors/Interact/STDimensionDrift.h"
+#include "Net/UnrealNetwork.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Subsystem/STUISubSystem.h"
@@ -38,6 +39,7 @@ void ASTDimensionDrift::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	DOREPLIFETIME(ASTDimensionDrift, SKMesh);
 }
 
 void ASTDimensionDrift::Interact_Implementation(UInteractComponent* InteractingComponent)
@@ -50,21 +52,51 @@ void ASTDimensionDrift::Interact_Implementation(UInteractComponent* InteractingC
 	FGameplayTag selectCharacterTag = FSTGameplayTags::Get().Widget_Lobby_CharacterSelect;
 	FGameplayTag selectLevelTag = FSTGameplayTags::Get().Widget_Lobby_LevelSelect;
 
-	uiComponent->ClientRPCRegisterWidget(loadoutTag, Widget_LoadoutClass);
-	uiComponent->ClientRPCRegisterWidget(selectCharacterTag, Widget_CharacterSelectClass);
-	uiComponent->ClientRPCRegisterWidget(selectLevelTag, Widget_LevelSelectClass);
+	uiComponent->AddPlayerID(pc->PlayerState->GetUniqueId());
 
-	uiComponent->ClientRPCAddToViewport(loadoutTag);
+	uiComponent->ServerRPCRegisterWidget(loadoutTag, Widget_LoadoutClass);
+	uiComponent->ServerRPCRegisterWidget(selectCharacterTag, Widget_CharacterSelectClass);
+	uiComponent->ServerRPCRegisterWidget(selectLevelTag, Widget_LevelSelectClass);
 
 	if (pc->IsLocalController())
 	{
-		uiComponent->AddPlayerID(pc->PlayerState->GetUniqueId());
-		uiComponent->UpdatePlayerWeaponLayer();
+		//uiComponent->RegisterWidget(loadoutTag, Widget_LoadoutClass);
+		//uiComponent->RegisterWidget(selectCharacterTag, Widget_CharacterSelectClass);
+		//uiComponent->RegisterWidget(selectLevelTag, Widget_LevelSelectClass);
+		uiComponent->AddToViewport(loadoutTag);
 	}
 	else
 	{
-		uiComponent->ServerRPCRegisterPlayerID(pc->PlayerState->GetUniqueId());
+		//uiComponent->ClientRPCRegisterWidget(loadoutTag, Widget_LoadoutClass);
+		//uiComponent->ClientRPCRegisterWidget(selectCharacterTag, Widget_CharacterSelectClass);
+		//uiComponent->ClientRPCRegisterWidget(selectLevelTag, Widget_LevelSelectClass);
+		uiComponent->ClientRPCAddToViewport(loadoutTag);
 	}
+
+	uiComponent->ServerRPCUpdateUI(loadoutTag);
+	
+	//if (pc->HasAuthority())
+	//{
+	//	uiComponent->AddPlayerID(pc->PlayerState->GetUniqueId());
+	//	// 스스로 호출
+	//	//uiComponent->ServerRPCUpdateUI(loadoutTag);
+	//}
+	//else
+	//{
+	//	uiComponent->ServerRPCRegisterPlayerID(pc->PlayerState->GetUniqueId());
+	//	uiComponent->ServerRPCUpdateUI(loadoutTag);
+	//}
+
+	//if (pc->IsLocalController())
+	//{
+	//	uiComponent->AddPlayerID(pc->PlayerState->GetUniqueId());
+	//	uiComponent->UpdateLoadoutUI();
+	//	uiComponent->UpdatePlayerWeaponLayer();
+	//}
+	//else
+	//{
+	//	uiComponent->ServerRPCRegisterPlayerID(pc->PlayerState->GetUniqueId());
+	//}
 }
 
 void ASTDimensionDrift::Interact_Finish_Implementation(UInteractComponent* InteractingComponent)
@@ -82,5 +114,5 @@ void ASTDimensionDrift::HideInteractiveUI_Implementation(UInteractComponent* Int
 
 void ASTDimensionDrift::HandleAllPlayerIsReady(FGameplayTag NewGameLevel)
 {
-	GetWorld()->ServerTravel(GetLevelName(NewGameLevel), true);
+	GetWorld()->ServerTravel(GetLevelName(NewGameLevel));
 }

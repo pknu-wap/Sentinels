@@ -365,7 +365,6 @@ void USTSessionSubSystem::OnJoinSessionCompleted(FName SessionName, EOnJoinSessi
 			if (PC)
 			{
 				PC->RegisterSelfToSession(SessionName);
-				//PC->ServerRPC_RegisterPlayerInfo();
 			}
 		}, 3, false);
 

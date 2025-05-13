@@ -13,12 +13,14 @@
 #include "GameplayTagsManager.h"
 #include "System/STGameState.h"
 #include "System/STGameInstance.h"
-#include "Player/Dummy/STDummyPlayer.h"
+#include "Player/Dummy/STDummyCharacter.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Materials/Material.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "SubSystem/STGameTravelDataSubsystem.h"
+#include "Player/STPlayerCharacter.h"
+#include "Components/STPlayerStatusComponent.h"
 
 USTPlayerUIComponent::USTPlayerUIComponent() :
 	bIsReady(false)
@@ -28,6 +30,8 @@ USTPlayerUIComponent::USTPlayerUIComponent() :
 void USTPlayerUIComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+
 }
 
 void USTPlayerUIComponent::InitializeComponent()
@@ -51,23 +55,26 @@ void USTPlayerUIComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 void USTPlayerUIComponent::ServerRPCRegisterPlayerID_Implementation(const FUniqueNetIdRepl& ID)
 {
 	AddPlayerID(ID);
+}
 
-	ServerRPCUpdateUI(FSTGameplayTags::Get().Widget_Lobby_Loadout);
+void USTPlayerUIComponent::ServerRPCRegisterWidget_Implementation(FGameplayTag WidgetTag, TSubclassOf<UUserWidget> WidgetClass)
+{
+	ASTPlayerController* serverPC = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+	if (serverPC)
+		serverPC->GetUIComponent()->RegisterWidget(WidgetTag, WidgetClass);
 
-	UpdatePlayerWeaponLayer();
+	for (ASTPlayerController* playerController : TActorRange<ASTPlayerController>(GetWorld()))
+	{
+		if (playerController && playerController != serverPC)
+		{
+			playerController->GetUIComponent()->ClientRPCRegisterWidget(WidgetTag, WidgetClass);
+		}
+	}
 }
 
 void USTPlayerUIComponent::ClientRPCRegisterWidget_Implementation(FGameplayTag WidgetTag, TSubclassOf<UUserWidget> WidgetClass)
 {
-	USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
-
-	ASTPlayerController* pc = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
-	UUserWidget* widget = UISubSystem->GetWidget(WidgetTag);
-	if (!widget)
-	{
-		widget = CreateWidget<UUserWidget>(pc, WidgetClass);
-		UISubSystem->RegisterWidget(WidgetTag, widget);
-	}
+	RegisterWidget(WidgetTag, WidgetClass);
 }
 
 void USTPlayerUIComponent::ServerRPCUnRegisterPlayerID_Implementation(const FUniqueNetIdRepl& ID)
@@ -77,15 +84,18 @@ void USTPlayerUIComponent::ServerRPCUnRegisterPlayerID_Implementation(const FUni
 
 void USTPlayerUIComponent::ClientRPCUnRegisterWidget_Implementation(FGameplayTag WidgetTag)
 {
-	USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
-	UISubSystem->UnRegisterWidget(WidgetTag);
+	UnRegisterWidget(WidgetTag);
 }
 
 void USTPlayerUIComponent::ServerRPCUpdateUI_Implementation(FGameplayTag WidgetTag)
 {
+	ASTPlayerController* serverPC = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+	if (serverPC)
+		serverPC->GetUIComponent()->UpdateUI(WidgetTag);
+
 	for (ASTPlayerController* playerController : TActorRange<ASTPlayerController>(GetWorld()))
 	{
-		if (playerController)
+		if (playerController && playerController != serverPC)
 		{
 			playerController->GetUIComponent()->ClientRPCUpdateUI(WidgetTag);
 		}
@@ -94,11 +104,7 @@ void USTPlayerUIComponent::ServerRPCUpdateUI_Implementation(FGameplayTag WidgetT
 
 void USTPlayerUIComponent::ClientRPCUpdateUI_Implementation(FGameplayTag WidgetTag)
 {
-	if (FSTGameplayTags::Get().Widget_Lobby_Loadout == WidgetTag)
-	{
-		UpdatePlayerWeaponLayer();
-		UpdateCurrentGameLevelLayer();
-	}
+	UpdateUI(WidgetTag);
 }
 
 void USTPlayerUIComponent::ServerRPCSetbIsReady_Implementation(bool Value)
@@ -168,6 +174,15 @@ void USTPlayerUIComponent::ClientRPCRemoveFromParent_Implementation(FGameplayTag
 	widget->RemoveFromParent();
 }
 
+void USTPlayerUIComponent::UpdateUI(FGameplayTag WidgetTag)
+{
+	if (FSTGameplayTags::Get().Widget_Lobby_Loadout == WidgetTag)
+	{
+		UpdatePlayerWeaponLayer();
+		UpdateCurrentGameLevelLayer();
+	}
+}
+
 void USTPlayerUIComponent::UpdatePlayerWeaponLayer()
 {
 	USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
@@ -178,36 +193,36 @@ void USTPlayerUIComponent::UpdatePlayerWeaponLayer()
 		return;
 	}
 
+	FGameplayTag widgetTag = FSTGameplayTags::Get().Widget_Lobby_Loadout;
+	UUserWidget* widgetInstance = UISubSystem->GetWidget(widgetTag);
+	if (!widgetInstance)
+	{
+		ST_SUBLOG(LogSTNetwork, Warning, TEXT("Can't find widgetInstance!"));
+		return;
+	}
+
 	for (auto playerIDIter : pc->GetUIComponent()->PlayerID)
 	{
-		ASTDummyPlayer* dummyPlayer = nullptr;
-		for (ASTDummyPlayer* dummyPlayerIter : TActorRange<ASTDummyPlayer>(GetWorld()))
+		ASTDummyCharacter* dummyCharacter = nullptr;
+		for (ASTDummyCharacter* dummyCharacterIter : TActorRange<ASTDummyCharacter>(GetWorld()))
 		{
-			if (dummyPlayerIter->GetPlayerID().ToString() == playerIDIter.ToString())
-				dummyPlayer = dummyPlayerIter;
+			if (dummyCharacterIter->GetPlayerID().ToString() == playerIDIter.ToString())
+				dummyCharacter = dummyCharacterIter;
 		}
 
-		if (!dummyPlayer)
+		if (!dummyCharacter)
 		{
 			ST_SUBLOG(LogSTNetwork, Warning, TEXT("dummyPlayer not found"));
 			return;
 		}
 
-		if (dummyPlayer->GetbIsShow())
+		if (dummyCharacter->GetbIsShow())
 			continue;
 
-		UMaterial* material = dummyPlayer->GetMaterial();
+		UMaterial* material = dummyCharacter->GetMaterial();
 		if (!material)
 		{
 			ST_SUBLOG(LogSTNetwork, Warning, TEXT("Can't find Material!"));
-			return;
-		}
-
-		FGameplayTag widgetTag = FSTGameplayTags::Get().Widget_Lobby_Loadout;
-		UUserWidget* widgetInstance = UISubSystem->GetWidget(widgetTag);
-		if (!widgetInstance)
-		{
-			ST_SUBLOG(LogSTNetwork, Warning, TEXT("Can't find widgetInstance!"));
 			return;
 		}
 
@@ -224,7 +239,7 @@ void USTPlayerUIComponent::UpdatePlayerWeaponLayer()
 			{
 				img_LocalPlayer->SetVisibility(ESlateVisibility::Visible);
 				img_LocalPlayer->SetBrushFromMaterial(material);
-				dummyPlayer->SetbIsShow(true);
+				dummyCharacter->SetbIsShow(true);
 			}
 		}
 		else
@@ -237,19 +252,19 @@ void USTPlayerUIComponent::UpdatePlayerWeaponLayer()
 			{
 				img_FirstPlayer->SetVisibility(ESlateVisibility::Visible);
 				img_FirstPlayer->SetBrushFromMaterial(material);
-				dummyPlayer->SetbIsShow(true);
+				dummyCharacter->SetbIsShow(true);
 			}
 			else if (img_SecondPlayer->GetBrush().GetResourceObject() == nullptr)
 			{
 				img_SecondPlayer->SetVisibility(ESlateVisibility::Visible);
 				img_SecondPlayer->SetBrushFromMaterial(material);
-				dummyPlayer->SetbIsShow(true);
+				dummyCharacter->SetbIsShow(true);
 			}
 			else if (img_ThirdPlayer->GetBrush().GetResourceObject() == nullptr)
 			{
 				img_ThirdPlayer->SetVisibility(ESlateVisibility::Visible);
 				img_ThirdPlayer->SetBrushFromMaterial(material);
-				dummyPlayer->SetbIsShow(true);
+				dummyCharacter->SetbIsShow(true);
 			}		
 		}
 	}
@@ -316,26 +331,26 @@ void USTPlayerUIComponent::UpdateCharacterSelectUI()
 		return;
 	}
 
-	ASTDummyPlayer* dummyPlayer = nullptr;
-	for (ASTDummyPlayer* dummyPlayerIter : TActorRange<ASTDummyPlayer>(GetWorld()))
+	ASTDummyCharacter* dummyCharacter = nullptr;
+	for (ASTDummyCharacter* dummyCharacterIter : TActorRange<ASTDummyCharacter>(GetWorld()))
 	{
-		if (dummyPlayerIter->GetPlayerID().ToString() == pc->PlayerState->GetUniqueId().ToString())
-			dummyPlayer = dummyPlayerIter;
+		if (dummyCharacterIter->GetPlayerID().ToString() == pc->PlayerState->GetUniqueId().ToString())
+			dummyCharacter = dummyCharacterIter;
 	}
 
-	if (!dummyPlayer)
+	if (!dummyCharacter)
 	{
-		ST_SUBLOG(LogSTNetwork, Warning, TEXT("dummyPlayer not found"));
+		ST_SUBLOG(LogSTNetwork, Warning, TEXT("dummyCharacter not found"));
 		return;
 	}
 
-	if (dummyPlayer->GetbIsShow())
+	if (dummyCharacter->GetbIsShow())
 	{
 		ST_SUBLOG(LogSTNetwork, Warning, TEXT("Alreay show"));
 		return;
 	}
 
-	UMaterial* material = dummyPlayer->GetMaterial();
+	UMaterial* material = dummyCharacter->GetMaterial();
 	if (!material)
 	{
 		ST_SUBLOG(LogSTNetwork, Warning, TEXT("Can't find Material!"));
@@ -351,6 +366,59 @@ void USTPlayerUIComponent::UpdateCharacterSelectUI()
 		return;
 	}
 
+}
+
+void USTPlayerUIComponent::UpdateMapUI()
+{
+
+}
+
+void USTPlayerUIComponent::UpdateQuestUI()
+{
+
+}
+
+void USTPlayerUIComponent::UpdateInventoryUI()
+{
+
+}
+
+void USTPlayerUIComponent::UpdateTeamInfoUI()
+{
+
+}
+
+void USTPlayerUIComponent::RegisterWidget(FGameplayTag WidgetTag, TSubclassOf<UUserWidget> WidgetClass)
+{
+	USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
+
+	ASTPlayerController* pc = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+	UUserWidget* widget = UISubSystem->GetWidget(WidgetTag);
+	if (!widget)
+	{
+		widget = CreateWidget<UUserWidget>(pc, WidgetClass);
+		UISubSystem->RegisterWidget(WidgetTag, widget);
+	}
+}
+
+void USTPlayerUIComponent::UnRegisterWidget(FGameplayTag WidgetTag)
+{
+	USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
+	UISubSystem->UnRegisterWidget(WidgetTag);
+}
+
+void USTPlayerUIComponent::AddToViewport(FGameplayTag WidgetTag)
+{
+	USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
+
+	UUserWidget* widget = UISubSystem->GetWidget(WidgetTag);
+	if (!widget)
+	{
+		ST_SUBLOG(LogSTNetwork, Warning, TEXT("No Widget"));
+		return;
+	}
+
+	widget->AddToViewport();
 }
 
 void USTPlayerUIComponent::AddPlayerID(const FUniqueNetIdRepl& ID)
@@ -383,21 +451,21 @@ void USTPlayerUIComponent::AddPlayerID(const FUniqueNetIdRepl& ID)
 
 void USTPlayerUIComponent::RegisterIDToDummyPlayer(const FUniqueNetIdRepl& ID)
 {
-	for (ASTDummyPlayer* dummyPlayer : TActorRange<ASTDummyPlayer>(GetWorld()))
+	for (ASTDummyCharacter* dummyCharacter : TActorRange<ASTDummyCharacter>(GetWorld()))
 	{
-		if (dummyPlayer->GetPlayerID() == ID)
+		if (dummyCharacter->GetPlayerID() == ID)
 			return;
 
-		if (dummyPlayer->GetPlayerID().IsValid())
+		if (dummyCharacter->GetPlayerID().IsValid())
 			continue;
 		
-		dummyPlayer->SetPlayerID(ID);
+		dummyCharacter->SetPlayerID(ID);
 
 		for (ASTPlayerController* playerController : TActorRange<ASTPlayerController>(GetWorld()))
 		{
 			if (playerController->PlayerState->GetUniqueId() == ID)
 			{
-				dummyPlayer->SetOwner(playerController);
+				dummyCharacter->SetOwner(playerController);
 			}
 		}
 

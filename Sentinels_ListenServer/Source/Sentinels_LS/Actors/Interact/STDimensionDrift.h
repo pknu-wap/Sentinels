@@ -39,7 +39,7 @@ private:
 	void HandleAllPlayerIsReady(FGameplayTag NewGameLevel);
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class USkeletalMeshComponent> SKMesh;
 
 	UPROPERTY(EditAnywhere, Category = "WBP")

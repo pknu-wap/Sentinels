@@ -51,6 +51,9 @@ public:
 	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void ServerRPCRegisterPlayerID(const FUniqueNetIdRepl& ID);
 
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void ServerRPCRegisterWidget(FGameplayTag WidgetTag, TSubclassOf<UUserWidget> WidgetClass);
+
 	UFUNCTION(Client, Reliable, BlueprintCallable)
 	void ClientRPCRegisterWidget(FGameplayTag WidgetTag, TSubclassOf<UUserWidget> WidgetClass);
 
@@ -87,6 +90,9 @@ public:
 		Local
 	*/
 	UFUNCTION(BlueprintCallable)
+	void UpdateUI(FGameplayTag WidgetTag);
+
+	UFUNCTION(BlueprintCallable)
 	void UpdatePlayerWeaponLayer();
 
 	UFUNCTION(BlueprintCallable)
@@ -95,8 +101,29 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UpdateCharacterSelectUI();
 
+	UFUNCTION(BlueprintCallable)
+	void UpdateMapUI();
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateQuestUI();
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateInventoryUI();
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateTeamInfoUI();
+
+	UFUNCTION(BlueprintCallable)
+	void RegisterWidget(FGameplayTag WidgetTag, TSubclassOf<UUserWidget> WidgetClass);
+
+	UFUNCTION(BlueprintCallable)
+	void UnRegisterWidget(FGameplayTag WidgetTag);
+
+	UFUNCTION(BlueprintCallable)
+	void AddToViewport(FGameplayTag WidgetTag);
+
 	/*
-		Server
+		Only Server
 	*/
 	UFUNCTION(BlueprintCallable)
 	void AddPlayerID(const FUniqueNetIdRepl& ID);

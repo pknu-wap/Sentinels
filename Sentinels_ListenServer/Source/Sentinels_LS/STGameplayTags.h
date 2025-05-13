@@ -25,9 +25,20 @@ public:
 	FGameplayTag Character_Player_State_Lifting;
 
 	//////////  Widget   /////////
+	FGameplayTag Widget_OutGame_MainMenu;
+	FGameplayTag Widget_OutGame_System;
 	FGameplayTag Widget_Lobby_Loadout;
 	FGameplayTag Widget_Lobby_CharacterSelect;
 	FGameplayTag Widget_Lobby_LevelSelect;
+	FGameplayTag Widget_InGame;
+	FGameplayTag Widget_InGame_Map;
+	FGameplayTag Widget_InGame_Minimap;
+	FGameplayTag Widget_InGame_PlayerSkill;
+	FGameplayTag Widget_InGame_PlayerState;
+	FGameplayTag Widget_InGame_Quest;
+	FGameplayTag Widget_InGame_Inventory;
+	FGameplayTag Widget_InGame_TeamInfo;
+
 
 	//////////  Mission  /////////
 	FGameplayTag Mission_Domination;
@@ -52,7 +63,7 @@ public:
 
 	/////////  Level  /////////
 	FGameplayTag Level_Lobby;
-	FGameplayTag Level_AbandonedFactory;
+	FGameplayTag Level_MilitaryAirport;
 	FGameplayTag Level_EX2;
 
 private:
