@@ -38,6 +38,14 @@ ASTPlayerController::ASTPlayerController()
 	UIComponent->SetIsReplicated(true);
 }
 
+void ASTPlayerController::OnPossess(APawn* aPawn)
+{
+	Super::OnPossess(aPawn);
+
+	if(InteractComponent)
+		InteractComponent->BindDelegates();
+}
+
 void ASTPlayerController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -157,7 +165,7 @@ void ASTPlayerController::MoveClick_Released()
 			for (const FVector& point : NavPath->PathPoints)
 			{
 				Spline->AddSplinePoint(point, ESplineCoordinateSpace::World);
-				DrawDebugSphere(GetWorld(), point, 10.f, 8, FColor::Green, false, 5.f);
+				// DrawDebugSphere(GetWorld(), point, 10.f, 8, FColor::Green, false, 5.f);
 			}
 
 			GetWorldTimerManager().SetTimer(Handle_AutoRun, this, &ASTPlayerController::AutoRun, GetWorld()->GetDeltaSeconds(), true);

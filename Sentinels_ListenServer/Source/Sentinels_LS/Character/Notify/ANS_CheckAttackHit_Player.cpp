@@ -69,10 +69,19 @@ void UANS_CheckAttackHit_Player::NotifyTick(USkeletalMeshComponent* MeshComp, UA
                 // Generate Damage Event With Critical
                 DamageEvent = FSTPointDamageEvent(bIsCritical, FinalDamage, hit, hit.ImpactNormal, GetDamageType());
 
+
+
+                // Player Logic Execute (Pre)
+                float AdjustedFinalDamage = FinalDamage;
+                Player->AdjustFinalDamage(AdjustedFinalDamage, DamageEvent, DamagedActor);
+
                 // Apply Damage
-                DamagedActor->TakeDamage(FinalDamage, DamageEvent, actor->GetInstigatorController(), actor);
-                /* UGameplayStatics::ApplyPointDamage(DamagedActor, FinalDamage, hit.ImpactNormal, hit,
-                    actor->GetInstigatorController(), actor, GetDamageType());*/
+                DamagedActor->TakeDamage(AdjustedFinalDamage, DamageEvent, actor->GetInstigatorController(), actor);
+               
+                // Player Logic Execute (After)
+                Player->OnAttackSuccess_Server(AdjustedFinalDamage, DamageEvent, actor->GetInstigatorController(), actor);
+
+
 
                 // Apply Time Dilation
                 if (!bTimeDilationApplied)

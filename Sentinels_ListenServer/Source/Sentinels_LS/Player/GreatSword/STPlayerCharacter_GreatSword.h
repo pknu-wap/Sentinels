@@ -6,29 +6,48 @@
 #include "Player/STPlayerCharacter.h"
 #include "STPlayerCharacter_GreatSword.generated.h"
 
-/**
- * 
- */
+
 UCLASS()
 class SENTINELS_LS_API ASTPlayerCharacter_GreatSword : public ASTPlayerCharacter
 {
 	GENERATED_BODY()
+
+/*
+	AActor Interface
+*/
+protected:
+	virtual void BeginPlay() override;
 	
+/*
+	Damage (Server)
+*/
+public:
+	virtual void AdjustFinalDamage(float& DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor) override;
+
+/*
+	On Attack Success (Passive Skill)
+*/
+protected:
+	virtual void OnAttackSuccess_Server_Implementation(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+/*
+	Passive Skill
+*/
+protected:
+	virtual void Skill_Passive_Pressed() override;
+	virtual void Skill_Passive_Pressed_Server_Implementation() override;
+
+	UFUNCTION()
+	void SetWrapTarget_Passive();
 
 protected:
-	/*virtual void Skill_Q_Pressed() override;
-	virtual void Skill_Q_Pressed_Server_Implementation() override;
-	virtual void Skill_Q_Pressed_Multicast_Implementation() override;*/
+	UPROPERTY(EditAnywhere, Category = "Skill")
+	float TraceRange_Passive = 200.f;
 
-	/*virtual void Skill_W_Pressed() override;
-	virtual void Skill_W_Pressed_Server_Implementation() override;
-	virtual void Skill_W_Pressed_Multicast_Implementation() override;
+	UPROPERTY(EditAnywhere, Category = "Skill")
+	float TraceRadius_Passive = 100.f;
 
-	virtual void Skill_E_Pressed() override;
-	virtual void Skill_E_Pressed_Server_Implementation() override;
-	virtual void Skill_E_Pressed_Multicast_Implementation() override;
-
-	virtual void Skill_R_Pressed() override;
-	virtual void Skill_R_Pressed_Server_Implementation() override;
-	virtual void Skill_R_Pressed_Multicast_Implementation() override;*/
+private:
+	UPROPERTY()
+	AActor* TargetActor_Passive = nullptr;
 };

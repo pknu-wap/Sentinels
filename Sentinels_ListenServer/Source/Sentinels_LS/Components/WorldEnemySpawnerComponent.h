@@ -19,6 +19,9 @@ public:
 	// Sets default values for this component's properties
 	UWorldEnemySpawnerComponent();
 
+protected:
+    virtual void BeginPlay() override;
+
 /*
     Spawn Enemy
 */

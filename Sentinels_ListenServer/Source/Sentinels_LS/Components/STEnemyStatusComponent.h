@@ -21,6 +21,9 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	void InitStatus();
+
+public:
 	float TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
 
 public:

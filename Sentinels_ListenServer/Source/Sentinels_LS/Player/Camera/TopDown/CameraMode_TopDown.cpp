@@ -37,7 +37,10 @@ void UCameraMode_TopDown::Tick(float DeltaTime)
     if (bShouldLerp && Camera && SpringArm && PC)
     {
         SpringArm->TargetArmLength = FMath::FInterpTo(SpringArm->TargetArmLength, TargetArmLength, DeltaTime, 2.5f);
-        PC->SetControlRotation(FMath::RInterpTo(PC->GetControlRotation(), FRotator(0, -90, 0), DeltaTime, 2.5f));
+
+        FRotator TargetControlRotation = Player->GetActorRotation();
+        // PC->SetControlRotation(FMath::RInterpTo(PC->GetControlRotation(), FRotator(0, -90, 0), DeltaTime, 2.5f));
+        PC->SetControlRotation(FMath::RInterpTo(PC->GetControlRotation(), TargetControlRotation, DeltaTime, 2.5f));
 
         Camera->SetRelativeRotation(FMath::RInterpTo(Camera->GetRelativeRotation(), TargetRotation, DeltaTime, 2.5f));
         Camera->SetRelativeLocation(FMath::VInterpTo(Camera->GetRelativeLocation(), TargetOffset, DeltaTime, 2.5f));

@@ -22,11 +22,16 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	UFUNCTION(BlueprintCallable)
 	float GetSplineLength();
+
+	UFUNCTION(BlueprintCallable)
 	FVector GetSplineLocationAtDistance(float length);
+
+	UFUNCTION(BlueprintCallable)
 	FRotator GetSplineRotationAtDistance(float length);
 
 protected:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<USplineComponent> Spline;
 };
