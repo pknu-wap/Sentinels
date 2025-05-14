@@ -115,6 +115,7 @@ public:
 	UAnimMontage* Montage_Died;
 	
 public:
+	UPROPERTY(BlueprintAssignable)
 	FOnEnemyDied Delegate_OnEnemyDied;
 
 private:

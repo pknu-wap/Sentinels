@@ -52,7 +52,10 @@ public:
 
 	// Target
 	AActor* GetCurrentTarget() const;
+
+	UFUNCTION(BlueprintCallable)
 	void SetTarget(AActor* InTarget);
+
 	void RestoreTarget();
 
 	// Stunned
