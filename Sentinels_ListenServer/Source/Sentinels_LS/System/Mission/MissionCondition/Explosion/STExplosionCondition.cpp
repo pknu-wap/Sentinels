@@ -8,12 +8,12 @@
 #include "System/Mission/STMissionBase.h"
 #include "Kismet/GameplayStatics.h"
 
-bool USTExplosionCondition::IsSatisfied()
+bool USTExplosionCondition::IsSatisfied_Implementation()
 {
 	return bIsExplosionOccured;
 }
 
-void USTExplosionCondition::MissionActivated()
+void USTExplosionCondition::MissionActivated_Implementation()
 {
 	bIsExplosionOccured = false;
 

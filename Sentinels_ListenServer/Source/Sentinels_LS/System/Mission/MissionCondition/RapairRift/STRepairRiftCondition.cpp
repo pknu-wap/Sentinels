@@ -18,7 +18,7 @@ void USTRepairRiftCondition::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	DOREPLIFETIME(USTRepairRiftCondition, RiftInfos)
 }
 
-bool USTRepairRiftCondition::IsSatisfied()
+bool USTRepairRiftCondition::IsSatisfied_Implementation()
 {
 	for (int i = 0; i < RiftInfos.Num(); i++)
 	{
@@ -31,7 +31,7 @@ bool USTRepairRiftCondition::IsSatisfied()
 	return true;
 }
 
-void USTRepairRiftCondition::MissionRegistered()
+void USTRepairRiftCondition::MissionRegistered_Implementation()
 {
 	/*
 		Spawn Rift On Random Point (Get All Rift Spawn Points From World)
@@ -90,7 +90,7 @@ void USTRepairRiftCondition::MissionRegistered()
 	}
 }
 
-void USTRepairRiftCondition::MissionActivated()
+void USTRepairRiftCondition::MissionActivated_Implementation()
 {
 	/*
 		Set Mission
@@ -113,7 +113,7 @@ void USTRepairRiftCondition::MissionActivated()
 	*/
 }
 
-void USTRepairRiftCondition::MissionDeactivated(bool IsCleared)
+void USTRepairRiftCondition::MissionDeactivated_Implementation(bool IsCleared)
 {
 }
 

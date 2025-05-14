@@ -17,7 +17,7 @@ void USTDominationCondition::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	DOREPLIFETIME(USTDominationCondition, DominationPointInfos);
 }
 
-bool USTDominationCondition::IsSatisfied()
+bool USTDominationCondition::IsSatisfied_Implementation()
 {
 	for (int i = 0; i < DominationPointInfos.Num(); i++)
 	{
@@ -30,7 +30,7 @@ bool USTDominationCondition::IsSatisfied()
 	return true;
 }
 
-void USTDominationCondition::MissionActivated()
+void USTDominationCondition::MissionActivated_Implementation()
 {
 	// Set Time Limit
 	GetWorld()->GetTimerManager().SetTimer(
@@ -88,7 +88,7 @@ void USTDominationCondition::MissionActivated()
 	}
 }
 
-void USTDominationCondition::MissionDeactivated(bool IsCleared)
+void USTDominationCondition::MissionDeactivated_Implementation(bool IsCleared)
 {
 
 }

@@ -22,5 +22,7 @@ protected:
 
 public:
 	UPROPERTY(BlueprintCallable, BlueprintAssignable)
-	FOnEventOccur Delegate_ExplosionEvent;
+	FOnEventOccur Delegate_EventOccur;
+
+
 };

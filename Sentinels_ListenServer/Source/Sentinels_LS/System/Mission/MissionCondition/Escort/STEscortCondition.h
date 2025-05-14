@@ -16,11 +16,11 @@ class SENTINELS_LS_API USTEscortCondition : public USTMissionConditionBase
 	
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty >& OutLifetimeProps) const override;
-	virtual bool IsSatisfied() override;
+	virtual bool IsSatisfied_Implementation() override;
 
 public:
-	virtual void MissionActivated() override;
-	virtual void MissionDeactivated(bool IsCleared) override;
+	virtual void MissionActivated_Implementation() override;
+	virtual void MissionDeactivated_Implementation(bool IsCleared) override;
 
 	UFUNCTION()
 	void ConditionUpdated(int ObjectID, bool Success);

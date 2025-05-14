@@ -19,7 +19,7 @@ void USTRescueHostageCondition::GetLifetimeReplicatedProps(TArray<FLifetimePrope
 	DOREPLIFETIME(USTRescueHostageCondition, HostageInfos)
 }
 
-bool USTRescueHostageCondition::IsSatisfied()
+bool USTRescueHostageCondition::IsSatisfied_Implementation()
 {
 	for (int i = 0; i < HostageInfos.Num(); i++)
 	{
@@ -32,7 +32,7 @@ bool USTRescueHostageCondition::IsSatisfied()
 	return true;
 }
 
-void USTRescueHostageCondition::MissionActivated()
+void USTRescueHostageCondition::MissionActivated_Implementation()
 {
 	/*
 		Set Mission
@@ -101,7 +101,7 @@ void USTRescueHostageCondition::MissionActivated()
 	*/
 }
 
-void USTRescueHostageCondition::MissionDeactivated(bool IsCleared)
+void USTRescueHostageCondition::MissionDeactivated_Implementation(bool IsCleared)
 {
 }
 

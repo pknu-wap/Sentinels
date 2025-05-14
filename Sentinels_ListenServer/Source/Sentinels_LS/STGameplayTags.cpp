@@ -169,8 +169,21 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 		FString("AbandonedFactory")
 	);
 
+	GameplayTags.Level_MilitaryAirport = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Level.MilitaryAirport"),
+		FString("MilitaryAirport")
+	);
+
 	GameplayTags.Level_EX2 = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Level.EX2"),
 		FString("EX2")
+	);
+
+	/*
+		Events
+	*/
+	GameplayTags.Level_MilitaryAirport_Event_Interact_ControlTower = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Level.MilitaryAirport.Event.Interact.ControlTower"),
+		FString("MilitaryAirport Event : Interact Success With ControlTower")
 	);
 }

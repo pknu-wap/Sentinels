@@ -15,12 +15,12 @@ void USTDefenseWaveCondition::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 }
 
-bool USTDefenseWaveCondition::IsSatisfied()
+bool USTDefenseWaveCondition::IsSatisfied_Implementation()
 {
 	return false;
 }
 
-void USTDefenseWaveCondition::MissionActivated()
+void USTDefenseWaveCondition::MissionActivated_Implementation()
 {
 	// Set Time Limit
 	GetWorld()->GetTimerManager().SetTimer(
@@ -49,7 +49,7 @@ void USTDefenseWaveCondition::MissionActivated()
 	}
 }
 
-void USTDefenseWaveCondition::MissionDeactivated(bool IsCleared)
+void USTDefenseWaveCondition::MissionDeactivated_Implementation(bool IsCleared)
 {
 
 }

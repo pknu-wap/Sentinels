@@ -13,12 +13,12 @@ void USTEscortCondition::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 }
 
-bool USTEscortCondition::IsSatisfied()
+bool USTEscortCondition::IsSatisfied_Implementation()
 {
     return Successed;
 }
 
-void USTEscortCondition::MissionActivated()
+void USTEscortCondition::MissionActivated_Implementation()
 {
     Super::MissionActivated();
 
@@ -40,7 +40,7 @@ void USTEscortCondition::MissionActivated()
 	}
 }
 
-void USTEscortCondition::MissionDeactivated(bool IsCleared)
+void USTEscortCondition::MissionDeactivated_Implementation(bool IsCleared)
 {
     Super::MissionDeactivated(IsCleared);
 }

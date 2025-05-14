@@ -17,7 +17,7 @@ void USTDestroyObjectCondition::GetLifetimeReplicatedProps(TArray<FLifetimePrope
 	DOREPLIFETIME(USTDestroyObjectCondition, DestructibleObjectInfos);
 }
 
-bool USTDestroyObjectCondition::IsSatisfied()
+bool USTDestroyObjectCondition::IsSatisfied_Implementation()
 {
 	for (int i = 0; i < DestructibleObjectInfos.Num(); i++)
 	{
@@ -30,7 +30,7 @@ bool USTDestroyObjectCondition::IsSatisfied()
 	return true;
 }
 
-void USTDestroyObjectCondition::MissionActivated()
+void USTDestroyObjectCondition::MissionActivated_Implementation()
 {
 	// Set Time Limit
 	GetWorld()->GetTimerManager().SetTimer(
@@ -86,7 +86,7 @@ void USTDestroyObjectCondition::MissionActivated()
 	}
 }
 
-void USTDestroyObjectCondition::MissionDeactivated(bool IsCleared)
+void USTDestroyObjectCondition::MissionDeactivated_Implementation(bool IsCleared)
 {
 }
 
