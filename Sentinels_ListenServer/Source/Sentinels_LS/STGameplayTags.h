@@ -60,6 +60,8 @@ public:
 
 	/////////  Event  /////////
 	FGameplayTag Level_MilitaryAirport_Event_Interact_ControlTower;
+	FGameplayTag Level_MilitaryAirport_Event_Destroy_Vehicle;
+	FGameplayTag Level_MilitaryAirport_Event_Destroy_ControlTower;
 
 private:
 	static FSTGameplayTags GameplayTags;

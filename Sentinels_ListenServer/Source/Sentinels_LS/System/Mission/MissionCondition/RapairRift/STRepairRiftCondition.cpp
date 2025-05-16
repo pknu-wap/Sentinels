@@ -129,14 +129,9 @@ void USTRepairRiftCondition::ConditionUpdated(int ObjectID, bool Success)
 
 	if (IsSatisfied())
 	{
-		ASTGameState* GameState = Cast<ASTGameState>(GetWorld()->GetGameState());
-		if (GameState)
+		if (Mission)
 		{
-			USTMissionBase* Mission = GameState->GetMission(MissionTag);
-			if (Mission)
-			{
-				Mission->CheckMissionClearable();
-			}
+			Mission->CheckMissionClearable();
 		}
 	}
 
@@ -146,6 +141,6 @@ void USTRepairRiftCondition::ConditionUpdated(int ObjectID, bool Success)
 
 void USTRepairRiftCondition::OnRep_RiftInfos()
 {
-	UE_LOG(LogTemp, Display, TEXT("USTRepairRiftCondition::OnRep_RiftInfos"));
+	UE_LOG(LogTemp, Display, TEXT("s"));
 	Delegate_ConditionUpdated.Broadcast();
 }

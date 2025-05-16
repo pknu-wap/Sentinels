@@ -65,14 +65,9 @@ void USTDefenseWaveCondition::ConditionUpdated(int ObjectID, bool Success)
 	}
 
 	// Defense Core is Broken
-	ASTGameState* GameState = Cast<ASTGameState>(GetWorld()->GetGameState());
-	if (GameState)
+	if (Mission)
 	{
-		USTMissionBase* Mission = GameState->GetMission(MissionTag);
-		if (Mission)
-		{
-			Mission->DeactivateMission(false);
-		}
+		Mission->DeactivateMission(false);
 	}
 
 	Delegate_ConditionUpdated.Broadcast();
@@ -87,14 +82,9 @@ void USTDefenseWaveCondition::TimeLimitEnded()
 	}
 
 	// Time Limit Success
-	ASTGameState* GameState = Cast<ASTGameState>(GetWorld()->GetGameState());
-	if (GameState)
+	if (Mission)
 	{
-		USTMissionBase* Mission = GameState->GetMission(MissionTag);
-		if (Mission)
-		{
-			Mission->DeactivateMission(true);
-		}
+		Mission->DeactivateMission(true);
 	}
 }
 

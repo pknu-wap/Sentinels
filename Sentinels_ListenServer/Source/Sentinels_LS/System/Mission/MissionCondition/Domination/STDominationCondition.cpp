@@ -110,14 +110,9 @@ void USTDominationCondition::ConditionUpdated(int ObjectID, bool Success)
 
 	if (IsSatisfied())
 	{
-		ASTGameState* GameState = Cast<ASTGameState>(GetWorld()->GetGameState());
-		if (GameState)
+		if (Mission)
 		{
-			USTMissionBase* Mission = GameState->GetMission(MissionTag);
-			if (Mission)
-			{
-				Mission->CheckMissionClearable();
-			}
+			Mission->CheckMissionClearable();
 		}
 	}
 
@@ -132,13 +127,8 @@ void USTDominationCondition::OnRep_DominationPointInfos()
 void USTDominationCondition::TimeLimitEnded()
 {
 	// Time Limit Success
-	ASTGameState* GameState = Cast<ASTGameState>(GetWorld()->GetGameState());
-	if (GameState)
+	if (Mission)
 	{
-		USTMissionBase* Mission = GameState->GetMission(MissionTag);
-		if (Mission)
-		{
-			Mission->DeactivateMission(false);
-		}
+		Mission->DeactivateMission(false);
 	}
 }

@@ -122,14 +122,9 @@ void USTRescueHostageCondition::ConditionUpdated(int ObjectID, bool Success)
 
 	if (IsSatisfied())
 	{
-		ASTGameState* GameState = Cast<ASTGameState>(GetWorld()->GetGameState());
-		if (GameState)
+		if (Mission)
 		{
-			USTMissionBase* Mission = GameState->GetMission(MissionTag);
-			if (Mission)
-			{
-				Mission->CheckMissionClearable();
-			}
+			Mission->CheckMissionClearable();
 		}
 	}
 

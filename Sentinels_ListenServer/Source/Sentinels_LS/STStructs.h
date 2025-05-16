@@ -4,7 +4,20 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
+#include "GameplayTagContainer.h"
 #include "STStructs.generated.h"
+
+USTRUCT(BlueprintType)
+struct FRegisterMissionInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGameplayTag MissionTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<class USTMissionBase> MissionSubClass;
+};
 
 USTRUCT(BlueprintType)
 struct SENTINELS_LS_API FSkillStruct : public FTableRowBase

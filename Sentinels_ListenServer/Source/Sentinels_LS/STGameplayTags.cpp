@@ -191,4 +191,14 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 		FName("Level.MilitaryAirport.Event.Interact.ControlTower"),
 		FString("MilitaryAirport Event : Interact Success With ControlTower")
 	);
+
+	GameplayTags.Level_MilitaryAirport_Event_Destroy_Vehicle = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Level.MilitaryAirport.Event.Destroy.Vehicle"),
+		FString("MilitaryAirport Event : Destroy Vehicle")
+	);
+
+	GameplayTags.Level_MilitaryAirport_Event_Destroy_ControlTower = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Level.MilitaryAirport.Event.Destroy.ControlTower"),
+		FString("MilitaryAirport Event : Destroy ControlTower")
+	);
 }

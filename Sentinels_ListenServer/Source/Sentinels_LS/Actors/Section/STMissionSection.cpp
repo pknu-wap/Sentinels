@@ -3,6 +3,9 @@
 
 #include "Actors/Section/STMissionSection.h"
 #include "Net/UnrealNetwork.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GameplayStatics.h"
+#include "System/STGameState.h"
 
 // Sets default values
 ASTMissionSection::ASTMissionSection()
@@ -24,4 +27,16 @@ void ASTMissionSection::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ASTMissionSection, TagContainer);
+}
+
+void ASTMissionSection::RegisterRandomMission()
+{
+	if (!HasAuthority() || MissionInfos.IsEmpty()) return;
+
+	ASTGameState* gameState = Cast<ASTGameState>(UGameplayStatics::GetGameState(this));
+	if (gameState)
+	{
+		int rand = UKismetMathLibrary::RandomIntegerInRange(0, MissionInfos.Num() - 1);
+		gameState->RegisterMission(MissionInfos[rand].MissionTag, MissionInfos[rand].MissionSubClass);
+	}
 }

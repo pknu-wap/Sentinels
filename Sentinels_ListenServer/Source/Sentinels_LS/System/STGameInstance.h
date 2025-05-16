@@ -35,6 +35,12 @@ class SENTINELS_LS_API USTGameInstance : public UGameInstance
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
+	UFUNCTION(BlueprintCallable)
+	UGameInstanceSubsystem* GetSubsystem(TSubclassOf<UGameInstanceSubsystem> SubsystemClass) const
+	{
+		return UGameInstance::GetSubsystemBase(SubsystemClass);
+	}
+
 public:
 	FName CurrentSessionName;
 

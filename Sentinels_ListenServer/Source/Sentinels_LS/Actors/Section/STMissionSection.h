@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "GameplayTagContainer.h"
+#include "STStructs.h"
 #include "STMissionSection.generated.h"
 
 class ASpawnPointBase;
@@ -23,14 +24,23 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-
+/*
+	Mission
+*/
 public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void GetSpawnPointsWithTag(const FGameplayTag InTag, TArray<ASpawnPointBase*>& OutActors) const;
 
+	UFUNCTION(BlueprintCallable)
+	void RegisterRandomMission();
+
 public:
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
+	TArray<FRegisterMissionInfo> MissionInfos;
+
 	UPROPERTY(VisibleAnywhere)
 	bool bIsSelected = false;
+
 
 public:
 	UFUNCTION(BlueprintCallable)

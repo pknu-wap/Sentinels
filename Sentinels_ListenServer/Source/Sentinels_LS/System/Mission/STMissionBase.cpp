@@ -28,7 +28,7 @@ void USTMissionBase::RegisterMission()
 		USTMissionConditionBase* condition = NewObject<USTMissionConditionBase>(Owner, conditionClass);
 		if (condition)
 		{
-			condition->SetMissionTag(MissionTag);
+			condition->InitializeCondition(this, MissionTag);
 			Owner->AddReplicatedSubObject(condition);
 			MissionConditions.Push(condition);
 			condition->MissionRegistered();

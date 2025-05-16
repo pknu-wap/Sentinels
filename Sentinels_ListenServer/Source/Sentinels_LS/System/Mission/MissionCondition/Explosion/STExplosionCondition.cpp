@@ -7,6 +7,7 @@
 #include "System/STGameState.h"
 #include "System/Mission/STMissionBase.h"
 #include "Kismet/GameplayStatics.h"
+#include "STGameplayTags.h"
 
 bool USTExplosionCondition::IsSatisfied_Implementation()
 {
@@ -21,22 +22,22 @@ void USTExplosionCondition::MissionActivated_Implementation()
 	if (GameInstance)
 	{
 		USTEventSubsystem* EventSubSystem = GameInstance->GetSubsystem<USTEventSubsystem>();
-		EventSubSystem->Delegate_ExplosionEvent.AddDynamic(this, &USTExplosionCondition::OnEventOccur);
+		EventSubSystem->Delegate_EventOccur.AddDynamic(this, &USTExplosionCondition::OnEventOccur);
 	}
 }
 
 void USTExplosionCondition::OnEventOccur(FGameplayTag InTag)
 {
+	if (InTag != FSTGameplayTags::Get().Level_MilitaryAirport_Event_Destroy_ControlTower)
+	{
+		return;
+	}
+
 	bIsExplosionOccured = true;
 
-	ASTGameState* GameState = Cast<ASTGameState>(GetWorld()->GetGameState());
-	if (GameState)
+	if (Mission)
 	{
-		USTMissionBase* Mission = GameState->GetMission(MissionTag);
-		if (Mission)
-		{
-			Mission->DeactivateMission(true);
-		}
+		Mission->DeactivateMission(true);
 	}
 
 	Delegate_ConditionUpdated.Broadcast();
