@@ -11,6 +11,7 @@
 #include "Character/Enemy/STEnemyBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "Actors/ObjectPool/CharacterObjectPool.h"
+#include "Components/BoxComponent.h"
 
 // Sets default values for this component's properties
 UWorldEnemySpawnerComponent::UWorldEnemySpawnerComponent()
@@ -19,7 +20,7 @@ UWorldEnemySpawnerComponent::UWorldEnemySpawnerComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
 
-	// ...
+	
 }
 
 void UWorldEnemySpawnerComponent::BeginPlay()

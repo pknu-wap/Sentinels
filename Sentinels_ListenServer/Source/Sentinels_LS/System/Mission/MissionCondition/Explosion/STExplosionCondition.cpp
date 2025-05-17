@@ -28,7 +28,7 @@ void USTExplosionCondition::MissionActivated_Implementation()
 
 void USTExplosionCondition::OnEventOccur(FGameplayTag InTag)
 {
-	if (InTag != FSTGameplayTags::Get().Level_MilitaryAirport_Event_Destroy_ControlTower)
+	if (InTag != FSTGameplayTags::Get().SubMission_Explosion)
 	{
 		return;
 	}
