@@ -24,19 +24,24 @@ protected:
 
 public:
 	// Spawn Mission Object
-	virtual void RegisterMission();
+	UFUNCTION(BlueprintCallable)
+	void RegisterMission();
 
 	// Show Widget & Set Mission
-	virtual void ActivateMission();
+	UFUNCTION(BlueprintCallable)
+	void ActivateMission();
 
 	// Hide Widget & Clear Mission
-	virtual void DeactivateMission(bool IsCleared);
+	UFUNCTION(BlueprintCallable)
+	void DeactivateMission(bool IsCleared);
 
 	// Check Mission is clearable
-	virtual void CheckMissionClearable();
+	UFUNCTION(BlueprintCallable)
+	void CheckMissionClearable();
 
 	// Define Mission Clear
-	virtual bool IsMissionCleared();
+	UFUNCTION(BlueprintCallable)
+	bool IsMissionCleared();
 
 protected:
 	UFUNCTION(NetMulticast, Reliable)

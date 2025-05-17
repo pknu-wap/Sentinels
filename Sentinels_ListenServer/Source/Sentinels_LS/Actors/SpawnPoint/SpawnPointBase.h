@@ -17,6 +17,7 @@ public:
 	ASpawnPointBase();
 
 public:
+	UFUNCTION(BlueprintCallable)
 	bool HasTag(FGameplayTag InTag) const;
 
 protected:

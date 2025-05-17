@@ -15,10 +15,10 @@ class SENTINELS_LS_API USTExplosionCondition : public USTMissionConditionBase
 	GENERATED_BODY()
 	
 public:
-	virtual bool IsSatisfied() override;
+	virtual bool IsSatisfied_Implementation() override;
 
 public:
-	virtual void MissionActivated() override;
+	virtual void MissionActivated_Implementation() override;
 
 protected:
 	UFUNCTION()

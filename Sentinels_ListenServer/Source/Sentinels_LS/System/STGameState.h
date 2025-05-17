@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameStateBase.h"
 #include "STGameplayTags.h"
+#include "STStructs.h"
 #include "STGameState.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAllPlayerIsReady, FGameplayTag, LevelTag);
@@ -12,18 +13,6 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRepActivatedMission);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRepSubMissions);
 
 class USTMissionBase;
-
-USTRUCT(BlueprintType)
-struct FRegisterMissionInfo
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FGameplayTag MissionTag;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<USTMissionBase> MissionSubClass;
-};
 
 USTRUCT(BlueprintType)
 struct FMissionInfo
@@ -34,7 +23,7 @@ struct FMissionInfo
 	FGameplayTag MissionTag;
 
 	UPROPERTY(BlueprintReadOnly)
-	TObjectPtr<USTMissionBase> Mission;
+	TObjectPtr<class USTMissionBase> Mission;
 };
 
 UCLASS()
@@ -78,6 +67,7 @@ public:
 	void OnMissionEnded_Multicast(FGameplayTag InMissionTag, bool IsCleared);
 
 public:
+	UFUNCTION(BlueprintCallable)
 	USTMissionBase* GetMission(FGameplayTag InMissionTag);
 
 	FGameplayTag GetCurrentLevelTag() { return CurrentLevelTag; }
@@ -95,7 +85,7 @@ private:
 	TArray<FMissionInfo> Missions;
 
 	UPROPERTY(ReplicatedUsing = OnRep_ActivatedMission, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	FMissionInfo ActivatedMission;
+	TArray<FMissionInfo> ActivatedMissions;
 
 	/*
 		Sub Mission

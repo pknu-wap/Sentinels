@@ -18,7 +18,7 @@ void ASTGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(ASTGameState, Missions);
-    DOREPLIFETIME(ASTGameState, ActivatedMission);
+    DOREPLIFETIME(ASTGameState, ActivatedMissions);
     DOREPLIFETIME(ASTGameState, SubMissions);
     DOREPLIFETIME(ASTGameState, CurrentLevelTag);
 }
@@ -35,7 +35,6 @@ void ASTGameState::ActivateRandomMission()
     if (Missions.IsValidIndex(rand))
     {
         ActivateMission(Missions[rand].MissionTag);
-        ActivatedMission = Missions[rand];
     }
 }
 
@@ -57,7 +56,7 @@ void ASTGameState::ActivateMission(FGameplayTag InMissionTag)
     {
         if (Missions[i].MissionTag == InMissionTag)
         {
-            ActivatedMission = Missions[i];
+            ActivatedMissions.Add(Missions[i]);
         }
     }
 
@@ -123,12 +122,12 @@ void ASTGameState::RegisterMission(FGameplayTag InMissionTag, TSubclassOf<USTMis
         return;
     }
 
-    USTMissionBase* mission = GetMission(InMissionTag);
+    /*USTMissionBase* mission = GetMission(InMissionTag);
     if (mission)
     {
         UE_LOG(LogTemp, Display, TEXT("%s is Already Registered Mission ! "), *mission->GetName());
         return;
-    }
+    }*/
 
     USTMissionBase* NewMission = NewObject<USTMissionBase>(this, MissionSubClass);
     if (NewMission)
@@ -163,6 +162,23 @@ void ASTGameState::UnRegisterMission(FGameplayTag InMissionTag)
             }
 
             Missions.RemoveAt(i);
+        }
+    }
+
+    for (int i = 0; i < ActivatedMissions.Num(); i++)
+    {
+        if (ActivatedMissions[i].MissionTag == InMissionTag)
+        {
+            if (ActivatedMissions[i].Mission)
+            {
+                RemoveReplicatedSubObject(ActivatedMissions[i].Mission);
+                ActivatedMissions[i].Mission = nullptr;
+
+                // Should Destory Mission?
+                // Automatically Destroyed by Garbage Collection
+            }
+
+            ActivatedMissions.RemoveAt(i);
             return;
         }
     }

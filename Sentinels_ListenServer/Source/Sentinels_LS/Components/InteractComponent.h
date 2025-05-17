@@ -74,10 +74,10 @@ protected:
 	Interact Hold (Hostage, Rift, . . .)
 */
 public:
-	UFUNCTION(Client, Reliable)
+	UFUNCTION(BlueprintCallable, Client, Reliable)
 	void StartInteractHold_Client(float InHoldingTime);
 
-	UFUNCTION(Client, Reliable)
+	UFUNCTION(BlueprintCallable, Client, Reliable)
 	void FinishInteractHold_Client();
 
 public:

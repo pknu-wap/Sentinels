@@ -33,7 +33,7 @@ void USTCompositeMissionConditionBase::PostInitProperties()
 	}
 }
 
-bool USTCompositeMissionConditionBase::IsSatisfied()
+bool USTCompositeMissionConditionBase::IsSatisfied_Implementation()
 {
 	if (CombineType == EConditionCombineType::AND)
 	{

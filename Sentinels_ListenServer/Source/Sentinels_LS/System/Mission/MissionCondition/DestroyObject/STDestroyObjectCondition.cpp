@@ -17,7 +17,7 @@ void USTDestroyObjectCondition::GetLifetimeReplicatedProps(TArray<FLifetimePrope
 	DOREPLIFETIME(USTDestroyObjectCondition, DestructibleObjectInfos);
 }
 
-bool USTDestroyObjectCondition::IsSatisfied()
+bool USTDestroyObjectCondition::IsSatisfied_Implementation()
 {
 	for (int i = 0; i < DestructibleObjectInfos.Num(); i++)
 	{
@@ -30,7 +30,7 @@ bool USTDestroyObjectCondition::IsSatisfied()
 	return true;
 }
 
-void USTDestroyObjectCondition::MissionActivated()
+void USTDestroyObjectCondition::MissionActivated_Implementation()
 {
 	// Set Time Limit
 	GetWorld()->GetTimerManager().SetTimer(
@@ -40,7 +40,7 @@ void USTDestroyObjectCondition::MissionActivated()
 	FVector SpawnLocation; FRotator SpawnRotation;
 
 	TArray<ASpawnPointBase*> SpawnPoints;
-	GetAllSpawnPointsWithTag(FSTGameplayTags::Get().SpawnPoint_DestructibleObject, SpawnPoints);
+	GetAllSpawnPointsWithTag(FSTGameplayTags::Get().Mission_DestroyObjects, SpawnPoints);
 
 	if (SpawnPoints.IsEmpty())
 	{
@@ -86,7 +86,7 @@ void USTDestroyObjectCondition::MissionActivated()
 	}
 }
 
-void USTDestroyObjectCondition::MissionDeactivated(bool IsCleared)
+void USTDestroyObjectCondition::MissionDeactivated_Implementation(bool IsCleared)
 {
 }
 
@@ -102,14 +102,9 @@ void USTDestroyObjectCondition::ConditionUpdated(int ObjectID, bool Success)
 
 	if (IsSatisfied())
 	{
-		ASTGameState* GameState = Cast<ASTGameState>(GetWorld()->GetGameState());
-		if (GameState)
+		if (Mission)
 		{
-			USTMissionBase* Mission = GameState->GetMission(MissionTag);
-			if (Mission)
-			{
-				Mission->CheckMissionClearable();
-			}
+			Mission->CheckMissionClearable();
 		}
 	}
 
@@ -124,13 +119,6 @@ void USTDestroyObjectCondition::OnRep_DestructibleObjectInfos()
 void USTDestroyObjectCondition::TimeLimitEnded()
 {
 	// Time Limit Success
-	ASTGameState* GameState = Cast<ASTGameState>(GetWorld()->GetGameState());
-	if (GameState)
-	{
-		USTMissionBase* Mission = GameState->GetMission(MissionTag);
-		if (Mission)
-		{
-			Mission->DeactivateMission(false);
-		}
-	}
+	if (Mission)
+		Mission->DeactivateMission(false);
 }

@@ -43,6 +43,7 @@ public:
 
 	FGameplayTag SubMission_Explosion;
 
+
 	/////////  SpawnPoint  /////////
 	FGameplayTag SpawnPoint_DefenseCore;
 	FGameplayTag SpawnPoint_DominationPoint;
@@ -54,7 +55,13 @@ public:
 	/////////  Level  /////////
 	FGameplayTag Level_Lobby;
 	FGameplayTag Level_AbandonedFactory;
+	FGameplayTag Level_MilitaryAirport;
 	FGameplayTag Level_EX2;
+
+	/////////  Event  /////////
+	FGameplayTag Level_MilitaryAirport_Event_Interact_ControlTower;
+	FGameplayTag Level_MilitaryAirport_Event_Destroy_Vehicle;
+	FGameplayTag Level_MilitaryAirport_Event_Destroy_ControlTower;
 
 private:
 	static FSTGameplayTags GameplayTags;

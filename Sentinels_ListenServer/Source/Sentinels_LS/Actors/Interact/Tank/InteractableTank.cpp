@@ -50,6 +50,10 @@ void AInteractableTank::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AInteractableTank, RemainedBullet);
+	DOREPLIFETIME(AInteractableTank, WheelSpeedOffset);
+	DOREPLIFETIME(AInteractableTank, WheelSpeed);
+	DOREPLIFETIME(AInteractableTank, TurretAngle);
+	DOREPLIFETIME(AInteractableTank, GunElevation);
 }
 
 void AInteractableTank::PossessedBy(AController* NewController)
