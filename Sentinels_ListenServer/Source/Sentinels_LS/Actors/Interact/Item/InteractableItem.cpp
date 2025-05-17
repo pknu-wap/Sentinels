@@ -5,14 +5,16 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/InventoryComponent.h"
 #include "Components/InteractComponent.h"
+#include "SubSystem/InventorySubsystem.h"
 
 void AInteractableItem::BeginPlay()
 {
 	Super::BeginPlay();
-	if (Item_DataRow.DataTable)
+
+	if (bUseItemHandle && ItemHandle_DataRow.DataTable)
 	{
 		FItemStruct* itemData =
-			Item_DataRow.DataTable->FindRow<FItemStruct>(Item_DataRow.RowName, Item_DataRow.RowName.ToString());
+			ItemHandle_DataRow.DataTable->FindRow<FItemStruct>(ItemHandle_DataRow.RowName, ItemHandle_DataRow.RowName.ToString());
 
 		if (!itemData)
 		{
@@ -22,24 +24,25 @@ void AInteractableItem::BeginPlay()
 
 		ItemID = itemData->ItemID;
 	}
+	else
+	{
+		SetItemID();
+	}
 }
 
 void AInteractableItem::Interact_Implementation(UInteractComponent* InteractingComponent)
 {
-	if (Item_DataRow.DataTable)
+	APlayerController* PC = Cast<APlayerController>(InteractingComponent->GetOwner());
+	if (!PC) return;
+
+	APawn* pawn = PC->GetPawn();
+	if (!pawn) return;
+
+	UInventoryComponent* InvComp = pawn->GetComponentByClass<UInventoryComponent>();
+	if (InvComp)
 	{
-		APlayerController* PC = Cast<APlayerController>(InteractingComponent->GetOwner());
-		if (!PC) return;
-
-		APawn* pawn = PC->GetPawn();
-		if (!pawn) return;
-
-		UInventoryComponent* InvComp = pawn->GetComponentByClass<UInventoryComponent>();
-		if (InvComp)
-		{
-			// bIsInteractable = false;
-			InvComp->AddItem_Server(ItemID);
-			UE_LOG(LogTemp, Display, TEXT(" AInteractableItem::Interact!"));
-		}
+		// bIsInteractable = false;
+		InvComp->AddItem_Server(ItemID);
+		UE_LOG(LogTemp, Display, TEXT(" AInteractableItem::Interact!"));
 	}
 }

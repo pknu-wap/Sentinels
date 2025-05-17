@@ -97,9 +97,18 @@ protected:
 
 	void PlayDiedMontage();
 
+	UFUNCTION(BlueprintCallable)
+	void DropItem();
+
 protected:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<USTEnemyStatusComponent> StatusComponent;
+
+	UPROPERTY(EditAnywhere)
+	float DropProbability = 0.2f;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AInteractableItem> DropItemClass;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)

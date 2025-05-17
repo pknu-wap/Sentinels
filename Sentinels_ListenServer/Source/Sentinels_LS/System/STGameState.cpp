@@ -23,6 +23,19 @@ void ASTGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
     DOREPLIFETIME(ASTGameState, CurrentLevelTag);
 }
 
+int ASTGameState::GetClearedMissionNum() const
+{
+    int count = 0;
+
+    for(auto& mission : Missions)
+    {
+        if (mission.Mission && mission.Mission->GetProgressState() == EMissionProgressState::Cleared)
+            count++;
+    }
+
+    return count;
+}
+
 void ASTGameState::ActivateRandomMission()
 {
     if (!HasAuthority())
@@ -133,14 +146,14 @@ void ASTGameState::RegisterMission(FGameplayTag InMissionTag, TSubclassOf<USTMis
     if (NewMission)
     {
         AddReplicatedSubObject(NewMission);
-        Missions.Push(FMissionInfo(InMissionTag, NewMission));
+        Missions.Push(FMissionInfo(NewMission, InMissionTag));
 
         NewMission->RegisterMission();
         NewMission->Delegate_MissionEnded.AddDynamic(this, &ASTGameState::OnMissionEnded);
     }
 }
 
-void ASTGameState::UnRegisterMission(FGameplayTag InMissionTag)
+void ASTGameState::UnRegisterMission(FGameplayTag InMissionTag, bool IsCleared)
 {
     if (!HasAuthority())
     {
@@ -152,16 +165,6 @@ void ASTGameState::UnRegisterMission(FGameplayTag InMissionTag)
     {
         if (Missions[i].MissionTag == InMissionTag)
         {
-            if (Missions[i].Mission)
-            {
-                RemoveReplicatedSubObject(Missions[i].Mission);
-                Missions[i].Mission = nullptr;
-
-                // Should Destory Mission?
-                // Automatically Destroyed by Garbage Collection
-            }
-
-            Missions.RemoveAt(i);
         }
     }
 
@@ -169,16 +172,6 @@ void ASTGameState::UnRegisterMission(FGameplayTag InMissionTag)
     {
         if (ActivatedMissions[i].MissionTag == InMissionTag)
         {
-            if (ActivatedMissions[i].Mission)
-            {
-                RemoveReplicatedSubObject(ActivatedMissions[i].Mission);
-                ActivatedMissions[i].Mission = nullptr;
-
-                // Should Destory Mission?
-                // Automatically Destroyed by Garbage Collection
-            }
-
-            ActivatedMissions.RemoveAt(i);
             return;
         }
     }
@@ -187,16 +180,6 @@ void ASTGameState::UnRegisterMission(FGameplayTag InMissionTag)
     {
         if (SubMissions[i].MissionTag == InMissionTag)
         {
-            if (SubMissions[i].Mission)
-            {
-                RemoveReplicatedSubObject(SubMissions[i].Mission);
-                SubMissions[i].Mission = nullptr;
-
-                // Should Destory Mission?
-                // Automatically Destroyed by Garbage Collection
-            }
-
-            SubMissions.RemoveAt(i);
             return;
         }
     }
@@ -208,7 +191,7 @@ void ASTGameState::OnMissionEnded(FGameplayTag InMissionTag, bool IsCleared)
     OnMissionEnded_Multicast(InMissionTag, IsCleared);
 
     // UnRegister Mission On Server
-    UnRegisterMission(InMissionTag);
+    UnRegisterMission(InMissionTag, IsCleared);
 
     // Start Next Random Mission
     ActivateRandomMission();
@@ -261,7 +244,7 @@ void ASTGameState::RegisterSubMission(FGameplayTag InMissionTag, TSubclassOf<UST
     if (NewSubMission)
     {
         AddReplicatedSubObject(NewSubMission);
-        SubMissions.Push(FMissionInfo(InMissionTag, NewSubMission));
+        SubMissions.Push(FMissionInfo(NewSubMission, InMissionTag));
 
         NewSubMission->RegisterMission();
         NewSubMission->Delegate_MissionEnded.AddDynamic(this, &ASTGameState::OnSubMissionEnded);
@@ -274,7 +257,7 @@ void ASTGameState::OnSubMissionEnded(FGameplayTag InMissionTag, bool IsCleared)
     OnSubMissionEnded_Multicast(InMissionTag, IsCleared);
 
     // UnRegister Mission On Server
-    UnRegisterMission(InMissionTag);
+    UnRegisterMission(InMissionTag, IsCleared);
 }
 
 void ASTGameState::OnSubMissionEnded_Multicast_Implementation(FGameplayTag InMissionTag, bool IsCleared)

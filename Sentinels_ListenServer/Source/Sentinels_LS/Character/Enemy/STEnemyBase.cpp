@@ -20,6 +20,7 @@
 #include "STGameplayTags.h"
 #include "Character/STCharacterAnimInstanceBase.h"
 #include "Actors/Projectile/ProjectileBase.h"
+#include "Actors/Interact/Item/InteractableItem.h"
 
 ASTEnemyBase::ASTEnemyBase(const FObjectInitializer& object_initializer)
 	: Super(object_initializer.SetDefaultSubobjectClass<USkeletalMeshComponentBudgeted>(ACharacter::MeshComponentName))
@@ -59,16 +60,13 @@ void ASTEnemyBase::BeginPlay()
 
 	if (HasAuthority())
 	{
-		Activate(GetActorLocation(), GetActorRotation());
-	}
-
-	if (HasAuthority())
-	{
 		if (USTCharacterAnimInstanceBase* AnimInst = Cast<USTCharacterAnimInstanceBase>(GetMesh()->GetAnimInstance()))
 		{
 			AnimInst->Delegate_PrimaryFire.AddUObject(this, &ASTEnemyBase::PrimaryFire);
 			AnimInst->Delegate_DissolveStart.AddUObject(this, &ASTEnemyBase::DissolveStart);
 		}
+
+		Activate(GetActorLocation(), GetActorRotation());
 	}
 }
 
@@ -164,6 +162,9 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 
 			// Delegate Broadcast
 			Delegate_OnEnemyDied.Broadcast(this);
+
+			// Drop Item
+			DropItem();
 
 			return ActualDamage;
 		}
@@ -301,6 +302,19 @@ void ASTEnemyBase::PlayDiedMontage()
 	if (AnimInst)
 	{
 		AnimInst->Montage_Play(Montage_Died);
+	}
+}
+
+void ASTEnemyBase::DropItem()
+{
+	if (HasAuthority())
+	{
+		float rand = UKismetMathLibrary::RandomFloatInRange(0, 1);
+
+		if (DropProbability >= rand)
+		{
+			GetWorld()->SpawnActor<AActor>(DropItemClass, GetActorLocation(), GetActorRotation());
+		}
 	}
 }
 

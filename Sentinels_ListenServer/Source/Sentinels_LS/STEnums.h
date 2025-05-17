@@ -63,3 +63,13 @@ enum class ESTBuffType : uint8
 	CriticalRate,
 	CDR,
 };
+
+UENUM(BlueprintType)
+enum class EMissionProgressState : uint8
+{
+	None,
+	Registered,
+	Activated,
+	Cleared,
+	Failed
+};

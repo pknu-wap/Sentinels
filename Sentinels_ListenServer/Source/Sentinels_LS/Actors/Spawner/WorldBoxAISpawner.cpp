@@ -163,9 +163,12 @@ bool AWorldBoxAISpawner::GetSpawnNavLocation(int infoIdx, FNavLocation& OutLocat
 	}
 
 	if (currentLoopIdx >= 50)
+	{
 		UE_LOG(LogTemp, Warning, TEXT("USpawnEnemyComponent : Can't get Point between Inner and Outer Circle!"));
+		return false;
+	}
 
-	return false;
+	return true;
 }
 
 bool AWorldBoxAISpawner::GetSpawnNavLocationInBox(int infoIdx, FNavLocation& OutLocation) const

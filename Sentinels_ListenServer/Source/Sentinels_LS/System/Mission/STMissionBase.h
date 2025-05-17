@@ -7,6 +7,7 @@
 #include "System/NetworkObject.h"
 #include "Tickable.h"
 #include "GameplayTagContainer.h"
+#include "STEnums.h"
 #include "STMissionBase.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMissionEnded, FGameplayTag, MissionTag, bool, IsSuccessed);
@@ -17,6 +18,9 @@ UCLASS()
 class SENTINELS_LS_API USTMissionBase : public UNetworkObject, public FTickableGameObject
 {
 	GENERATED_BODY()
+
+public:
+	USTMissionBase();
 
 protected:
 	virtual void BeginDestroy() override;
@@ -47,12 +51,18 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void MissionEnded_Multicast(bool IsCleared);
 
+public:
+	EMissionProgressState GetProgressState() const { return ProgressState; }
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FName MissionName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FGameplayTag MissionTag;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	EMissionProgressState ProgressState;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<TSubclassOf<USTMissionConditionBase>> SubclassOfMissionConditions;
@@ -65,19 +75,8 @@ protected:
 		On Mission Ended Delegate
 	*/
 public:
-	FORCEINLINE bool IsActivated() { return bIsMisionActivated; }
-
 	UPROPERTY(BlueprintAssignable)
 	FOnMissionEnded Delegate_MissionEnded;
-
-
-protected:
-	UFUNCTION()
-	virtual void OnRep_bIsMisionActivated();
-
-	UPROPERTY(ReplicatedUsing = OnRep_bIsMisionActivated, EditAnywhere, BlueprintReadWrite)
-	bool bIsMisionActivated = false;
-
 
 
 /*
