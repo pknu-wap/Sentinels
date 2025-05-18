@@ -125,7 +125,7 @@ void ASTDummyCharacter::OnRep_PlayerID()
 		if (!pc || !pc->GetLocalPlayer())
 			return;
 
-		pc->GetUIComponent()->UpdatePlayerWeaponLayer();
+		pc->GetUIComponent()->UpdatePlayerAvatarLayer();
 
 		}, 0.5f, false);
 }

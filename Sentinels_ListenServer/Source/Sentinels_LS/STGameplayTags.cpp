@@ -26,9 +26,14 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 		FString("Loadout")
 	);
 
-	GameplayTags.Widget_Lobby_CharacterSelect = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("Widget.Lobby.CharacterSelect"),
-		FString("Character Select")
+	GameplayTags.Widget_Lobby_WeaponSelect = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Widget.Lobby.WeaponSelect"),
+		FString("Weapon Select")
+	);
+
+	GameplayTags.Widget_Lobby_Customize = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Widget.Lobby.Customize"),
+		FString("Customize")
 	);
 
 	GameplayTags.Widget_Lobby_LevelSelect = UGameplayTagsManager::Get().AddNativeGameplayTag(

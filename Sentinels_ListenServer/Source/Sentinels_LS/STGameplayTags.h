@@ -29,8 +29,9 @@ public:
 	FGameplayTag Widget_OutGame_MainMenu;
 	FGameplayTag Widget_OutGame_System;
 	FGameplayTag Widget_Lobby_Loadout;
-	FGameplayTag Widget_Lobby_CharacterSelect;
+	FGameplayTag Widget_Lobby_WeaponSelect;
 	FGameplayTag Widget_Lobby_LevelSelect;
+	FGameplayTag Widget_Lobby_Customize;
 	FGameplayTag Widget_InGame;
 	FGameplayTag Widget_InGame_Map;
 	FGameplayTag Widget_InGame_Minimap;

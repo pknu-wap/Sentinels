@@ -7,6 +7,7 @@
 #include "STStructs.h"
 #include "InventoryComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUpdateInventory);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SENTINELS_LS_API UInventoryComponent : public UActorComponent
@@ -24,6 +25,9 @@ protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	TArray<FInvSlotStruct> GetInventoryCopy() const { return Inventory; }
+
 	FORCEINLINE const TArray<FInvSlotStruct>& GetInventory() const { return Inventory; }
 	const FInvSlotStruct& GetItem(int InItemID) const;
 
@@ -47,4 +51,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void LogInventory();
 
+	UPROPERTY(BlueprintAssignable)
+	FOnUpdateInventory OnUpdatreInventory;
 };

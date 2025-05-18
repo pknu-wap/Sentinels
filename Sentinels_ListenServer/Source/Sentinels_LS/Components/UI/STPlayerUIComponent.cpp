@@ -13,7 +13,8 @@
 #include "GameplayTagsManager.h"
 #include "System/STGameState.h"
 #include "System/STGameInstance.h"
-#include "Player/Dummy/STDummyCharacter.h"
+#include "Player/Dummy/STDummyPlayer.h"
+#include "Components/Widget.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Materials/Material.h"
@@ -50,6 +51,17 @@ void USTPlayerUIComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 	DOREPLIFETIME(USTPlayerUIComponent, bIsReady);
 	DOREPLIFETIME(USTPlayerUIComponent, PlayerID);
+}
+
+UWidget* USTPlayerUIComponent::GetWidgetByName(UUserWidget* WidgetInstance, const FString& Name)
+{
+	if (!WidgetInstance) return nullptr;
+
+	FName PropertyFName(*Name);
+
+	UWidget* widget = Cast<UWidget>(WidgetInstance->GetWidgetFromName(PropertyFName));
+
+	return widget;
 }
 
 void USTPlayerUIComponent::ServerRPCRegisterPlayerID_Implementation(const FUniqueNetIdRepl& ID)
@@ -130,7 +142,7 @@ void USTPlayerUIComponent::ServerRPCCheckbIsReady_Implementation(FGameplayTag Wi
 	FGameplayTag loadoutTag = FSTGameplayTags::Get().Widget_Lobby_Loadout;
 	UUserWidget* loadoutWidgetInstance = UISubSystem->GetWidget(loadoutTag);
 
-	UImage* img_CurrentLevel = Cast<UImage>(loadoutWidgetInstance->GetWidgetFromName(TEXT("IMG_CurrentLevel")));
+	UImage* img_CurrentLevel = Cast<UImage>(loadoutWidgetInstance->GetWidgetFromName(TEXT("IMG_Map")));
 
 	if (img_CurrentLevel->GetBrush().GetResourceObject() == nullptr)
 		return;
@@ -140,6 +152,9 @@ void USTPlayerUIComponent::ServerRPCCheckbIsReady_Implementation(FGameplayTag Wi
 		if (playerController)
 		{
 			playerController->GetUIComponent()->ClientRPCRemoveFromParent(WidgetTag);
+			playerController->SetInputMode(FInputModeGameOnly());
+			playerController->SetShowMouseCursor(false);
+			playerController->GetUIComponent()->bIsReady = false;
 		}
 	}
 
@@ -178,12 +193,12 @@ void USTPlayerUIComponent::UpdateUI(FGameplayTag WidgetTag)
 {
 	if (FSTGameplayTags::Get().Widget_Lobby_Loadout == WidgetTag)
 	{
-		UpdatePlayerWeaponLayer();
+		UpdatePlayerAvatarLayer();
 		UpdateCurrentGameLevelLayer();
 	}
 }
 
-void USTPlayerUIComponent::UpdatePlayerWeaponLayer()
+void USTPlayerUIComponent::UpdatePlayerAvatarLayer()
 {
 	USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
 
@@ -203,8 +218,8 @@ void USTPlayerUIComponent::UpdatePlayerWeaponLayer()
 
 	for (auto playerIDIter : pc->GetUIComponent()->PlayerID)
 	{
-		ASTDummyCharacter* dummyCharacter = nullptr;
-		for (ASTDummyCharacter* dummyCharacterIter : TActorRange<ASTDummyCharacter>(GetWorld()))
+		ASTDummyPlayer* dummyCharacter = nullptr;
+		for (ASTDummyPlayer* dummyCharacterIter : TActorRange<ASTDummyPlayer>(GetWorld()))
 		{
 			if (dummyCharacterIter->GetPlayerID().ToString() == playerIDIter.ToString())
 				dummyCharacter = dummyCharacterIter;
@@ -226,46 +241,42 @@ void USTPlayerUIComponent::UpdatePlayerWeaponLayer()
 			return;
 		}
 
-		if (playerIDIter == pc->PlayerState->GetUniqueId())
+		UImage* img_Player1 = Cast<UImage>(widgetInstance->GetWidgetFromName(TEXT("IMG_Player1")));
+		if (img_Player1 && img_Player1->GetBrush().GetResourceObject() == nullptr)
 		{
-			UImage* img_LocalPlayer = Cast<UImage>(widgetInstance->GetWidgetFromName(TEXT("IMG_Self")));
-			if (!img_LocalPlayer)
-			{
-				ST_SUBLOG(LogSTNetwork, Warning, TEXT("no IMG_Self"));
-				return;
-			}
+			img_Player1->SetVisibility(ESlateVisibility::Visible);
+			img_Player1->SetBrushFromMaterial(material);
+			dummyCharacter->SetbIsShow(true);
 
-			if (img_LocalPlayer->GetBrush().GetResourceObject() == nullptr)
-			{
-				img_LocalPlayer->SetVisibility(ESlateVisibility::Visible);
-				img_LocalPlayer->SetBrushFromMaterial(material);
-				dummyCharacter->SetbIsShow(true);
-			}
+			break;
 		}
-		else
-		{
-			UImage* img_FirstPlayer = Cast<UImage>(widgetInstance->GetWidgetFromName(TEXT("IMG_FirstPlayer")));
-			UImage* img_SecondPlayer = Cast<UImage>(widgetInstance->GetWidgetFromName(TEXT("IMG_SecondPlayer")));
-			UImage* img_ThirdPlayer = Cast<UImage>(widgetInstance->GetWidgetFromName(TEXT("IMG_ThirdPlayer")));
 
-			if (img_FirstPlayer->GetBrush().GetResourceObject() == nullptr)
-			{
-				img_FirstPlayer->SetVisibility(ESlateVisibility::Visible);
-				img_FirstPlayer->SetBrushFromMaterial(material);
-				dummyCharacter->SetbIsShow(true);
-			}
-			else if (img_SecondPlayer->GetBrush().GetResourceObject() == nullptr)
-			{
-				img_SecondPlayer->SetVisibility(ESlateVisibility::Visible);
-				img_SecondPlayer->SetBrushFromMaterial(material);
-				dummyCharacter->SetbIsShow(true);
-			}
-			else if (img_ThirdPlayer->GetBrush().GetResourceObject() == nullptr)
-			{
-				img_ThirdPlayer->SetVisibility(ESlateVisibility::Visible);
-				img_ThirdPlayer->SetBrushFromMaterial(material);
-				dummyCharacter->SetbIsShow(true);
-			}		
+		UImage* img_Player2 = Cast<UImage>(widgetInstance->GetWidgetFromName(TEXT("IMG_Player2")));
+		if (img_Player2 && img_Player2->GetBrush().GetResourceObject() == nullptr)
+		{
+			img_Player2->SetVisibility(ESlateVisibility::Visible);
+			img_Player2->SetBrushFromMaterial(material);
+			dummyCharacter->SetbIsShow(true);
+
+			break;
+		}
+
+		UImage* img_Player3 = Cast<UImage>(widgetInstance->GetWidgetFromName(TEXT("IMG_Player3")));
+		if (img_Player3 && img_Player3->GetBrush().GetResourceObject() == nullptr)
+		{
+			img_Player3->SetVisibility(ESlateVisibility::Visible);
+			img_Player3->SetBrushFromMaterial(material);
+			dummyCharacter->SetbIsShow(true);
+
+			break;
+		}
+
+		UImage* img_Player4 = Cast<UImage>(widgetInstance->GetWidgetFromName(TEXT("IMG_Player4")));
+		if (img_Player4 && img_Player4->GetBrush().GetResourceObject() == nullptr)
+		{
+			img_Player4->SetVisibility(ESlateVisibility::Visible);
+			img_Player4->SetBrushFromMaterial(material);
+			dummyCharacter->SetbIsShow(true);
 		}
 	}
 }
@@ -302,11 +313,11 @@ void USTPlayerUIComponent::UpdateCurrentGameLevelLayer()
 	const FSlateBrush& sourceBrush = Cast<UImage>(selectLevelWidgetInstance->GetWidgetFromName(*widgetNameStr))->GetBrush();
 	FSlateBrush copiedBrush = sourceBrush;
 
-	UImage* img_CurrentLevel = Cast<UImage>(loadoutWidgetInstance->GetWidgetFromName(TEXT("IMG_CurrentLevel")));
+	UImage* img_CurrentLevel = Cast<UImage>(loadoutWidgetInstance->GetWidgetFromName(TEXT("IMG_Map")));
 	img_CurrentLevel->SetBrush(copiedBrush);
 	img_CurrentLevel->SetVisibility(ESlateVisibility::Visible);
 
-	UTextBlock* tb_LevelName = Cast<UTextBlock>(loadoutWidgetInstance->GetWidgetFromName(TEXT("TB_LevelName")));
+	UTextBlock* tb_LevelName = Cast<UTextBlock>(loadoutWidgetInstance->GetWidgetFromName(TEXT("TB_MapDescription")));
 	tb_LevelName->SetText(FText::FromString(cleanTagName));
 }
 
@@ -331,8 +342,8 @@ void USTPlayerUIComponent::UpdateCharacterSelectUI()
 		return;
 	}
 
-	ASTDummyCharacter* dummyCharacter = nullptr;
-	for (ASTDummyCharacter* dummyCharacterIter : TActorRange<ASTDummyCharacter>(GetWorld()))
+	ASTDummyPlayer* dummyCharacter = nullptr;
+	for (ASTDummyPlayer* dummyCharacterIter : TActorRange<ASTDummyPlayer>(GetWorld()))
 	{
 		if (dummyCharacterIter->GetPlayerID().ToString() == pc->PlayerState->GetUniqueId().ToString())
 			dummyCharacter = dummyCharacterIter;
@@ -357,7 +368,7 @@ void USTPlayerUIComponent::UpdateCharacterSelectUI()
 		return;
 	}
 
-	FGameplayTag widgetTag = FSTGameplayTags::Get().Widget_Lobby_CharacterSelect;
+	FGameplayTag widgetTag = FSTGameplayTags::Get().Widget_Lobby_WeaponSelect;
 
 	UUserWidget* widgetInstance = UISubSystem->GetWidget(widgetTag);
 	if (!widgetInstance)
@@ -451,7 +462,7 @@ void USTPlayerUIComponent::AddPlayerID(const FUniqueNetIdRepl& ID)
 
 void USTPlayerUIComponent::RegisterIDToDummyPlayer(const FUniqueNetIdRepl& ID)
 {
-	for (ASTDummyCharacter* dummyCharacter : TActorRange<ASTDummyCharacter>(GetWorld()))
+	for (ASTDummyPlayer* dummyCharacter : TActorRange<ASTDummyPlayer>(GetWorld()))
 	{
 		if (dummyCharacter->GetPlayerID() == ID)
 			return;

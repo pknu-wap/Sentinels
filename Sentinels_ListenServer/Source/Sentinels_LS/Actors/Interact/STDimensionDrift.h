@@ -46,7 +46,10 @@ protected:
 	TSubclassOf<UUserWidget> Widget_LoadoutClass;
 
 	UPROPERTY(EditAnywhere, Category = "WBP")
-	TSubclassOf<UUserWidget> Widget_CharacterSelectClass;
+	TSubclassOf<UUserWidget> Widget_WeaponSelectClass;
+
+	UPROPERTY(EditAnywhere, Category = "WBP")
+	TSubclassOf<UUserWidget> Widget_CustomizeClass;
 
 	UPROPERTY(EditAnywhere, Category = "WBP")
 	TSubclassOf<UUserWidget> Widget_LevelSelectClass;

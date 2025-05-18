@@ -49,29 +49,28 @@ void ASTDimensionDrift::Interact_Implementation(UInteractComponent* InteractingC
 	USTPlayerUIComponent* uiComponent = pc->GetUIComponent();
 
 	FGameplayTag loadoutTag = FSTGameplayTags::Get().Widget_Lobby_Loadout;
-	FGameplayTag selectCharacterTag = FSTGameplayTags::Get().Widget_Lobby_CharacterSelect;
-	FGameplayTag selectLevelTag = FSTGameplayTags::Get().Widget_Lobby_LevelSelect;
+	FGameplayTag weaponSelectTag = FSTGameplayTags::Get().Widget_Lobby_WeaponSelect;
+	FGameplayTag customizeTag = FSTGameplayTags::Get().Widget_Lobby_Customize;
+	FGameplayTag levelSelectTag = FSTGameplayTags::Get().Widget_Lobby_LevelSelect;
 
 	uiComponent->AddPlayerID(pc->PlayerState->GetUniqueId());
 
 	uiComponent->ServerRPCRegisterWidget(loadoutTag, Widget_LoadoutClass);
-	uiComponent->ServerRPCRegisterWidget(selectCharacterTag, Widget_CharacterSelectClass);
-	uiComponent->ServerRPCRegisterWidget(selectLevelTag, Widget_LevelSelectClass);
+	uiComponent->ServerRPCRegisterWidget(weaponSelectTag, Widget_WeaponSelectClass);
+	uiComponent->ServerRPCRegisterWidget(customizeTag, Widget_CustomizeClass);
+	uiComponent->ServerRPCRegisterWidget(levelSelectTag, Widget_LevelSelectClass);
 
 	if (pc->IsLocalController())
 	{
-		//uiComponent->RegisterWidget(loadoutTag, Widget_LoadoutClass);
-		//uiComponent->RegisterWidget(selectCharacterTag, Widget_CharacterSelectClass);
-		//uiComponent->RegisterWidget(selectLevelTag, Widget_LevelSelectClass);
 		uiComponent->AddToViewport(loadoutTag);
 	}
 	else
 	{
-		//uiComponent->ClientRPCRegisterWidget(loadoutTag, Widget_LoadoutClass);
-		//uiComponent->ClientRPCRegisterWidget(selectCharacterTag, Widget_CharacterSelectClass);
-		//uiComponent->ClientRPCRegisterWidget(selectLevelTag, Widget_LevelSelectClass);
 		uiComponent->ClientRPCAddToViewport(loadoutTag);
 	}
+
+	pc->SetInputMode(FInputModeUIOnly());
+	pc->SetShowMouseCursor(true);
 
 	uiComponent->ServerRPCUpdateUI(loadoutTag);
 	

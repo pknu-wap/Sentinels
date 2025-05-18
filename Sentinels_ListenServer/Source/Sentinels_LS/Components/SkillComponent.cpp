@@ -62,6 +62,8 @@ void USkillComponent::InitSkillInfos(UDataTable* InDataTable)
 void USkillComponent::ActivateSkill(int SkillIdx)
 {
 	StartCoolDown(SkillIdx);
+
+	OnActivateSkill.Broadcast(SkillIdx);
 }
 
 bool USkillComponent::CanActivateSkill(int SkillIdx)

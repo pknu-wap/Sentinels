@@ -11,6 +11,8 @@
  * 
  */
 
+class UWidget;
+
 UCLASS()
 class SENTINELS_LS_API USTPlayerUIComponent : public USTUIComponent_Base
 {
@@ -36,6 +38,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	FString GetPlayerIDString(const FUniqueNetIdRepl& ID) { return *ID.ToString(); }
+
+	/*
+		Blueprint Function
+	*/
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	static UWidget* GetWidgetByName(UUserWidget* WidgetInstance, const FString& Name);
 
 public:
 	UFUNCTION(BlueprintCallable)
@@ -93,7 +101,7 @@ public:
 	void UpdateUI(FGameplayTag WidgetTag);
 
 	UFUNCTION(BlueprintCallable)
-	void UpdatePlayerWeaponLayer();
+	void UpdatePlayerAvatarLayer();
 
 	UFUNCTION(BlueprintCallable)
 	void UpdateCurrentGameLevelLayer();
