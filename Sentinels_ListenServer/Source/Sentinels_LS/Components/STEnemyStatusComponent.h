@@ -21,11 +21,17 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	void InitStatus();
+
+public:
 	float TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
 
 public:
 	FORCEINLINE bool IsDied() { return bIsDied; }
 
+public:
+	FORCEINLINE float GetMaxHP() const { return MaxHP; }
+	FORCEINLINE float GetCurrentHP() const { return CurrentHP; }
 
 protected:
 	UPROPERTY(EditAnywhere)

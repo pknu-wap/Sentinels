@@ -41,7 +41,7 @@ protected:
 	virtual void Jump() override;
 
 	/*
-		
+		On Montage Ended (For GameplayTag)
 	*/
 	UFUNCTION()
 	void OnMontageEnded_Callback(UAnimMontage* Montage, bool bInterrupted);
@@ -61,6 +61,23 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
+
+	/*
+		Step
+	*/
+protected:
+	bool CanDoStep() const;
+
+	void Step_Pressed();
+	void PlayMontage_Step();
+
+	UFUNCTION(Server, Reliable)
+	virtual void Step_Pressed_Server();
+
+	UFUNCTION(NetMulticast, Reliable)
+	virtual void Step_Pressed_Multicast();
+
 
 	/*
 		Normal Attack
@@ -94,46 +111,11 @@ protected:
 
 
 	/*
-		Time Dilation
-	*/
-public:
-	UFUNCTION(Client, Reliable)
-	void ApplyCustomTimeDilation(float inValue, float inDuration);
-
-protected:
-	FTimerHandle Handle_TimeDilation;
-
-	/*
-		Camera Shake
-	*/
-public:
-	UFUNCTION(Client, Reliable)
-	void ApplyAttackCameraShake();
-
-	UPROPERTY(EditAnywhere, Category = Camera)
-	TSubclassOf<UCameraShakeBase> CameraShakeClass_Attack;
-
-	/*
-		Step
-	*/
-protected:
-	bool CanDoStep() const;
-
-	void Step_Pressed();
-	void PlayMontage_Step();
-
-	UFUNCTION(Server, Reliable)
-	virtual void Step_Pressed_Server();
-
-	UFUNCTION(NetMulticast, Reliable)
-	virtual void Step_Pressed_Multicast();
-
-
-	/*
 		Skills
 	*/
 protected:
 	bool CanDoSkill() const;
+	bool IsSkillMontage(const UAnimMontage* inMontage) const;
 
 	virtual void Skill_Q_Pressed();
 	void PlayMontage_Skill_Q();
@@ -171,6 +153,57 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	virtual void Skill_R_Pressed_Multicast();
 
+	virtual void Skill_Passive_Pressed();
+	void PlayMontage_Skill_Passive();
+
+	UFUNCTION(Server, Reliable)
+	virtual void Skill_Passive_Pressed_Server();
+
+	UFUNCTION(NetMulticast, Reliable)
+	virtual void Skill_Passive_Pressed_Multicast();
+
+	/*
+		Damage (Server)
+	*/
+public:
+	UFUNCTION(BlueprintCallable)
+	virtual void AdjustFinalDamage(float& DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor);
+
+protected:
+
+	
+	/*
+		On Attack Success 
+	*/
+public:
+	UFUNCTION(Server, Reliable)
+	virtual void OnAttackSuccess_Server(float DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor);
+
+	UFUNCTION(Client, Reliable)
+	virtual void OnAttackSuccess_Client();
+
+
+	/*
+		Time Dilation
+	*/
+public:
+	UFUNCTION(Client, Reliable)
+	void ApplyCustomTimeDilation(float inValue, float inDuration);
+
+protected:
+	FTimerHandle Handle_TimeDilation;
+
+	/*
+		Camera Shake
+	*/
+public:
+	UFUNCTION(Client, Reliable)
+	void ApplyAttackCameraShake();
+
+	UPROPERTY(EditAnywhere, Category = Camera)
+	TSubclassOf<UCameraShakeBase> CameraShakeClass_Attack;
+
+
 protected:
 	/*
 		Camera
@@ -195,6 +228,12 @@ protected:
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated)
 	TObjectPtr<USTPlayerStatusComponent> StatusComponent;
+
+	/*
+		Data
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UDataTable* DataTable_Skill;
 
 	/* 
 		Input 
@@ -222,6 +261,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* Skill_R_Action;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* Skill_Passive_Action;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* MappingContext_ThirdPerson;
@@ -252,4 +294,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* Montage_Skill_R;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* Montage_Skill_Passive;
 };

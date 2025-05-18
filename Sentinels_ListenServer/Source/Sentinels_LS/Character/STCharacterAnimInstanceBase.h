@@ -10,6 +10,7 @@ class ASTCharacterBase;
 
 DECLARE_MULTICAST_DELEGATE(FPrimaryFire);
 DECLARE_MULTICAST_DELEGATE(FUltimateFire);
+DECLARE_MULTICAST_DELEGATE(FDissolveStart);
 
 UCLASS()
 class SENTINELS_LS_API USTCharacterAnimInstanceBase : public UAnimInstance
@@ -44,7 +45,11 @@ protected:
 	UFUNCTION()
 	void AnimNotify_UltimateFire();
 
+	UFUNCTION()
+	void AnimNotify_DissolveStart();
+
 public:
 	FPrimaryFire Delegate_PrimaryFire;
 	FUltimateFire Delegate_UltimateFire;
+	FDissolveStart Delegate_DissolveStart;
 };

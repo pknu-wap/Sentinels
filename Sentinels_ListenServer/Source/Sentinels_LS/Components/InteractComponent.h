@@ -30,6 +30,12 @@ protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 /*
+	Bind Delegate
+*/
+public:
+	void BindDelegates();
+
+/*
 	Interact
 */
 public:

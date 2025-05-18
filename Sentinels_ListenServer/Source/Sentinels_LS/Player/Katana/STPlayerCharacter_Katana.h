@@ -15,7 +15,51 @@ class SENTINELS_LS_API ASTPlayerCharacter_Katana : public ASTPlayerCharacter
 	
 protected:
 	virtual void BeginPlay() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
+/*
+	Damage (Server)
+*/
+public:
+	virtual void AdjustFinalDamage(float& DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor) override;
 
+/*
+	On Attack Success (Passive Skill)
+*/
+protected:
+	virtual void OnAttackSuccess_Server_Implementation(float DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor) override;
+
+/*
+	Passive Skill
+*/
+protected:
+	virtual void Skill_Passive_Pressed() override;
+	virtual void Skill_Passive_Pressed_Server_Implementation() override;
+
+	UFUNCTION()
+	void SetWrapTarget_Passive();
+
+protected:
+	UPROPERTY(EditAnywhere, Category = "Skill")
+	float TraceRange_Passive = 1000.f;
+
+	UPROPERTY(EditAnywhere, Category = "Skill")
+	float TraceRadius_Passive = 100.f;
+
+	UPROPERTY(EditAnywhere, Category = "Skill")
+	float WarpDistance_Passive = 500.f;
+
+private:
+	UPROPERTY()
+	TArray<AActor*> AllTargetActors_Passive;
+
+	UPROPERTY()
+	AActor* TargetActor_Passive = nullptr;
+
+
+/*
+	Active Skill
+*/
 protected:
 	UFUNCTION()
 	void SetWrapTarget_Q();

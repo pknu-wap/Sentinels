@@ -83,6 +83,11 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 		FName("Character.State.Stunned"),
 		FString("Character is Stunned")
 	);
+
+	GameplayTags.Character_State_Bleed = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Character.State.Bleed"),
+		FString("Character State Bleed")
+	);
 	
 	GameplayTags.Character_State_Jump = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Character.State.Jump"),

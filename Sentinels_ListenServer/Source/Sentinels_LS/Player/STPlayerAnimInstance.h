@@ -6,11 +6,12 @@
 #include "Character/STCharacterAnimInstanceBase.h"
 #include "STPlayerAnimInstance.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FThrowLiftingActor);
 DECLARE_MULTICAST_DELEGATE(FStartCheckNextInput);
 DECLARE_MULTICAST_DELEGATE(FCheckNextAttack);
 DECLARE_MULTICAST_DELEGATE(FSetWarpTarget_Q);
 DECLARE_MULTICAST_DELEGATE(FSpawnSlash_Q);
-DECLARE_MULTICAST_DELEGATE(FThrowLiftingActor)
+DECLARE_MULTICAST_DELEGATE(FSetWarpTarget_Passive);
 
 UCLASS()
 class SENTINELS_LS_API USTPlayerAnimInstance : public USTCharacterAnimInstanceBase
@@ -47,9 +48,13 @@ protected:
 	UFUNCTION()
 	void AnimNotify_SpawnSlash_Q();
 
+	UFUNCTION()
+	void AnimNotify_SetWarpTarget_Passive();
+
 public:
 	FSetWarpTarget_Q Delegate_SetWarpTarget_Q;
 	FSpawnSlash_Q Delegate_SpawnSlash_Q;
+	FSetWarpTarget_Passive Delegate_SetWarpTarget_Passive;
 
 	/*
 		DualBlade

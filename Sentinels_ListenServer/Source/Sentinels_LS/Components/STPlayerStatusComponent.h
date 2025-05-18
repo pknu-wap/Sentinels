@@ -47,8 +47,6 @@ protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
-	ESTStatusType GetRelatedStatusType(ESTBuffType inBuffType) const;
-	
 	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void SetStatus_Server(ESTStatusType inType, float inValue, bool forceApply);
 
@@ -84,16 +82,28 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float BaseMaxHP;
 
-	UPROPERTY(ReplicatedUsing = OnRep_HPUpdated, EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(ReplicatedUsing = OnRep_HPUpdated, EditAnywhere, BlueprintReadWrite)
 	float MaxHP;
 
 	UPROPERTY(ReplicatedUsing = OnRep_HPUpdated, EditAnywhere, BlueprintReadOnly)
 	float HP;
 
+
+	// HP Regen
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float BaseMaxHPRegen;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float MaxHPRegen;
+
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
+	float HPRegen;
+
+
 	// ATK & DEF
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
 	int ATK;
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
 	int DEF;
 
 	/*
@@ -104,7 +114,7 @@ public:
 	*/
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 	float MaxMovementSpeed;
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite)
 	float MovementSpeed;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 	float BaseMovementSpeed;
@@ -117,7 +127,7 @@ public:
 	*/
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 	float MaxAttackSpeed;
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite)
 	float AttackSpeed;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 	float BaseAttackSpeed;
@@ -129,7 +139,7 @@ public:
 	*/
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 	float MaxDamageIncreaseRate;
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite)
 	float DamageIncreaseRate;
 
 	/*
@@ -142,20 +152,20 @@ public:
 	*/
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 	float MaxCDR;
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite)
 	float CDR;
 
 	/*
 		Critical Damage Percent (CDP)
 		
-		Calculation formula : CDP = BaseCDP * Item_CDP * Buff_CDP
-			eg) 5.184 = 2.0f * (1.2 * 1.2 * 1.2) * (1.5)
+		Calculation formula : CDP = BaseCDP + Item_CDP + Buff_CDP
+			eg) 5.184 = 2.0f + (0.2 + 0.2 + 0.2) + (0.5)
 
 		BaseCDP : 2.0f
 	*/
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 	float MaxCriticalDamagePercent;
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly)		//
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite)		//
 	float CriticalDamagePercent;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 	float BaseCriticalDamagePercent;
@@ -168,7 +178,7 @@ public:
 	*/
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 	float MaxCriticalRate;
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite)
 	float CriticalRate;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 	float BaseCriticalRate;
