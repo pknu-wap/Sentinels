@@ -21,6 +21,8 @@
 #include "Character/STCharacterAnimInstanceBase.h"
 #include "Actors/Projectile/ProjectileBase.h"
 #include "Actors/Interact/Item/InteractableItem.h"
+#include "SubSystem/STProjectilePoolingSubSystem.h"
+#include "Particles/ParticleSystemComponent.h"
 
 ASTEnemyBase::ASTEnemyBase(const FObjectInitializer& object_initializer)
 	: Super(object_initializer.SetDefaultSubobjectClass<USkeletalMeshComponentBudgeted>(ACharacter::MeshComponentName))
@@ -67,6 +69,12 @@ void ASTEnemyBase::BeginPlay()
 		}
 
 		Activate(GetActorLocation(), GetActorRotation());
+
+		if (ProjectileClass_PrimaryFire)
+		{
+			USTProjectilePoolingSubSystem* ProjectileSubSystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<USTProjectilePoolingSubSystem>();
+			ProjectileSubSystem->InitProjectilePool(this, ProjectileClass_PrimaryFire, 100);
+		}
 	}
 }
 
@@ -260,10 +268,18 @@ void ASTEnemyBase::PlayNormalAttackMontage(int MontageIdx)
 
 void ASTEnemyBase::PrimaryFire()
 {
+	USTProjectilePoolingSubSystem* ProjectileSubSystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<USTProjectilePoolingSubSystem>();
+
 	FVector SpawnLocation = GetMesh()->GetSocketLocation(SocketName_PrimaryFire);
-	AProjectileBase* projectile = GetWorld()->SpawnActor<AProjectileBase>(ProjectileClass_PrimaryFire, SpawnLocation, GetActorForwardVector().Rotation());
+	AProjectileBase* projectile = ProjectileSubSystem->GetActor<AProjectileBase>(ProjectileClass_PrimaryFire, SpawnLocation);
+	// AProjectileBase* projectile = GetWorld()->SpawnActor<AProjectileBase>(ProjectileClass_PrimaryFire, SpawnLocation, GetActorForwardVector().Rotation());
 	if (projectile)
 	{
+		UParticleSystemComponent* Particle = projectile->GetComponentByClass<UParticleSystemComponent>();
+		if (Particle)
+		{
+			Particle->ActivateSystem(true);
+		}
 		projectile->FireInDirection(GetActorForwardVector());
 	}
 }

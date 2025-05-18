@@ -178,6 +178,7 @@ bool AWorldBoxAISpawner::GetSpawnNavLocationInBox(int infoIdx, FNavLocation& Out
 
 void AWorldBoxAISpawner::OnEnemyDied(AActor* DiedEnemy)
 {
+	UE_LOG(LogTemp, Display, TEXT("AWorldBoxAISpawner::OnEnemyDied"));
 	// Called when enemy died
 	if (DiedEnemy)
 	{
