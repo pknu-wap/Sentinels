@@ -13,6 +13,7 @@
 #include "System/STGameInstance.h"
 #include "Sentinels_LSGameMode.h"
 #include "Player/STPlayerController.h"
+#include "Player/STLocalPlayer.h"
 
 #pragma region Session
 
@@ -219,6 +220,7 @@ void USTSessionSubSystem::FindSessionInfos()
 	LastSessionSearch = MakeShareable(new FOnlineSessionSearch());
 	LastSessionSearch->MaxSearchResults = 100;
 	LastSessionSearch->bIsLanQuery = true;
+	LastSessionSearch->TimeoutInSeconds = 1.f;
 
 	LastSessionSearch->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
 
@@ -228,6 +230,9 @@ void USTSessionSubSystem::FindSessionInfos()
 		sessionInterface->ClearOnFindSessionsCompleteDelegate_Handle(Handle_FindSessionComplete);
 		OnFindSessionsCompleteEvent.Broadcast(TArray<FSessionInfo>(), false);
 	}
+
+	FTimerHandle handle;
+	GetWorld()->GetTimerManager().SetTimer(handle, [&]() {this->OnFindSessionsComplete(true); }, 1.f, false);
 }
 
 void USTSessionSubSystem::OnFindSessionsComplete(bool bWasSuccessful)
@@ -358,15 +363,23 @@ void USTSessionSubSystem::OnJoinSessionCompleted(FName SessionName, EOnJoinSessi
 		GameMode->CurrentSessionName = SessionName;
 	}
 
-	FTimerHandle handle;
-	GetWorld()->GetTimerManager().SetTimer(handle, [this, SessionName]() 
-		{
-			ASTPlayerController* PC = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
-			if (PC)
-			{
-				PC->RegisterSelfToSession(SessionName);
-			}
-		}, 3, false);
+	USTLocalPlayer* LocalPlayer = Cast<USTLocalPlayer>(UGameplayStatics::GetPlayerController(this, 0)->GetLocalPlayer());
+	if (LocalPlayer)
+	{
+		LocalPlayer->RegisterSelfToSession(SessionName, false);
+	}
+
+	/*ASTPlayerController* PC = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+	if (PC)
+	{
+		PC->RegisterSelfToSession(SessionName);
+	}*/
+
+	/*ASTPlayerController* PC = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+	if (PC)
+	{
+		PC->RegisterSelfToSession(SessionName);
+	}*/
 
 	TryTravelToCurrentSession(SessionName);
 }

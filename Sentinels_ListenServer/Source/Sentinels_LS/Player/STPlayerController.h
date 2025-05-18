@@ -31,6 +31,7 @@ public:
 	ASTPlayerController();
 
 protected:
+	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -81,12 +82,14 @@ public:
 /*
 	Session
 */
-	void RegisterSelfToSession(FName SessionName);
+	UFUNCTION(Client, Reliable)
+	void RegisterSelfToSession_Client();
 
 	UFUNCTION(Server, Reliable)
 	void RegisterSelfToSession_Server(FName SessionName);
 
 	FName CurrentSession;
+	FTimerHandle RegisterHandle;
 
 protected:
 /*
