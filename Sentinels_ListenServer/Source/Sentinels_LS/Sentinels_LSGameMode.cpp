@@ -13,6 +13,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "System/STGameState.h"
 #include "SubSystem/STGameTravelDataSubsystem.h"
+#include "Player/STLocalPlayer.h"
 
 ASentinels_LSGameMode::ASentinels_LSGameMode()
 	: Delegate_RegisterPlayerComplete(FOnRegisterPlayersCompleteDelegate::CreateUObject(this, &ASentinels_LSGameMode::OnRegisterPlayerComplete))
@@ -39,6 +40,18 @@ void ASentinels_LSGameMode::PostLogin(APlayerController* NewPlayer)
 
 	APlayerState* PlayerState = NewPlayer->PlayerState;
 	if (!PlayerState) return;
+
+	if (ASTPlayerController* PC = Cast<ASTPlayerController>(NewPlayer))
+	{
+		PC->RegisterSelfToSession_Client();
+	}
+
+	//USTLocalPlayer* LocalPlayer = Cast<USTLocalPlayer>(NewPlayer->GetLocalPlayer());
+	//if (LocalPlayer)
+	//{
+	//	LocalPlayer->OnPostLogin();
+	//	// SessionInterface->RegisterPlayer(LocalPlayer->SessionName, *LocalPlayer->GetPreferredUniqueNetId(), false);
+	//}
 
 	if (PlayerState)
 	{
