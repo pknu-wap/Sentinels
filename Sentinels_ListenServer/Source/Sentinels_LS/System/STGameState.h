@@ -80,6 +80,7 @@ public:
 public:
 	USTMissionBase* GetMission(FGameplayTag InMissionTag);
 
+	UFUNCTION(BlueprintCallable)
 	FGameplayTag GetCurrentLevelTag() { return CurrentLevelTag; }
 
 	UFUNCTION(BlueprintCallable)

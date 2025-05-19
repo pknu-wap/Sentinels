@@ -142,9 +142,9 @@ void USTPlayerUIComponent::ServerRPCCheckbIsReady_Implementation(FGameplayTag Wi
 	FGameplayTag loadoutTag = FSTGameplayTags::Get().Widget_Lobby_Loadout;
 	UUserWidget* loadoutWidgetInstance = UISubSystem->GetWidget(loadoutTag);
 
-	UImage* img_CurrentLevel = Cast<UImage>(loadoutWidgetInstance->GetWidgetFromName(TEXT("IMG_Map")));
+	FGameplayTag currentLevelTag = GetWorld()->GetGameState<ASTGameState>()->GetCurrentLevelTag();
 
-	if (img_CurrentLevel->GetBrush().GetResourceObject() == nullptr)
+	if (currentLevelTag == FSTGameplayTags::Get().Level_Lobby)
 		return;
 
 	for (ASTPlayerController* playerController : TActorRange<ASTPlayerController>(GetWorld()))
