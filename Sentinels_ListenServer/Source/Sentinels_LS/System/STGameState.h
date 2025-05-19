@@ -19,11 +19,17 @@ struct FMissionInfo
 {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadOnly)
-	FGameplayTag MissionTag;
+	FMissionInfo() {};
+
+	FMissionInfo(class USTMissionBase* InMission, FGameplayTag InMissionTag)
+		: Mission(InMission), MissionTag(InMissionTag)
+	{};
 
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<class USTMissionBase> Mission;
+
+	UPROPERTY(BlueprintReadOnly)
+	FGameplayTag MissionTag;
 };
 
 UCLASS()
@@ -40,6 +46,9 @@ protected:
 	/*
 		Main Mission
 	*/
+public:
+	int GetClearedMissionNum() const;
+
 public:
 	UFUNCTION(BlueprintCallable)
 	void ActivateRandomMission();
@@ -58,7 +67,7 @@ public:
 	void RegisterMission(FGameplayTag InMissionTag, TSubclassOf<USTMissionBase> MissionSubClass);
 
 	UFUNCTION(BlueprintCallable)
-	void UnRegisterMission(FGameplayTag InMissionTag);
+	void UnRegisterMission(FGameplayTag InMissionTag, bool IsCleared);
 
 	UFUNCTION()
 	void OnMissionEnded(FGameplayTag InMissionTag, bool IsCleared);

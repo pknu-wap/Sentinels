@@ -23,13 +23,22 @@ protected:
 
 public:
 	const FItemStruct* GetItemInfo(int itemID) const;
+	const FItemStruct* GetRandomCombatItemInfo() const;
+
+	UFUNCTION(BlueprintCallable)
+	int GetRandomCombatItemID() const;
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = true))
 	TMap<int, FItemStruct> ItemMap;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = true))
+	TMap<int, FItemStruct> CombatItemMap;
+
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = true))
 	TObjectPtr<UDataTable> ItemDB;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = true))
+	TObjectPtr<UDataTable> CombatItemDB;
 };

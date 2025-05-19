@@ -20,6 +20,9 @@
 #include "STGameplayTags.h"
 #include "Character/STCharacterAnimInstanceBase.h"
 #include "Actors/Projectile/ProjectileBase.h"
+#include "Actors/Interact/Item/InteractableItem.h"
+#include "SubSystem/STProjectilePoolingSubSystem.h"
+#include "Particles/ParticleSystemComponent.h"
 
 ASTEnemyBase::ASTEnemyBase(const FObjectInitializer& object_initializer)
 	: Super(object_initializer.SetDefaultSubobjectClass<USkeletalMeshComponentBudgeted>(ACharacter::MeshComponentName))
@@ -59,15 +62,18 @@ void ASTEnemyBase::BeginPlay()
 
 	if (HasAuthority())
 	{
-		Activate(GetActorLocation(), GetActorRotation());
-	}
-
-	if (HasAuthority())
-	{
 		if (USTCharacterAnimInstanceBase* AnimInst = Cast<USTCharacterAnimInstanceBase>(GetMesh()->GetAnimInstance()))
 		{
 			AnimInst->Delegate_PrimaryFire.AddUObject(this, &ASTEnemyBase::PrimaryFire);
 			AnimInst->Delegate_DissolveStart.AddUObject(this, &ASTEnemyBase::DissolveStart);
+		}
+
+		Activate(GetActorLocation(), GetActorRotation());
+
+		if (ProjectileClass_PrimaryFire)
+		{
+			USTProjectilePoolingSubSystem* ProjectileSubSystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<USTProjectilePoolingSubSystem>();
+			ProjectileSubSystem->InitProjectilePool(this, ProjectileClass_PrimaryFire, 100);
 		}
 	}
 }
@@ -165,6 +171,9 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 			// Delegate Broadcast
 			Delegate_OnEnemyDied.Broadcast(this);
 
+			// Drop Item
+			DropItem();
+
 			return ActualDamage;
 		}
 
@@ -259,10 +268,18 @@ void ASTEnemyBase::PlayNormalAttackMontage(int MontageIdx)
 
 void ASTEnemyBase::PrimaryFire()
 {
+	USTProjectilePoolingSubSystem* ProjectileSubSystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<USTProjectilePoolingSubSystem>();
+
 	FVector SpawnLocation = GetMesh()->GetSocketLocation(SocketName_PrimaryFire);
-	AProjectileBase* projectile = GetWorld()->SpawnActor<AProjectileBase>(ProjectileClass_PrimaryFire, SpawnLocation, GetActorForwardVector().Rotation());
+	AProjectileBase* projectile = ProjectileSubSystem->GetActor<AProjectileBase>(ProjectileClass_PrimaryFire, SpawnLocation);
+	// AProjectileBase* projectile = GetWorld()->SpawnActor<AProjectileBase>(ProjectileClass_PrimaryFire, SpawnLocation, GetActorForwardVector().Rotation());
 	if (projectile)
 	{
+		UParticleSystemComponent* Particle = projectile->GetComponentByClass<UParticleSystemComponent>();
+		if (Particle)
+		{
+			Particle->ActivateSystem(true);
+		}
 		projectile->FireInDirection(GetActorForwardVector());
 	}
 }
@@ -301,6 +318,19 @@ void ASTEnemyBase::PlayDiedMontage()
 	if (AnimInst)
 	{
 		AnimInst->Montage_Play(Montage_Died);
+	}
+}
+
+void ASTEnemyBase::DropItem()
+{
+	if (HasAuthority())
+	{
+		float rand = UKismetMathLibrary::RandomFloatInRange(0, 1);
+
+		if (DropProbability >= rand)
+		{
+			GetWorld()->SpawnActor<AActor>(DropItemClass, GetActorLocation(), GetActorRotation());
+		}
 	}
 }
 

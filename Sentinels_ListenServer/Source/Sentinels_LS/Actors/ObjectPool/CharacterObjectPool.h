@@ -38,10 +38,11 @@ public:
 			}
 		}
 
-		T* character = Cast<T>(UAIBlueprintHelperLibrary::SpawnAIFromClass(this, ObjectClass, nullptr,
+		ASTPoolableCharacter* character = Cast<T>(UAIBlueprintHelperLibrary::SpawnAIFromClass(this, ObjectClass, nullptr,
 			FVector::ZeroVector, FRotator::ZeroRotator, true));
 		if (character)
 		{
+			character->Activate(Location, Rotation);
 			ObjectPool.Add(character);
 			return  Cast<T>(character);
 		}
