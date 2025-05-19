@@ -13,6 +13,7 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Net/UnrealNetwork.h"
 
 AInteractableTank::AInteractableTank()
 {
@@ -31,6 +32,11 @@ void AInteractableTank::BeginPlay()
 	{
 		CameraLocation_Normal = Camera->GetRelativeLocation();
 	}
+
+	if (HasAuthority())
+	{
+		RemainedBullet = MaxBullet;
+	}
 }
 
 void AInteractableTank::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -42,6 +48,8 @@ void AInteractableTank::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 void AInteractableTank::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AInteractableTank, RemainedBullet);
 }
 
 void AInteractableTank::PossessedBy(AController* NewController)
@@ -69,6 +77,9 @@ void AInteractableTank::PossessedCallback_Multicast_Implementation()
 
 			if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent))
 			{
+				EnhancedInputComponent->ClearAxisBindings();
+				EnhancedInputComponent->ClearBindingsForObject(this);
+
 				EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AInteractableTank::Move);
 				EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AInteractableTank::Look);
 				EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &AInteractableTank::Fire_Pressed);
@@ -121,11 +132,15 @@ void AInteractableTank::Look(const FInputActionValue& Value)
 
 void AInteractableTank::Fire_Pressed()
 {
+	if (RemainedBullet <= 0) return;
+
 	Fire_Pressed_Server();
 }
 
 void AInteractableTank::Fire_Pressed_Server_Implementation()
 {
+	if (RemainedBullet <= 0) return;
+
 	FVector SpawnLocation = GetMesh()->GetSocketLocation(FName("gun_jntSocket"));
 	FRotator SpawnRotation = GetMesh()->GetSocketRotation(FName("turret_jnt"));
 
@@ -133,7 +148,7 @@ void AInteractableTank::Fire_Pressed_Server_Implementation()
 	if (Rocket)
 	{
 		Rocket->FireInDirection(SpawnRotation.Vector());
-		// Rocket->FireInDirection(GetActorForwardVector());
+		RemainedBullet = FMath::Clamp(RemainedBullet - 1, 0, MaxBullet);
 	}
 }
 
@@ -177,6 +192,25 @@ void AInteractableTank::ConvertMode_Pressed()
 
 void AInteractableTank::GetOffFromTank()
 {
+	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	{
+		if (CurrentCameraMode == ETankCameraMode::ETC_Focus)
+		{
+			CurrentCameraMode = ETankCameraMode::ETC_Normal;
+
+			if (UCameraComponent* Camera = GetComponentByClass<UCameraComponent>())
+			{
+				Camera->AttachToComponent(GetComponentByClass<USpringArmComponent>(), FAttachmentTransformRules::KeepRelativeTransform);
+				Camera->SetRelativeLocation(CameraLocation_Normal);
+			}
+
+			if (CrossHairWidget)
+			{
+				CrossHairWidget->RemoveFromParent();
+			}
+		}
+	}
+
 	GetOffFromTank_Server();
 }
 
@@ -197,6 +231,8 @@ void AInteractableTank::GetOffFromTank_Server_Implementation()
 void AInteractableTank::Interact_Implementation(UInteractComponent* InteractingComponent)
 {
 	if (!bIsInteractable) return;
+
+	if (RemainedBullet <= 0) return;
 
 	CachedPC = Cast<APlayerController>(InteractingComponent->GetOwner());
 	if (CachedPC)

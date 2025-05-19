@@ -4,29 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
-#include "STEnums.h"
-#include "STGameplayTags.h"
 #include "STGameInstance.generated.h"
 
 /**
  * 
  */
-
-USTRUCT()
-struct FPlayerInfo
-{
-	GENERATED_BODY()
-
-	UPROPERTY()
-	FUniqueNetIdRepl PlayerID = FUniqueNetIdRepl();
-
-	UPROPERTY()
-	ESTClassType PlayerClass = ESTClassType::GreatSword;
-
-	// 플레이어 메시 파츠
-};
-
-
 UCLASS()
 class SENTINELS_LS_API USTGameInstance : public UGameInstance
 {
@@ -37,8 +19,4 @@ protected:
 	
 public:
 	FName CurrentSessionName;
-
-	TArray<FPlayerInfo> PlayerInfos;
-
-	FGameplayTag CurrentLevelTag;
 };

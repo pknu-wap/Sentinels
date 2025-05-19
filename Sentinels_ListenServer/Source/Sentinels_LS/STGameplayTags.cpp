@@ -11,20 +11,74 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 	/*
 		Widget
 	*/
+	GameplayTags.Widget_OutGame_MainMenu = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Widget.OutGame.Mainmenu"),
+		FString("Loadout")
+	);
+
+	GameplayTags.Widget_OutGame_System = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Widget.OutGame.System"),
+		FString("Character Select")
+	);
 
 	GameplayTags.Widget_Lobby_Loadout = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Widget.Lobby.Loadout"),
 		FString("Loadout")
 	);
 
-	GameplayTags.Widget_Lobby_CharacterSelect = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("Widget.Lobby.CharacterSelect"),
-		FString("Character Select")
+	GameplayTags.Widget_Lobby_WeaponSelect = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Widget.Lobby.WeaponSelect"),
+		FString("Weapon Select")
+	);
+
+	GameplayTags.Widget_Lobby_Customize = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Widget.Lobby.Customize"),
+		FString("Customize")
 	);
 
 	GameplayTags.Widget_Lobby_LevelSelect = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Widget.Lobby.LevelSelect"),
 		FString("Level Select")
+	);
+
+	GameplayTags.Widget_InGame = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Widget.InGame"),
+		FString("InGame")
+	);
+
+	GameplayTags.Widget_InGame_Map = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Widget.InGame.Map"),
+		FString("Map")
+	);
+
+	GameplayTags.Widget_InGame_Minimap = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Widget.InGame.Minimap"),
+		FString("Minimap")
+	);
+
+	GameplayTags.Widget_InGame_PlayerSkill = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Widget.InGame.PlayerSkill"),
+		FString("Player Skill")
+	);
+
+	GameplayTags.Widget_InGame_PlayerState = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Widget.InGame.PlayerState"),
+		FString("Player State")
+	);
+
+	GameplayTags.Widget_InGame_Quest = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Widget.InGame.Quest"),
+		FString("Quest")
+	);
+
+	GameplayTags.Widget_InGame_Inventory = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Widget.InGame.Inventory"),
+		FString("Character Select")
+	);
+
+	GameplayTags.Widget_InGame_TeamInfo = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Widget.InGame.TeamInfo"),
+		FString("Team Info")
 	);
 
 	/*	
@@ -33,6 +87,11 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.Character_State_Stunned = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Character.State.Stunned"),
 		FString("Character is Stunned")
+	);
+
+	GameplayTags.Character_State_Bleed = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Character.State.Bleed"),
+		FString("Character State Bleed")
 	);
 	
 	GameplayTags.Character_State_Jump = UGameplayTagsManager::Get().AddNativeGameplayTag(
@@ -164,9 +223,9 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 		FString("Lobby")
 	);
 
-	GameplayTags.Level_AbandonedFactory = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("Level.AbandonedFactory"),
-		FString("AbandonedFactory")
+	GameplayTags.Level_MilitaryAirport = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Level.MilitaryAirport"),
+		FString("MilitaryAirport")
 	);
 
 	GameplayTags.Level_EX2 = UGameplayTagsManager::Get().AddNativeGameplayTag(

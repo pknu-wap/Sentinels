@@ -15,6 +15,7 @@
 #include "TimerManager.h"
 #include "Sentinels_LS.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "SubSystem/STGameTravelDataSubsystem.h"
 
 // Sets default values
 ASTDummyPlayer::ASTDummyPlayer() :
@@ -38,23 +39,23 @@ ASTDummyPlayer::ASTDummyPlayer() :
 		FName componentName = *FString::Printf(TEXT("SkeletalMeshComponent_%d"), i);
 		AddSKComponents(componentName);
 	}
-
+	// FAttachmentTransformRules::SnapToTargetIncludingScale
 	FName greatSword = *FString::Printf(TEXT("GreatSword"));
-	AddSKComponents(greatSword);
+	AddSKComponents(greatSword, TEXT("Weapon_R"));
 
 	FName katana = *FString::Printf(TEXT("Katana"));
-	AddSKComponents(katana);
+	AddSKComponents(katana, TEXT("Weapon_R"));
 
 	FName blade_L = *FString::Printf(TEXT("Blade_L"));
-	AddSKComponents(blade_L);
+	AddSKComponents(blade_L, TEXT("Weapon_L"));
 
 	FName blade_R = *FString::Printf(TEXT("Blade_R"));
-	AddSKComponents(blade_R);
+	AddSKComponents(blade_R, TEXT("Weapon_R"));
 
-	GetSKMeshComponent(ESKParts::GreatSword)->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform, TEXT("Weapon_R"));
-	GetSKMeshComponent(ESKParts::Katana)->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform, TEXT("Weapon_R"));
-	GetSKMeshComponent(ESKParts::Blade_L)->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform, TEXT("Weapon_L"));
-	GetSKMeshComponent(ESKParts::Blade_R)->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform, TEXT("Weapon_R"));
+	// GetSKMeshComponent(ESKParts::GreatSword)->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform, TEXT("Weapon_R"));
+	// GetSKMeshComponent(ESKParts::Katana)->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform, TEXT("Weapon_R"));
+	// GetSKMeshComponent(ESKParts::Blade_L)->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform, TEXT("Weapon_L"));
+	// GetSKMeshComponent(ESKParts::Blade_R)->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform, TEXT("Weapon_R"));
 }
 
 // Called when the game starts or when spawned
@@ -80,9 +81,18 @@ void ASTDummyPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME(ASTDummyPlayer, CurrentClass);
 }
 
-void ASTDummyPlayer::ServerRPCChangeCurrentClass_Implementation(ESTClassType InClass)
+void ASTDummyPlayer::ServerRPCChangeCurrentClass_Implementation(FUniqueNetIdRepl playerID, ESTClassType InClass)
 {
 	CurrentClass = InClass;
+
+	USTGameTravelDataSubsystem* gameTravelDataSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
+	if (!gameTravelDataSubsystem)
+		return;
+
+	FPlayerInfo playerInfo = FPlayerInfo();
+	playerInfo.PlayerClass = InClass;
+
+	gameTravelDataSubsystem->ChangePlayerInfo(playerID, playerInfo);
 
 	OnRep_CurrentClass();
 }
@@ -113,10 +123,18 @@ ASTDummyPlayer* ASTDummyPlayer::FindByID(UObject* WorldContextObject, FUniqueNet
 	return nullptr;
 }
 
-void ASTDummyPlayer::AddSKComponents(FName ComponentName)
+void ASTDummyPlayer::AddSKComponents(FName ComponentName, FString SocketName)
 {
 	USkeletalMeshComponent* newComp = CreateDefaultSubobject<USkeletalMeshComponent>(ComponentName);
-	newComp->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	if (SocketName.IsEmpty())
+	{
+		newComp->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	}
+	else
+	{
+		newComp->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform, FName(*SocketName));
+	}
+
 	newComp->SetIsReplicated(true);
 	SKMeshComponents.Add(newComp);
 }
@@ -130,7 +148,7 @@ void ASTDummyPlayer::OnRep_PlayerID()
 		if (!pc || !pc->GetLocalPlayer())
 			return;
 
-		pc->GetUIComponent()->UpdateLoadoutUI();
+		pc->GetUIComponent()->UpdatePlayerAvatarLayer();
 
 	}, 0.5f, false);
 }
