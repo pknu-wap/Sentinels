@@ -43,6 +43,6 @@ void AInteractableItem::Interact_Implementation(UInteractComponent* InteractingC
 	{
 		// bIsInteractable = false;
 		InvComp->AddItem_Server(ItemID);
-		UE_LOG(LogTemp, Display, TEXT(" AInteractableItem::Interact!"));
+		UE_LOG(LogTemp, Display, TEXT(" AInteractableItem::Interact - Item ID : %d"), ItemID);
 	}
 }

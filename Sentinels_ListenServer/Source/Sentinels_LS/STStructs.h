@@ -8,6 +8,18 @@
 #include "STStructs.generated.h"
 
 USTRUCT(BlueprintType)
+struct SENTINELS_LS_API FDropInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	float DropProbability = 0.1f;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AInteractableItem> DropItemClass;
+};
+
+USTRUCT(BlueprintType)
 struct FRegisterMissionInfo
 {
 	GENERATED_BODY()

@@ -110,6 +110,8 @@ void AWorldBoxAISpawner::SpawnEnemy(int InfoIdx)
 			ASTEnemyBase* Enemy = Cast<ASTEnemyBase>(Info.ObjectPools[rand]->GetCharacter<ASTEnemyBase>(SpawnNavLocation.Location));
 			if (Enemy)
 			{
+				Enemy->SetAdditionalDropInfos(Info.AdditionalDropInfos);
+
 				// Bind Function on Enemy Died!
 				Enemy->Delegate_OnEnemyDied.RemoveDynamic(this, &AWorldBoxAISpawner::OnEnemyDied);
 				Enemy->Delegate_OnEnemyDied.AddDynamic(this, &AWorldBoxAISpawner::OnEnemyDied);
@@ -150,7 +152,11 @@ bool AWorldBoxAISpawner::GetSpawnNavLocation(int infoIdx, FNavLocation& OutLocat
 	UNavigationSystemV1* NavSystem = Cast<UNavigationSystemV1>(GetWorld()->GetNavigationSystem());
 	if (!NavSystem) return false;
 
-	NavSystem->GetRandomReachablePointInRadius(GetActorLocation(), Info.SpawnableRadius_Outer, OutLocation);
+	if (!NavSystem->GetRandomReachablePointInRadius(GetActorLocation(), Info.SpawnableRadius_Outer, OutLocation))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AWorldBoxAISpawner : Failed to get spawnable Nav Location!"));
+		return false;
+	}
 
 	int maxLoopIdx = 50; int currentLoopIdx = 0;
 	while (

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "STStructs.h"
 #include "SpawnEnemyComponent.generated.h"
 
 struct FNavLocation;
@@ -29,6 +30,9 @@ struct SENTINELS_LS_API FSpawnInfo
     */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
     TArray<TSubclassOf<ASTPoolableCharacter>> SpawnPawnClasses;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
+    TArray<FDropInfo> AdditionalDropInfos;
 
     /*
         Spawn Pawns of SpawnRate per Spawn Period

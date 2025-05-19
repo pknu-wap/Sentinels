@@ -321,16 +321,31 @@ void ASTEnemyBase::PlayDiedMontage()
 	}
 }
 
+void ASTEnemyBase::SetAdditionalDropInfos(const TArray<FDropInfo>& inDropInfos)
+{
+	DropInfos_Additional = inDropInfos;
+}
+
 void ASTEnemyBase::DropItem()
 {
 	if (HasAuthority())
 	{
 		float rand = UKismetMathLibrary::RandomFloatInRange(0, 1);
 
-		if (DropProbability >= rand)
+		if(DropInfo_Base.DropProbability >= rand)
 		{
-			GetWorld()->SpawnActor<AActor>(DropItemClass, GetActorLocation(), GetActorRotation());
+			GetWorld()->SpawnActor<AActor>(DropInfo_Base.DropItemClass, GetActorLocation(), GetActorRotation());
 		}
+		
+		for (const auto& dropInfo : DropInfos_Additional)
+		{
+			rand = UKismetMathLibrary::RandomFloatInRange(0, 1);
+			if (dropInfo.DropProbability >= rand)
+			{
+				GetWorld()->SpawnActor<AActor>(dropInfo.DropItemClass, GetActorLocation(), GetActorRotation());
+			}
+		}
+		
 	}
 }
 
