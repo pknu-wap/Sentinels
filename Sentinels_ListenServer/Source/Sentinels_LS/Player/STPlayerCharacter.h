@@ -168,13 +168,16 @@ protected:
 public:
 	UFUNCTION(BlueprintCallable)
 	virtual void AdjustFinalDamage(float& DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor);
+
+protected:
+
 	
 	/*
 		On Attack Success 
 	*/
 public:
 	UFUNCTION(Server, Reliable)
-	virtual void OnAttackSuccess_Server(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
+	virtual void OnAttackSuccess_Server(float DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor);
 
 	UFUNCTION(Client, Reliable)
 	virtual void OnAttackSuccess_Client();
@@ -225,6 +228,12 @@ protected:
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated)
 	TObjectPtr<USTPlayerStatusComponent> StatusComponent;
+
+	/*
+		Data
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UDataTable* DataTable_Skill;
 
 	/* 
 		Input 

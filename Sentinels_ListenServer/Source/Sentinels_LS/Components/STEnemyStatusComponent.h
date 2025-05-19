@@ -29,6 +29,9 @@ public:
 public:
 	FORCEINLINE bool IsDied() { return bIsDied; }
 
+public:
+	FORCEINLINE float GetMaxHP() const { return MaxHP; }
+	FORCEINLINE float GetCurrentHP() const { return CurrentHP; }
 
 protected:
 	UPROPERTY(EditAnywhere)

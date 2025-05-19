@@ -32,9 +32,9 @@ void ASTPlayerCharacter_GreatSword::AdjustFinalDamage(float& DamageAmount, FDama
 	}
 }
 
-void ASTPlayerCharacter_GreatSword::OnAttackSuccess_Server_Implementation(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+void ASTPlayerCharacter_GreatSword::OnAttackSuccess_Server_Implementation(float DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor)
 {
-	Super::OnAttackSuccess_Server_Implementation(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	Super::OnAttackSuccess_Server_Implementation(DamageAmount, DamageEvent, DamagedActor);
 }
 
 void ASTPlayerCharacter_GreatSword::Skill_Passive_Pressed()

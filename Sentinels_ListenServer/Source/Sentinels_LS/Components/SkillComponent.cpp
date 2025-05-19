@@ -23,14 +23,6 @@ void USkillComponent::BeginPlay()
 
 	for (int i = 0; i < 4; i++)
 		Skill_CoolDowns.Add(0.f);
-
-	FSkillStruct SkillInfo;
-	SkillInfo.SkillCoolTime = 5.f;
-	for (int i = 1; i <= 4; i++)
-	{
-		SkillInfo.ID = i;
-		ClassSkills.Add(SkillInfo);
-	}
 }
 
 
@@ -40,6 +32,31 @@ void USkillComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	Tick_SkillCoolDown(DeltaTime);
+}
+
+void USkillComponent::InitSkillInfos(UDataTable* InDataTable)
+{
+	ClassSkills.Empty();
+
+	if (InDataTable)
+	{
+		TArray<FSkillStruct*> SkillData;
+
+		InDataTable->GetAllRows<FSkillStruct>(FString("USkillComponent : Get Skill Data"), SkillData);
+		for (auto& SkillInfo : SkillData)
+		{
+			if (SkillInfo)
+			{
+				ClassSkills.Add(*SkillInfo);
+			}
+		}
+
+		int SkillID = 1;
+		for (int i = 0; i < ClassSkills.Num(); i++)
+		{
+			ClassSkills[i].ID = SkillID++;
+		}
+	}
 }
 
 void USkillComponent::ActivateSkill(int SkillIdx)

@@ -4,6 +4,7 @@
 #include "Actors/Interact/Item/InteractableItem.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/InventoryComponent.h"
+#include "Components/InteractComponent.h"
 
 void AInteractableItem::BeginPlay()
 {
@@ -27,7 +28,10 @@ void AInteractableItem::Interact_Implementation(UInteractComponent* InteractingC
 {
 	if (Item_DataRow.DataTable)
 	{
-		APawn* pawn = UGameplayStatics::GetPlayerPawn(this, 0);
+		APlayerController* PC = Cast<APlayerController>(InteractingComponent->GetOwner());
+		if (!PC) return;
+
+		APawn* pawn = PC->GetPawn();
 		if (!pawn) return;
 
 		UInventoryComponent* InvComp = pawn->GetComponentByClass<UInventoryComponent>();

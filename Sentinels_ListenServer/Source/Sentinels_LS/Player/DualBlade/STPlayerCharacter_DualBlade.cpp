@@ -24,9 +24,9 @@ void ASTPlayerCharacter_DualBlade::AdjustFinalDamage(float& DamageAmount, FDamag
 	DamageAmount = DamageAmount * (1 + comboRate);
 }
 
-void ASTPlayerCharacter_DualBlade::OnAttackSuccess_Server_Implementation(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+void ASTPlayerCharacter_DualBlade::OnAttackSuccess_Server_Implementation(float DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor)
 {
-	Super::OnAttackSuccess_Server_Implementation(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	Super::OnAttackSuccess_Server_Implementation(DamageAmount, DamageEvent, DamagedActor);
 
 	CurrentComboStack = FMath::Clamp(CurrentComboStack + 1, 0, MaxComboStack);
 }

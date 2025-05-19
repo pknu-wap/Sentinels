@@ -79,7 +79,7 @@ void UANS_CheckAttackHit_Player::NotifyTick(USkeletalMeshComponent* MeshComp, UA
                 DamagedActor->TakeDamage(AdjustedFinalDamage, DamageEvent, actor->GetInstigatorController(), actor);
                
                 // Player Logic Execute (After)
-                Player->OnAttackSuccess_Server(AdjustedFinalDamage, DamageEvent, actor->GetInstigatorController(), actor);
+                Player->OnAttackSuccess_Server(AdjustedFinalDamage, DamageEvent, DamagedActor);
 
 
 
