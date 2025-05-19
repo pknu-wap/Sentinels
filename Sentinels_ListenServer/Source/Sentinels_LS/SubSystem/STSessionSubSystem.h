@@ -52,7 +52,7 @@ public:
 	void RegisterPlayer(FName SessionName);
 
 	UFUNCTION(BlueprintCallable, Category = "Session")
-	void CreateSession(FName SessionName);
+	void CreateSession(FName SessionName, int PublicConnection = 4, bool bUseLan = false);
 
 	UFUNCTION(BlueprintCallable, Category = "Session")
 	void StartSession(FName SessionName);
