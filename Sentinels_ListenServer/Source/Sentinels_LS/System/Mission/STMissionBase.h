@@ -7,6 +7,7 @@
 #include "System/NetworkObject.h"
 #include "Tickable.h"
 #include "GameplayTagContainer.h"
+#include "STEnums.h"
 #include "STMissionBase.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMissionEnded, FGameplayTag, MissionTag, bool, IsSuccessed);
@@ -18,29 +19,40 @@ class SENTINELS_LS_API USTMissionBase : public UNetworkObject, public FTickableG
 {
 	GENERATED_BODY()
 
+public:
+	USTMissionBase();
+
 protected:
 	virtual void BeginDestroy() override;
 	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
 
 public:
 	// Spawn Mission Object
-	virtual void RegisterMission();
+	UFUNCTION(BlueprintCallable)
+	void RegisterMission();
 
 	// Show Widget & Set Mission
-	virtual void ActivateMission();
+	UFUNCTION(BlueprintCallable)
+	void ActivateMission();
 
 	// Hide Widget & Clear Mission
-	virtual void DeactivateMission(bool IsCleared);
+	UFUNCTION(BlueprintCallable)
+	void DeactivateMission(bool IsCleared);
 
 	// Check Mission is clearable
-	virtual void CheckMissionClearable();
+	UFUNCTION(BlueprintCallable)
+	void CheckMissionClearable();
 
 	// Define Mission Clear
-	virtual bool IsMissionCleared();
+	UFUNCTION(BlueprintCallable)
+	bool IsMissionCleared();
 
 protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void MissionEnded_Multicast(bool IsCleared);
+
+public:
+	EMissionProgressState GetProgressState() const { return ProgressState; }
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -48,6 +60,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FGameplayTag MissionTag;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	EMissionProgressState ProgressState;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<TSubclassOf<USTMissionConditionBase>> SubclassOfMissionConditions;
@@ -60,19 +75,8 @@ protected:
 		On Mission Ended Delegate
 	*/
 public:
-	FORCEINLINE bool IsActivated() { return bIsMisionActivated; }
-
 	UPROPERTY(BlueprintAssignable)
 	FOnMissionEnded Delegate_MissionEnded;
-
-
-protected:
-	UFUNCTION()
-	virtual void OnRep_bIsMisionActivated();
-
-	UPROPERTY(ReplicatedUsing = OnRep_bIsMisionActivated, EditAnywhere, BlueprintReadWrite)
-	bool bIsMisionActivated = false;
-
 
 
 /*

@@ -13,14 +13,14 @@ void USTEscortCondition::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 }
 
-bool USTEscortCondition::IsSatisfied()
+bool USTEscortCondition::IsSatisfied_Implementation()
 {
     return Successed;
 }
 
-void USTEscortCondition::MissionActivated()
+void USTEscortCondition::MissionActivated_Implementation()
 {
-    Super::MissionActivated();
+    Super::MissionActivated_Implementation();
 
 	TArray<AActor*> Actors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEscortObject::StaticClass(), Actors);
@@ -40,22 +40,17 @@ void USTEscortCondition::MissionActivated()
 	}
 }
 
-void USTEscortCondition::MissionDeactivated(bool IsCleared)
+void USTEscortCondition::MissionDeactivated_Implementation(bool IsCleared)
 {
-    Super::MissionDeactivated(IsCleared);
+    Super::MissionDeactivated_Implementation(IsCleared);
 }
 
 void USTEscortCondition::ConditionUpdated(int ObjectID, bool Success)
 {
 	// Time Limit Success
-	ASTGameState* GameState = Cast<ASTGameState>(GetWorld()->GetGameState());
-	if (GameState)
+	if (Mission)
 	{
-		USTMissionBase* Mission = GameState->GetMission(MissionTag);
-		if (Mission)
-		{
-			Mission->DeactivateMission(Success);
-		}
+		Mission->DeactivateMission(Success);
 	}
 
 	Delegate_ConditionUpdated.Broadcast();

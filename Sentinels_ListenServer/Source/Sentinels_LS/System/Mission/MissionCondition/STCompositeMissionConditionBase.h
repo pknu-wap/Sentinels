@@ -24,7 +24,7 @@ protected:
 	
     virtual void PostInitProperties() override;
 
-    virtual bool IsSatisfied();
+    virtual bool IsSatisfied_Implementation();
 
 public:
     UPROPERTY(Replicated)

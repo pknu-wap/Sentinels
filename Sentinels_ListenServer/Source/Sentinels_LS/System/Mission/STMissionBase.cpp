@@ -5,6 +5,11 @@
 #include "Net/UnrealNetwork.h"
 #include "MissionCondition/STMissionConditionBase.h"
 
+USTMissionBase::USTMissionBase()
+{
+	ProgressState = EMissionProgressState::None;
+}
+
 void USTMissionBase::BeginDestroy()
 {
 	Super::BeginDestroy();
@@ -15,12 +20,14 @@ void USTMissionBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(USTMissionBase, bIsMisionActivated);
 	DOREPLIFETIME(USTMissionBase, MissionConditions);
 }
 
 void USTMissionBase::RegisterMission()
 {
+	if (ProgressState != EMissionProgressState::None)
+		return;
+
 	UE_LOG(LogTemp, Display, TEXT("USTMissionBase::RegisterMission %s"), *MissionTag.GetTagName().ToString());
 	AActor* Owner = GetTypedOuter<AActor>();
 	for (auto& conditionClass : SubclassOfMissionConditions)
@@ -28,21 +35,22 @@ void USTMissionBase::RegisterMission()
 		USTMissionConditionBase* condition = NewObject<USTMissionConditionBase>(Owner, conditionClass);
 		if (condition)
 		{
-			condition->SetMissionTag(MissionTag);
+			condition->InitializeCondition(this, MissionTag);
 			Owner->AddReplicatedSubObject(condition);
 			MissionConditions.Push(condition);
 			condition->MissionRegistered();
 		}
 	}
+
+	ProgressState = EMissionProgressState::Registered;
 }
 
 void USTMissionBase::ActivateMission()
 {
-	if (bIsMisionActivated)
+	if (ProgressState != EMissionProgressState::Registered)
 		return;
 
 	UE_LOG(LogTemp, Display, TEXT("USTMissionBase::ActivateMission : %s is Activated!"), *GetName());
-	bIsMisionActivated = true;
 
 	AActor* Owner = GetTypedOuter<AActor>();
 
@@ -51,12 +59,15 @@ void USTMissionBase::ActivateMission()
 		if(condition)
 			condition->MissionActivated();
 	}
+
+	ProgressState = EMissionProgressState::Activated;
 }
 
 void USTMissionBase::DeactivateMission(bool IsCleared)
 {
 	UE_LOG(LogTemp, Display, TEXT("USTMissionBase::DeactivateMission"));
-	bIsMisionActivated = false;
+
+	if (ProgressState != EMissionProgressState::Activated) return;
 
 	MissionEnded_Multicast(IsCleared);
 
@@ -65,6 +76,8 @@ void USTMissionBase::DeactivateMission(bool IsCleared)
 		if (condition)
 			condition->MissionDeactivated(IsCleared);
 	}
+
+	ProgressState = IsCleared ? EMissionProgressState::Cleared : EMissionProgressState::Failed;
 }
 
 void USTMissionBase::MissionEnded_Multicast_Implementation(bool IsCleared)
@@ -96,9 +109,4 @@ bool USTMissionBase::IsMissionCleared()
 	}
 
 	return true;
-}
-
-void USTMissionBase::OnRep_bIsMisionActivated()
-{
-	UE_LOG(LogTemp, Display, TEXT("USTMissionBase::OnRep_bIsMisionActivated"));
 }

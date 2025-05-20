@@ -2,6 +2,7 @@
 
 
 #include "SubSystem/InventorySubsystem.h"
+#include "Kismet/KismetMathLibrary.h"
 
 UInventorySubsystem::UInventorySubsystem()
 {
@@ -24,9 +25,37 @@ void UInventorySubsystem::Initialize(FSubsystemCollectionBase& Collection)
 			ItemMap.Add(ItemInfo->ItemID, *ItemInfo);
 		}
 	}
+
+	CombatItemDB = LoadObject<UDataTable>(this, TEXT("/Script/Engine.DataTable'/Game/Sentinels/Inventory/DataTables/DB_Items_Combat.DB_Items_Combat'"));
+	if (CombatItemDB == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UInventorySubsystem : Failed to Load ItemDB !!! "));
+	}
+
+	rowNames = ItemDB->GetRowNames();
+	for (FName RowName : rowNames)
+	{
+		FItemStruct* ItemInfo = ItemDB->FindRow<FItemStruct>(RowName, TEXT("FindRow"));
+		if (ItemInfo != nullptr)
+		{
+			CombatItemMap.Add(ItemInfo->ItemID, *ItemInfo);
+		}
+	}
 }
 
 const FItemStruct* UInventorySubsystem::GetItemInfo(int itemID) const
 {
 	return ItemMap.Find(itemID);
+}
+
+const FItemStruct* UInventorySubsystem::GetRandomCombatItemInfo() const
+{
+	int itemID = UKismetMathLibrary::RandomIntegerInRange(0, CombatItemMap.Num() - 1);
+
+	return CombatItemMap.Find(itemID);
+}
+
+int UInventorySubsystem::GetRandomCombatItemID() const
+{
+	return UKismetMathLibrary::RandomIntegerInRange(0, CombatItemMap.Num() - 1);
 }

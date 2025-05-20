@@ -19,10 +19,16 @@ protected:
 public:
 	virtual void Interact_Implementation(UInteractComponent* InteractingComponent) override;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetItemID();
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
-	FDataTableRowHandle Item_DataRow;
+	bool bUseItemHandle = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
+	FDataTableRowHandle ItemHandle_DataRow;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
 	int ItemID;
 };

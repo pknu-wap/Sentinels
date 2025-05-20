@@ -19,7 +19,7 @@ void USTRescueHostageCondition::GetLifetimeReplicatedProps(TArray<FLifetimePrope
 	DOREPLIFETIME(USTRescueHostageCondition, HostageInfos)
 }
 
-bool USTRescueHostageCondition::IsSatisfied()
+bool USTRescueHostageCondition::IsSatisfied_Implementation()
 {
 	for (int i = 0; i < HostageInfos.Num(); i++)
 	{
@@ -32,7 +32,7 @@ bool USTRescueHostageCondition::IsSatisfied()
 	return true;
 }
 
-void USTRescueHostageCondition::MissionActivated()
+void USTRescueHostageCondition::MissionActivated_Implementation()
 {
 	/*
 		Set Mission
@@ -45,7 +45,7 @@ void USTRescueHostageCondition::MissionActivated()
 	FVector SpawnLocation; FRotator SpawnRotation;
 
 	TArray<ASpawnPointBase*> SpawnPoints;
-	GetAllSpawnPointsWithTag(FSTGameplayTags::Get().SpawnPoint_Hostage, SpawnPoints);
+	GetAllSpawnPointsWithTag(FSTGameplayTags::Get().Mission_RescueHostage, SpawnPoints);
 
 	if (SpawnPoints.IsEmpty())
 	{
@@ -101,7 +101,7 @@ void USTRescueHostageCondition::MissionActivated()
 	*/
 }
 
-void USTRescueHostageCondition::MissionDeactivated(bool IsCleared)
+void USTRescueHostageCondition::MissionDeactivated_Implementation(bool IsCleared)
 {
 }
 
@@ -122,14 +122,9 @@ void USTRescueHostageCondition::ConditionUpdated(int ObjectID, bool Success)
 
 	if (IsSatisfied())
 	{
-		ASTGameState* GameState = Cast<ASTGameState>(GetWorld()->GetGameState());
-		if (GameState)
+		if (Mission)
 		{
-			USTMissionBase* Mission = GameState->GetMission(MissionTag);
-			if (Mission)
-			{
-				Mission->CheckMissionClearable();
-			}
+			Mission->CheckMissionClearable();
 		}
 	}
 
