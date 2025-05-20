@@ -20,6 +20,8 @@
 #include "STGameplayTags.h"
 #include "Character/STCharacterAnimInstanceBase.h"
 #include "Actors/Projectile/ProjectileBase.h"
+#include "Components/WidgetComponent.h"
+#include "Widget/STWidget_DamageInd.h"
 
 ASTEnemyBase::ASTEnemyBase(const FObjectInitializer& object_initializer)
 	: Super(object_initializer.SetDefaultSubobjectClass<USkeletalMeshComponentBudgeted>(ACharacter::MeshComponentName))
@@ -70,6 +72,14 @@ void ASTEnemyBase::BeginPlay()
 			AnimInst->Delegate_DissolveStart.AddUObject(this, &ASTEnemyBase::DissolveStart);
 		}
 	}
+
+	if (W_DamageIndClass)
+	{
+		WC_DamageInd = NewObject<UWidgetComponent>(this, WC_DamageIndClass);
+		WC_DamageInd->SetWidgetClass(W_DamageIndClass);
+		WC_DamageInd->RegisterComponent();
+		WC_DamageInd->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+	}
 }
 
 void ASTEnemyBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -91,10 +101,12 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 		/*
 			Critical
 		*/
+		FSlateColor damageTextColor;
 		if (DamageEvent.GetTypeID() == FSTPointDamageEvent::ClassID)
 		{
 			const FSTPointDamageEvent& PointDamageEvent = static_cast<const FSTPointDamageEvent&>(DamageEvent);
 			FString Str_DamageType = PointDamageEvent.bIsCritical ? FString("Critical") : FString("Normal");
+			damageTextColor = PointDamageEvent.bIsCritical ? FSlateColor(FLinearColor::Yellow) : FSlateColor(FLinearColor::White);
 			UE_LOG(LogTemp, Warning, TEXT("ASTEnemyBase : %s Damage %f"), *Str_DamageType, Damage);
 		}
 		else
@@ -138,6 +150,20 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 			{
 				AddTag(FSTGameplayTags::Get().Character_State_Bleed);
 				UE_LOG(LogTemp, Display, TEXT("Katana Damage Type ! ! !"));
+			}
+		}
+
+		/*
+			Damage Indicate
+		*/
+		if (WC_DamageInd)
+		{
+			USTWidget_DamageInd* WDamageInd = Cast<USTWidget_DamageInd>(WC_DamageInd->GetWidget());
+			if (IsValid(WDamageInd))
+			{
+				WDamageInd->SetTextColor(damageTextColor);
+				WDamageInd->SetDamage(Damage);
+				WDamageInd->PlayCustomAnimation();
 			}
 		}
 

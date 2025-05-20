@@ -80,6 +80,16 @@ protected:
 	void PlayKnockbackMontage_Multicast();
 
 	void PlayKnockbackMontage();
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	class UWidgetComponent* WC_DamageInd;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<class UWidgetComponent> WC_DamageIndClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<class USTWidget_DamageInd> W_DamageIndClass;
 /*
 	Die
 */
