@@ -16,6 +16,8 @@ void ASTPoolableCharacter::Activate(const FVector ActivateLocation, const FRotat
 {
 	bIsActivated = true;
 
+	SetActorLocation(ActivateLocation); SetActorRotation(ActivateRotation);
+
 	// Enable Tick
 	GetMesh()->SetComponentTickEnabled(true);
 	GetCharacterMovement()->SetComponentTickEnabled(true);
@@ -25,12 +27,6 @@ void ASTPoolableCharacter::Activate(const FVector ActivateLocation, const FRotat
 	if (UCapsuleComponent* CapsuleComp = GetComponentByClass<UCapsuleComponent>())
 	{
 		CapsuleComp->SetEnableGravity(true);
-	}
-
-	ASTEnemyBase_AIController* AIController = Cast<ASTEnemyBase_AIController>(GetController());
-	if (AIController)
-	{
-		AIController->StartAILogic(ActivateLocation, ActivateRotation);
 	}
 
 	SetActorHiddenInGame(false);

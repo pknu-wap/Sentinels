@@ -27,6 +27,7 @@ public:
 public:
 	FORCEINLINE bool IsActivated() const { return bIsActivated; }
 
-private:
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bIsActivated = false;
 };

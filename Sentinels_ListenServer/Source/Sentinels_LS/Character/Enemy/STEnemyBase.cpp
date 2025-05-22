@@ -68,7 +68,8 @@ void ASTEnemyBase::BeginPlay()
 			AnimInst->Delegate_DissolveStart.AddUObject(this, &ASTEnemyBase::DissolveStart);
 		}
 
-		Activate(GetActorLocation(), GetActorRotation());
+		if(bIsActivated)
+			Activate(GetActorLocation(), GetActorRotation());
 
 		if (ProjectileClass_PrimaryFire)
 		{
@@ -188,7 +189,7 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 		{
 			StopCurrentAnimMontage_Multicast();
 			FVector LaunchDir = (GetActorLocation() - DamageCauser->GetActorLocation()).GetSafeNormal2D();
-			LaunchCharacter(LaunchDir * 750.f, false, false);
+			LaunchCharacter(LaunchDir * LaunchVelocity, false, false);
 		}
 	}
 
@@ -198,10 +199,14 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 void ASTEnemyBase::Activate(const FVector ActivateLocation, const FRotator ActivateRotation)
 {
 	Super::Activate(ActivateLocation, ActivateRotation);
-
-	DissolveReverseStart();
+	
 	StopAnimMontage();
 	StatusComponent->InitStatus();
+
+	if(!DissolveReverseStart())
+	{
+		DissolveReverseEnded();
+	}
 }
 
 void ASTEnemyBase::Deactivate()
@@ -304,6 +309,18 @@ void ASTEnemyBase::DissolveEnded()
 	{
 		GetWorld()->GetTimerManager().ClearTimer(Handle_Deactivate);
 		Deactivate();
+	}
+}
+
+void ASTEnemyBase::DissolveReverseEnded()
+{
+	if (HasAuthority())
+	{
+		ASTEnemyBase_AIController* AIController = Cast<ASTEnemyBase_AIController>(GetController());
+		if (AIController)
+		{
+			AIController->StartAILogic();
+		}
 	}
 }
 

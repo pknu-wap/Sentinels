@@ -20,9 +20,18 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+protected:
+    UFUNCTION()
+    void BoxBeginOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+    
+    UFUNCTION()
+    void BoxEndOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    int NumOfOverlappedPlayers;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    TSet<AActor*> Players;
 
 /*
        Spawn Enemy

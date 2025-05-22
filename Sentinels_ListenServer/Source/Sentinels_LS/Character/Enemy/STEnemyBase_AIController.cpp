@@ -49,14 +49,8 @@ void ASTEnemyBase_AIController::OnPossess(APawn* InPawn)
 		UE_LOG(LogTemp, Warning, TEXT("ASTEnemyBase_AIController : Blackboard is not valid."));
 }
 
-void ASTEnemyBase_AIController::StartAILogic(const FVector StartLocation, const FRotator StartRotation)
+void ASTEnemyBase_AIController::StartAILogic()
 {
-	if (!StartLocation.Equals(FVector::ZeroVector))
-		GetPawn()->SetActorLocation(StartLocation);
-
-	if (!StartRotation.Equals(FRotator::ZeroRotator))
-		GetPawn()->SetActorRotation(StartRotation);
-
 	if (IsValid(BehaviorTree) && IsValid(BTComponent) && IsValid(Blackboard))
 	{
 		RunBehaviorTree(BehaviorTree);

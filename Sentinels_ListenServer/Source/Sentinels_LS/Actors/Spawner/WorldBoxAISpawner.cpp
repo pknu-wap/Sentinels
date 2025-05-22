@@ -13,6 +13,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Actors/ObjectPool/CharacterObjectPool.h"
 #include "Components/BoxComponent.h"
+#include "Player/STPlayerCharacter.h"
 
 // Sets default values
 AWorldBoxAISpawner::AWorldBoxAISpawner()
@@ -29,29 +30,58 @@ void AWorldBoxAISpawner::BeginPlay()
 {
 	Super::BeginPlay();
 
-	for (auto& SpawnInfo : SpawnInfos)
+	if (HasAuthority())
 	{
-		SpawnInfo.ObjectPools.Reserve(SpawnInfo.SpawnPawnClasses.Num());
+		NumOfOverlappedPlayers = 0;
+		Box->OnComponentBeginOverlap.AddDynamic(this, &AWorldBoxAISpawner::BoxBeginOverlapped);
+		Box->OnComponentEndOverlap.AddDynamic(this, &AWorldBoxAISpawner::BoxEndOverlapped);
 
-		for (int i = 0; i < SpawnInfo.SpawnPawnClasses.Num(); i++)
+		for (auto& SpawnInfo : SpawnInfos)
 		{
-			ACharacterObjectPool* ObjectPool =
-				GetWorld()->SpawnActor<ACharacterObjectPool>(ACharacterObjectPool::StaticClass());
+			SpawnInfo.ObjectPools.Reserve(SpawnInfo.SpawnPawnClasses.Num());
 
-			if (ObjectPool)
+			for (int i = 0; i < SpawnInfo.SpawnPawnClasses.Num(); i++)
 			{
-				ObjectPool->InitPool(SpawnInfo.SpawnPawnClasses[i], SpawnInfo.MaxSpawnCount);
-				SpawnInfo.ObjectPools.Add(ObjectPool);
+				ACharacterObjectPool* ObjectPool =
+					GetWorld()->SpawnActor<ACharacterObjectPool>(ACharacterObjectPool::StaticClass());
+
+				if (ObjectPool)
+				{
+					ObjectPool->InitPool(SpawnInfo.SpawnPawnClasses[i], SpawnInfo.MaxSpawnCount);
+					SpawnInfo.ObjectPools.Add(ObjectPool);
+				}
 			}
 		}
 	}
 }
 
-// Called every frame
-void AWorldBoxAISpawner::Tick(float DeltaTime)
+void AWorldBoxAISpawner::BoxBeginOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	Super::Tick(DeltaTime);
+	if (ASTPlayerCharacter* Player = Cast<ASTPlayerCharacter>(OtherActor))
+	{
+		if (NumOfOverlappedPlayers == 0)
+		{
+			StartSpawnEnemy();
+		}
 
+		NumOfOverlappedPlayers++;
+		Players.Add(Player);
+	}
+
+}
+
+void AWorldBoxAISpawner::BoxEndOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (ASTPlayerCharacter* Player = Cast<ASTPlayerCharacter>(OtherActor))
+	{
+		NumOfOverlappedPlayers--;
+		Players.Remove(Player);
+
+		if (NumOfOverlappedPlayers == 0)
+		{
+			StopSpawnEnemy();
+		}
+	}
 }
 
 void AWorldBoxAISpawner::StartSpawnEnemy()
