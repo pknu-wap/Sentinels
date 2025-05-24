@@ -18,10 +18,10 @@ void USTExplosionCondition::MissionActivated_Implementation()
 {
 	bIsExplosionOccured = false;
 
-	UGameInstance* GameInstance = UGameplayStatics::GetGameInstance(this);
-	if (GameInstance)
+	UWorld* world = GetWorld();
+	if (world)
 	{
-		USTEventSubsystem* EventSubSystem = GameInstance->GetSubsystem<USTEventSubsystem>();
+		USTEventSubsystem* EventSubSystem = world->GetSubsystem<USTEventSubsystem>();
 		EventSubSystem->Delegate_EventOccur.AddDynamic(this, &USTExplosionCondition::OnEventOccur);
 	}
 }

@@ -73,7 +73,7 @@ void ASTEnemyBase::BeginPlay()
 
 		if (ProjectileClass_PrimaryFire)
 		{
-			USTProjectilePoolingSubSystem* ProjectileSubSystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<USTProjectilePoolingSubSystem>();
+			USTProjectilePoolingSubSystem* ProjectileSubSystem = GetWorld()->GetSubsystem<USTProjectilePoolingSubSystem>();
 			ProjectileSubSystem->InitProjectilePool(this, ProjectileClass_PrimaryFire, 100);
 		}
 	}
@@ -273,7 +273,7 @@ void ASTEnemyBase::PlayNormalAttackMontage(int MontageIdx)
 
 void ASTEnemyBase::PrimaryFire()
 {
-	USTProjectilePoolingSubSystem* ProjectileSubSystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<USTProjectilePoolingSubSystem>();
+	USTProjectilePoolingSubSystem* ProjectileSubSystem = GetWorld()->GetSubsystem<USTProjectilePoolingSubSystem>();
 
 	FVector SpawnLocation = GetMesh()->GetSocketLocation(SocketName_PrimaryFire);
 	AProjectileBase* projectile = ProjectileSubSystem->GetActor<AProjectileBase>(ProjectileClass_PrimaryFire, SpawnLocation);
