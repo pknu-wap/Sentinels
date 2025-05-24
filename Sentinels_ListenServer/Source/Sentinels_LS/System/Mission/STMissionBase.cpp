@@ -21,6 +21,7 @@ void USTMissionBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(USTMissionBase, MissionConditions);
+	DOREPLIFETIME(USTMissionBase, ProgressState);
 }
 
 void USTMissionBase::RegisterMission()
@@ -43,6 +44,7 @@ void USTMissionBase::RegisterMission()
 	}
 
 	ProgressState = EMissionProgressState::Registered;
+	OnRep_ProgressState();
 }
 
 void USTMissionBase::ActivateMission()
@@ -61,6 +63,7 @@ void USTMissionBase::ActivateMission()
 	}
 
 	ProgressState = EMissionProgressState::Activated;
+	OnRep_ProgressState();
 }
 
 void USTMissionBase::DeactivateMission(bool IsCleared)
@@ -78,6 +81,7 @@ void USTMissionBase::DeactivateMission(bool IsCleared)
 	}
 
 	ProgressState = IsCleared ? EMissionProgressState::Cleared : EMissionProgressState::Failed;
+	OnRep_ProgressState();
 }
 
 void USTMissionBase::MissionEnded_Multicast_Implementation(bool IsCleared)
@@ -109,4 +113,10 @@ bool USTMissionBase::IsMissionCleared()
 	}
 
 	return true;
+}
+
+void USTMissionBase::OnRep_ProgressState()
+{
+	UE_LOG(LogTemp, Display, TEXT("OnRep_ProgressState"));
+	Delegate_MissionStateChanged.Broadcast(this, ProgressState);
 }

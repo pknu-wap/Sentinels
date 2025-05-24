@@ -10,9 +10,11 @@
 #include "STEnums.h"
 #include "STMissionBase.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMissionEnded, FGameplayTag, MissionTag, bool, IsSuccessed);
-
 class USTMissionConditionBase;
+class USTMissionBase;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMissionEnded, FGameplayTag, MissionTag, bool, IsSuccessed);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMissionStateChanged, USTMissionBase*, Mission, EMissionProgressState, NewState);
 
 UCLASS()
 class SENTINELS_LS_API USTMissionBase : public UNetworkObject, public FTickableGameObject
@@ -55,13 +57,17 @@ public:
 	EMissionProgressState GetProgressState() const { return ProgressState; }
 
 protected:
+	UFUNCTION()
+	void OnRep_ProgressState();
+
+protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FName MissionName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FGameplayTag MissionTag;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(ReplicatedUsing = OnRep_ProgressState, VisibleAnywhere, BlueprintReadOnly)
 	EMissionProgressState ProgressState;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -77,6 +83,9 @@ protected:
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnMissionEnded Delegate_MissionEnded;
+	
+	UPROPERTY(BlueprintAssignable)
+	FOnMissionStateChanged Delegate_MissionStateChanged;
 
 
 /*
