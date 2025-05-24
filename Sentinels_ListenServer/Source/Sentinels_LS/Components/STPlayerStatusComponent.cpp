@@ -3,10 +3,12 @@
 
 #include "Components/STPlayerStatusComponent.h"
 #include "Components/InventoryComponent.h"
+#include "Components/UI/STPlayerUIComponent.h"
 #include "SubSystem/InventorySubsystem.h"
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Player/Inventory/ItemObject.h"
+
 
 // Sets default values for this component's properties
 USTPlayerStatusComponent::USTPlayerStatusComponent()
@@ -291,7 +293,7 @@ void USTPlayerStatusComponent::OnRep_HPUpdated()
 {
 	UE_LOG(LogTemp, Display, TEXT("USTPlayerStatusComponent::OnRep_HPUpdated Called!"));
 	// Update UI
-
+	OnHPDelegate.Broadcast(HP, MaxHP);
 	// Check Died
 }
 

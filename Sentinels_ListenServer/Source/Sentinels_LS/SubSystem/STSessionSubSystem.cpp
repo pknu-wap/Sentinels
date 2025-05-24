@@ -13,6 +13,7 @@
 #include "System/STGameInstance.h"
 #include "Sentinels_LSGameMode.h"
 #include "Player/STPlayerController.h"
+#include "Player/STLocalPlayer.h"
 
 #pragma region Session
 
@@ -60,7 +61,7 @@ void USTSessionSubSystem::OnRegisterPlayerComplete(FName SessionName, const TArr
 	OnRegisterPlayerCompleteEvent.Broadcast(bWasSuccessful);
 }
 
-void USTSessionSubSystem::CreateSession(FName SessionName)
+void USTSessionSubSystem::CreateSession(FName SessionName, int PublicConnection, bool bUseLan)
 {
 	const IOnlineSessionPtr sessionInterface = Online::GetSessionInterface(GetWorld());
 	if (!sessionInterface.IsValid())
@@ -68,14 +69,14 @@ void USTSessionSubSystem::CreateSession(FName SessionName)
 
 	LastSessionSettings = MakeShareable(new FOnlineSessionSettings());
 	LastSessionSettings->NumPrivateConnections = 0;
-	LastSessionSettings->NumPublicConnections = 5;
+	LastSessionSettings->NumPublicConnections = PublicConnection;
 	LastSessionSettings->bAllowInvites = true;
 	LastSessionSettings->bAllowJoinInProgress = true;
 	LastSessionSettings->bAllowJoinViaPresence = true;
 	LastSessionSettings->bAllowJoinViaPresenceFriendsOnly = true;
 	LastSessionSettings->bIsDedicated = false;
 	LastSessionSettings->bUsesPresence = true;
-	LastSessionSettings->bIsLANMatch = true;
+	LastSessionSettings->bIsLANMatch = bUseLan;
 	LastSessionSettings->bShouldAdvertise = true;
 
 	LastSessionSettings->Set(FName("SessionName"), SessionName.ToString(), EOnlineDataAdvertisementType::ViaOnlineService);
@@ -161,7 +162,7 @@ void USTSessionSubSystem::OnStartSessionCompleted(FName SessionName, bool bWasSu
 	// If the start was successful, we can open a NewMap if we want. Make sure to use "listen" as a parameter!
 	if (bWasSuccessful)
 	{
-		UGameplayStatics::OpenLevel(GetWorld(), "LobbyMap", true, "listen");
+		UGameplayStatics::OpenLevel(GetWorld(), "Map_Airbase_Demo", true, "listen");
 	}
 }
 
@@ -219,6 +220,7 @@ void USTSessionSubSystem::FindSessionInfos()
 	LastSessionSearch = MakeShareable(new FOnlineSessionSearch());
 	LastSessionSearch->MaxSearchResults = 100;
 	LastSessionSearch->bIsLanQuery = true;
+	LastSessionSearch->TimeoutInSeconds = 1.f;
 
 	LastSessionSearch->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
 
@@ -228,6 +230,9 @@ void USTSessionSubSystem::FindSessionInfos()
 		sessionInterface->ClearOnFindSessionsCompleteDelegate_Handle(Handle_FindSessionComplete);
 		OnFindSessionsCompleteEvent.Broadcast(TArray<FSessionInfo>(), false);
 	}
+
+	FTimerHandle handle;
+	GetWorld()->GetTimerManager().SetTimer(handle, [&]() {this->OnFindSessionsComplete(true); }, 1.f, false);
 }
 
 void USTSessionSubSystem::OnFindSessionsComplete(bool bWasSuccessful)
@@ -358,15 +363,23 @@ void USTSessionSubSystem::OnJoinSessionCompleted(FName SessionName, EOnJoinSessi
 		GameMode->CurrentSessionName = SessionName;
 	}
 
-	FTimerHandle handle;
-	GetWorld()->GetTimerManager().SetTimer(handle, [this, SessionName]() 
-		{
-			ASTPlayerController* PC = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
-			if (PC)
-			{
-				PC->RegisterSelfToSession(SessionName);
-			}
-		}, 3, false);
+	USTLocalPlayer* LocalPlayer = Cast<USTLocalPlayer>(UGameplayStatics::GetPlayerController(this, 0)->GetLocalPlayer());
+	if (LocalPlayer)
+	{
+		LocalPlayer->RegisterSelfToSession(SessionName, false);
+	}
+
+	/*ASTPlayerController* PC = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+	if (PC)
+	{
+		PC->RegisterSelfToSession(SessionName);
+	}*/
+
+	/*ASTPlayerController* PC = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+	if (PC)
+	{
+		PC->RegisterSelfToSession(SessionName);
+	}*/
 
 	TryTravelToCurrentSession(SessionName);
 }

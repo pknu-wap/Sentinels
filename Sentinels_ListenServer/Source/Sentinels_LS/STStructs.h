@@ -60,6 +60,12 @@ struct SENTINELS_LS_API FSkillStruct : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float SkillCoolTime = 5.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString SkillName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString SkillDescription;
 };
 
 USTRUCT(BlueprintType)

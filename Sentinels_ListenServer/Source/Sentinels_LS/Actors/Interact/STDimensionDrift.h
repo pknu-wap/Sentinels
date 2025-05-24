@@ -39,14 +39,17 @@ private:
 	void HandleAllPlayerIsReady(FGameplayTag NewGameLevel);
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class USkeletalMeshComponent> SKMesh;
 
 	UPROPERTY(EditAnywhere, Category = "WBP")
 	TSubclassOf<UUserWidget> Widget_LoadoutClass;
 
 	UPROPERTY(EditAnywhere, Category = "WBP")
-	TSubclassOf<UUserWidget> Widget_CharacterSelectClass;
+	TSubclassOf<UUserWidget> Widget_WeaponSelectClass;
+
+	UPROPERTY(EditAnywhere, Category = "WBP")
+	TSubclassOf<UUserWidget> Widget_CustomizeClass;
 
 	UPROPERTY(EditAnywhere, Category = "WBP")
 	TSubclassOf<UUserWidget> Widget_LevelSelectClass;

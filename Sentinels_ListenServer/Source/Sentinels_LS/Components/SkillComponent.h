@@ -7,6 +7,7 @@
 #include "STStructs.h"
 #include "SkillComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActivateSkill, int, index);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SENTINELS_LS_API USkillComponent : public UActorComponent
@@ -37,4 +38,8 @@ private:
 private:
 	TArray<FSkillStruct> ClassSkills;
 	TArray<float> Skill_CoolDowns;
+
+public:
+	UPROPERTY(BlueprintAssignable)
+	FOnActivateSkill OnActivateSkill;
 };

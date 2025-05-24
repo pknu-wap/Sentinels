@@ -105,6 +105,7 @@ void UInventoryComponent::OnRep_Inventory()
 	/*
 		Update Item UI
 	*/
+	OnUpdatreInventory.Broadcast();
 }
 
 void UInventoryComponent::LogInventory()

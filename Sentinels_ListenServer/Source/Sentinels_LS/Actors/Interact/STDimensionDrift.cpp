@@ -2,6 +2,7 @@
 
 
 #include "Actors/Interact/STDimensionDrift.h"
+#include "Net/UnrealNetwork.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Subsystem/STUISubSystem.h"
@@ -31,13 +32,14 @@ void ASTDimensionDrift::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GetWorld()->GetGameState<ASTGameState>()->OnAllPlayerIsReady.AddDynamic(this, &ASTDimensionDrift::HandleAllPlayerIsReady);
+	GetWorld()->GetGameState<ASTGameState>()->OnServerTravelReady.AddDynamic(this, &ASTDimensionDrift::HandleAllPlayerIsReady);
 }
 
 void ASTDimensionDrift::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	DOREPLIFETIME(ASTDimensionDrift, SKMesh);
 }
 
 void ASTDimensionDrift::Interact_Implementation(UInteractComponent* InteractingComponent)
@@ -47,24 +49,53 @@ void ASTDimensionDrift::Interact_Implementation(UInteractComponent* InteractingC
 	USTPlayerUIComponent* uiComponent = pc->GetUIComponent();
 
 	FGameplayTag loadoutTag = FSTGameplayTags::Get().Widget_Lobby_Loadout;
-	FGameplayTag selectCharacterTag = FSTGameplayTags::Get().Widget_Lobby_CharacterSelect;
-	FGameplayTag selectLevelTag = FSTGameplayTags::Get().Widget_Lobby_LevelSelect;
+	FGameplayTag weaponSelectTag = FSTGameplayTags::Get().Widget_Lobby_WeaponSelect;
+	FGameplayTag customizeTag = FSTGameplayTags::Get().Widget_Lobby_Customize;
+	FGameplayTag levelSelectTag = FSTGameplayTags::Get().Widget_Lobby_LevelSelect;
 
-	uiComponent->ClientRPCRegisterWidget(loadoutTag, Widget_LoadoutClass);
-	uiComponent->ClientRPCRegisterWidget(selectCharacterTag, Widget_CharacterSelectClass);
-	uiComponent->ClientRPCRegisterWidget(selectLevelTag, Widget_LevelSelectClass);
+	uiComponent->AddPlayerID(pc->PlayerState->GetUniqueId());
 
-	uiComponent->ClientRPCAddToViewport(loadoutTag);
+	uiComponent->ServerRPCRegisterWidget(loadoutTag, Widget_LoadoutClass);
+	uiComponent->ServerRPCRegisterWidget(weaponSelectTag, Widget_WeaponSelectClass);
+	uiComponent->ServerRPCRegisterWidget(customizeTag, Widget_CustomizeClass);
+	uiComponent->ServerRPCRegisterWidget(levelSelectTag, Widget_LevelSelectClass);
 
 	if (pc->IsLocalController())
 	{
-		uiComponent->AddPlayerID(pc->PlayerState->GetUniqueId());
-		uiComponent->UpdateLoadoutUI();
+		uiComponent->AddToViewport(loadoutTag);
 	}
 	else
 	{
-		uiComponent->ServerRPCRegisterPlayerID(pc->PlayerState->GetUniqueId());
+		uiComponent->ClientRPCAddToViewport(loadoutTag);
 	}
+
+	pc->SetInputMode(FInputModeUIOnly());
+	pc->SetShowMouseCursor(true);
+
+	uiComponent->ServerRPCUpdateUI(loadoutTag);
+	
+	//if (pc->HasAuthority())
+	//{
+	//	uiComponent->AddPlayerID(pc->PlayerState->GetUniqueId());
+	//	// 스스로 호출
+	//	//uiComponent->ServerRPCUpdateUI(loadoutTag);
+	//}
+	//else
+	//{
+	//	uiComponent->ServerRPCRegisterPlayerID(pc->PlayerState->GetUniqueId());
+	//	uiComponent->ServerRPCUpdateUI(loadoutTag);
+	//}
+
+	//if (pc->IsLocalController())
+	//{
+	//	uiComponent->AddPlayerID(pc->PlayerState->GetUniqueId());
+	//	uiComponent->UpdateLoadoutUI();
+	//	uiComponent->UpdatePlayerWeaponLayer();
+	//}
+	//else
+	//{
+	//	uiComponent->ServerRPCRegisterPlayerID(pc->PlayerState->GetUniqueId());
+	//}
 }
 
 void ASTDimensionDrift::Interact_Finish_Implementation(UInteractComponent* InteractingComponent)

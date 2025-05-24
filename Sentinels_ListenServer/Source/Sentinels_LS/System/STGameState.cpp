@@ -294,20 +294,9 @@ USTMissionBase* ASTGameState::GetMission(FGameplayTag InMissionTag)
     return nullptr;
 }
 
-bool ASTGameState::CanServerTravel()
-{
-    if (CurrentLevelTag == FSTGameplayTags::Get().Level_Lobby)
-    {
-        ST_LOG(LogSTNetwork, Log, TEXT("You must select map(level)!"));
-        return false;
-    }
-
-    return true;
-}
-
 void ASTGameState::TryServerTravel()
 {
-    OnAllPlayerIsReady.Broadcast(CurrentLevelTag);
+    OnServerTravelReady.Broadcast(CurrentLevelTag);
 }
 
 void ASTGameState::SetCurrentLevelTag(FGameplayTag NewLevelTag)

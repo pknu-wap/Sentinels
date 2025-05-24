@@ -7,6 +7,8 @@
 #include "STEnums.h"
 #include "STPlayerStatusComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHPDelegate, float, Current, float, Max);
+
 USTRUCT(BlueprintType)
 struct SENTINELS_LS_API FSTBuffStruct : public FTableRowBase
 {
@@ -180,4 +182,8 @@ public:
 	float CriticalRate;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 	float BaseCriticalRate;
+
+public:
+	UPROPERTY(BlueprintAssignable)
+	FOnHPDelegate OnHPDelegate;
 };
