@@ -4,6 +4,7 @@
 #include "Actors/Projectile/ProjectileBase.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Particles/ParticleSystemComponent.h"
 
 // Sets default values
 AProjectileBase::AProjectileBase()
@@ -44,9 +45,19 @@ void AProjectileBase::Activate(const FVector ActivateLocation, const FRotator Ac
 
     UE_LOG(LogTemp, Display, TEXT("%s"), *GetActorLocation().ToString());
 
+    SetActorTickEnabled(true);
+
     CollisionComponent->SetRelativeLocation(FVector(0, 0, 0));
     CollisionComponent->Activate();
+    CollisionComponent->SetComponentTickEnabled(true);
     ProjectileMovementComponent->Activate();
+    ProjectileMovementComponent->SetComponentTickEnabled(true);
+
+    UParticleSystemComponent* Particle = GetComponentByClass<UParticleSystemComponent>();
+    if (Particle)
+    {
+        Particle->SetComponentTickEnabled(true);
+    }
 
     FTimerHandle DeactivateHandle;
     GetWorldTimerManager().SetTimer(DeactivateHandle, this, &AProjectileBase::Deactivate, LifeTime, false);
@@ -56,8 +67,19 @@ void AProjectileBase::Deactivate()
 {
     Super::Deactivate();
 
+    SetActorTickEnabled(false);
+
     CollisionComponent->Deactivate();
+    CollisionComponent->SetComponentTickEnabled(false);
     ProjectileMovementComponent->Deactivate();
+    ProjectileMovementComponent->SetComponentTickEnabled(false);
+
+    UParticleSystemComponent* Particle = GetComponentByClass<UParticleSystemComponent>();
+    if (Particle)
+    {
+        Particle->SetComponentTickEnabled(false);
+        Particle->DeactivateSystem();
+    }
 }
 
 void AProjectileBase::FireInDirection(const FVector& ShootDirection)
