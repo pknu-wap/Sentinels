@@ -161,6 +161,7 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 				}, 5.f, false);
 
 			PlayDiedMontage_Multicast();
+			// GetCharacterMovement()->Deactivate();
 			
 			// Stop Behavior Tree
 			AAIController* AIController = Cast<AAIController>(GetController());
