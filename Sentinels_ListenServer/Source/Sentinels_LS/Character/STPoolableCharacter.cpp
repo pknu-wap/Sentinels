@@ -19,9 +19,15 @@ void ASTPoolableCharacter::Activate(const FVector ActivateLocation, const FRotat
 	SetActorLocation(ActivateLocation); SetActorRotation(ActivateRotation);
 
 	// Enable Tick
-	GetMesh()->SetComponentTickEnabled(true);
-	GetCharacterMovement()->SetComponentTickEnabled(true);
+	GetMesh()->Activate();
+	GetCharacterMovement()->Activate();
 	SetActorTickEnabled(true);
+
+	AAIController* controller = Cast<AAIController>(GetController());
+	if (controller)
+	{
+		controller->SetActorTickEnabled(true);
+	}
 
 	GetMesh()->SetEnableGravity(true);
 	if (UCapsuleComponent* CapsuleComp = GetComponentByClass<UCapsuleComponent>())
@@ -39,8 +45,8 @@ void ASTPoolableCharacter::Deactivate()
 
 	// Disable Tick
 	// GetMesh()->SetAnimationMode(EAnimationMode::AnimationCustomMode);
-	GetMesh()->SetComponentTickEnabled(false);
-	GetCharacterMovement()->SetComponentTickEnabled(false);
+	GetMesh()->Deactivate();
+	GetCharacterMovement()->Deactivate();
 	SetActorTickEnabled(false);
 
 	// Disable Gravity
@@ -50,11 +56,13 @@ void ASTPoolableCharacter::Deactivate()
 		CapsuleComp->SetEnableGravity(false);
 	}
 
-	// Disable Behavior Tree
-	ASTEnemyBase_AIController* AIController = Cast<ASTEnemyBase_AIController>(GetController());
-	if (AIController)
+	// Disable Tick & Behavior Tree
+	AAIController* controller = Cast<AAIController>(GetController());
+	if (controller)
 	{
-		UBrainComponent* brainComponnet = AIController->GetBrainComponent();
+		controller->SetActorTickEnabled(false);
+
+		UBrainComponent* brainComponnet = controller->GetBrainComponent();
 		if(brainComponnet) 
 			brainComponnet->StopLogic(FString("Deactivated"));
 	}

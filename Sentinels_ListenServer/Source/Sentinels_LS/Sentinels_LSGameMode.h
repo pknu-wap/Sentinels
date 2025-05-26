@@ -17,6 +17,7 @@ public:
 	ASentinels_LSGameMode();
 
 protected:
+	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
 	UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
