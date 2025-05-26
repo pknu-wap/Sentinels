@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Character/STPoolableCharacter.h"
+#include "STStructs.h"
 #include "STEnemyBase.generated.h"
 
 class USTEnemyStatusComponent;
@@ -87,10 +88,13 @@ protected:
 	void DissolveStart();
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void DissolveReverseStart();
+	bool DissolveReverseStart();
 
 	UFUNCTION(BlueprintCallable)
 	void DissolveEnded();
+
+	UFUNCTION(BlueprintCallable)
+	void DissolveReverseEnded();
 
 	UFUNCTION(NetMulticast, Reliable)
 	void PlayDiedMontage_Multicast();
@@ -100,6 +104,28 @@ protected:
 protected:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<USTEnemyStatusComponent> StatusComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Damaged")
+	float LaunchVelocity = 1000.f;
+
+
+/*
+	Drop
+*/
+public:
+	UFUNCTION(BLueprintCallable)
+	void SetAdditionalDropInfos(const TArray<FDropInfo>& inDropInfos);
+
+	UFUNCTION(BlueprintCallable)
+	void DropItem();
+
+protected:
+	UPROPERTY(EditAnywhere, Category = "Drop")
+	FDropInfo DropInfo_Base;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Drop")
+	TArray<FDropInfo> DropInfos_Additional;
+
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
@@ -115,6 +141,7 @@ public:
 	UAnimMontage* Montage_Died;
 	
 public:
+	UPROPERTY(BlueprintAssignable)
 	FOnEnemyDied Delegate_OnEnemyDied;
 
 private:

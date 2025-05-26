@@ -15,12 +15,12 @@ void USTDefenseWaveCondition::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 }
 
-bool USTDefenseWaveCondition::IsSatisfied()
+bool USTDefenseWaveCondition::IsSatisfied_Implementation()
 {
 	return false;
 }
 
-void USTDefenseWaveCondition::MissionActivated()
+void USTDefenseWaveCondition::MissionActivated_Implementation()
 {
 	// Set Time Limit
 	GetWorld()->GetTimerManager().SetTimer(
@@ -30,7 +30,7 @@ void USTDefenseWaveCondition::MissionActivated()
 	FVector SpawnLocation; FRotator SpawnRotation;
 
 	TArray<ASpawnPointBase*> SpawnPoints;
-	GetAllSpawnPointsWithTag(FSTGameplayTags::Get().SpawnPoint_DefenseCore, SpawnPoints);
+	GetAllSpawnPointsWithTag(FSTGameplayTags::Get().Mission_DefenseWave, SpawnPoints);
 
 	if (SpawnPoints.IsEmpty())
 	{
@@ -49,7 +49,7 @@ void USTDefenseWaveCondition::MissionActivated()
 	}
 }
 
-void USTDefenseWaveCondition::MissionDeactivated(bool IsCleared)
+void USTDefenseWaveCondition::MissionDeactivated_Implementation(bool IsCleared)
 {
 
 }
@@ -65,14 +65,9 @@ void USTDefenseWaveCondition::ConditionUpdated(int ObjectID, bool Success)
 	}
 
 	// Defense Core is Broken
-	ASTGameState* GameState = Cast<ASTGameState>(GetWorld()->GetGameState());
-	if (GameState)
+	if (Mission)
 	{
-		USTMissionBase* Mission = GameState->GetMission(MissionTag);
-		if (Mission)
-		{
-			Mission->DeactivateMission(false);
-		}
+		Mission->DeactivateMission(false);
 	}
 
 	Delegate_ConditionUpdated.Broadcast();
@@ -87,14 +82,9 @@ void USTDefenseWaveCondition::TimeLimitEnded()
 	}
 
 	// Time Limit Success
-	ASTGameState* GameState = Cast<ASTGameState>(GetWorld()->GetGameState());
-	if (GameState)
+	if (Mission)
 	{
-		USTMissionBase* Mission = GameState->GetMission(MissionTag);
-		if (Mission)
-		{
-			Mission->DeactivateMission(true);
-		}
+		Mission->DeactivateMission(true);
 	}
 }
 

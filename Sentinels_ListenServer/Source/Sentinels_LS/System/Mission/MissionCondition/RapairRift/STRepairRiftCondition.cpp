@@ -18,7 +18,7 @@ void USTRepairRiftCondition::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	DOREPLIFETIME(USTRepairRiftCondition, RiftInfos)
 }
 
-bool USTRepairRiftCondition::IsSatisfied()
+bool USTRepairRiftCondition::IsSatisfied_Implementation()
 {
 	for (int i = 0; i < RiftInfos.Num(); i++)
 	{
@@ -31,7 +31,7 @@ bool USTRepairRiftCondition::IsSatisfied()
 	return true;
 }
 
-void USTRepairRiftCondition::MissionRegistered()
+void USTRepairRiftCondition::MissionRegistered_Implementation()
 {
 	/*
 		Spawn Rift On Random Point (Get All Rift Spawn Points From World)
@@ -39,7 +39,7 @@ void USTRepairRiftCondition::MissionRegistered()
 	FVector SpawnLocation; FRotator SpawnRotation;
 
 	TArray<ASpawnPointBase*> SpawnPoints;
-	GetAllSpawnPointsWithTag(FSTGameplayTags::Get().SpawnPoint_Rift, SpawnPoints);
+	GetAllSpawnPointsWithTag(FSTGameplayTags::Get().Mission_RepairRift, SpawnPoints);
 
 	if (SpawnPoints.IsEmpty())
 	{
@@ -90,7 +90,7 @@ void USTRepairRiftCondition::MissionRegistered()
 	}
 }
 
-void USTRepairRiftCondition::MissionActivated()
+void USTRepairRiftCondition::MissionActivated_Implementation()
 {
 	/*
 		Set Mission
@@ -113,7 +113,7 @@ void USTRepairRiftCondition::MissionActivated()
 	*/
 }
 
-void USTRepairRiftCondition::MissionDeactivated(bool IsCleared)
+void USTRepairRiftCondition::MissionDeactivated_Implementation(bool IsCleared)
 {
 }
 
@@ -129,14 +129,9 @@ void USTRepairRiftCondition::ConditionUpdated(int ObjectID, bool Success)
 
 	if (IsSatisfied())
 	{
-		ASTGameState* GameState = Cast<ASTGameState>(GetWorld()->GetGameState());
-		if (GameState)
+		if (Mission)
 		{
-			USTMissionBase* Mission = GameState->GetMission(MissionTag);
-			if (Mission)
-			{
-				Mission->CheckMissionClearable();
-			}
+			Mission->CheckMissionClearable();
 		}
 	}
 
@@ -146,6 +141,6 @@ void USTRepairRiftCondition::ConditionUpdated(int ObjectID, bool Success)
 
 void USTRepairRiftCondition::OnRep_RiftInfos()
 {
-	UE_LOG(LogTemp, Display, TEXT("USTRepairRiftCondition::OnRep_RiftInfos"));
+	UE_LOG(LogTemp, Display, TEXT("s"));
 	Delegate_ConditionUpdated.Broadcast();
 }

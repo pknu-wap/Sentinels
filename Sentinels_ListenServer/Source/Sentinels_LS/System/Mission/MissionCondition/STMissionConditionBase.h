@@ -10,6 +10,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnConditionUpdated);
 
 class ASpawnPointBase;
+class USTMissionBase;
 
 UCLASS(ABSTRACT)
 class SENTINELS_LS_API USTMissionConditionBase : public UNetworkObject
@@ -17,23 +18,46 @@ class SENTINELS_LS_API USTMissionConditionBase : public UNetworkObject
 	GENERATED_BODY()
 	
 public:
-	virtual void MissionRegistered() {};
-	virtual void MissionActivated() {};
-	virtual void MissionDeactivated(bool IsCleared) {};
-	virtual bool IsSatisfied() { return false; };
+	UFUNCTION(BlueprintNativeEvent)
+	void MissionRegistered();
+	UFUNCTION(BlueprintNativeEvent)
+	void MissionActivated();
+	UFUNCTION(BlueprintNativeEvent)
+	void MissionDeactivated(bool IsCleared);
+	UFUNCTION(BlueprintNativeEvent)
+	bool IsSatisfied();
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	FText GetConditionDescription();
 
 public:
-	void SetMissionTag(FGameplayTag InTag) { MissionTag = InTag; };
+	void InitializeCondition(USTMissionBase* InMission, FGameplayTag InTag) 
+	{ Mission = InMission; MissionTag = InTag; };
 
 	void GetAllSpawnPointsWithTag(FGameplayTag InTag, TArray<ASpawnPointBase*>& OutActors) const;
 
 protected:
-	UPROPERTY(BlueprintAssignable)
-	FOnConditionUpdated Delegate_ConditionUpdated;
+	UPROPERTY(BlueprintReadOnly)
+	USTMissionBase* Mission;
 
 	FGameplayTag MissionTag;
+
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FOnConditionUpdated Delegate_ConditionUpdated;
+
+
+
+/*
+	Blueprint Helper Function		
+*/
+protected:
+	UWorld* GetWorld() const override
+	{
+		if (IsTemplate() || !GetOuter())
+		{
+			return nullptr;
+		}
+		return GetOuter()->GetWorld();
+	}
 };

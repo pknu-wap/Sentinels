@@ -44,7 +44,7 @@ protected:
 	AI Logic
 */
 public:
-	void StartAILogic(const FVector StartLocation = FVector::ZeroVector, const FRotator StartRotation = FRotator::ZeroRotator);
+	void StartAILogic();
 
 public:
 	UFUNCTION()
@@ -52,7 +52,10 @@ public:
 
 	// Target
 	AActor* GetCurrentTarget() const;
+
+	UFUNCTION(BlueprintCallable)
 	void SetTarget(AActor* InTarget);
+
 	void RestoreTarget();
 
 	// Stunned

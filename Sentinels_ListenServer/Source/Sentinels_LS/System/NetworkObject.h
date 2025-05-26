@@ -7,7 +7,7 @@
 #include "NetworkObject.generated.h"
 
 
-UCLASS(Abstract, Blueprintable)
+UCLASS(Abstract, Blueprintable, BlueprintType)
 class SENTINELS_LS_API UNetworkObject : public UObject
 {
 	GENERATED_BODY()

@@ -61,7 +61,7 @@ void USTSessionSubSystem::OnRegisterPlayerComplete(FName SessionName, const TArr
 	OnRegisterPlayerCompleteEvent.Broadcast(bWasSuccessful);
 }
 
-void USTSessionSubSystem::CreateSession(FName SessionName)
+void USTSessionSubSystem::CreateSession(FName SessionName, int PublicConnection, bool bUseLan)
 {
 	const IOnlineSessionPtr sessionInterface = Online::GetSessionInterface(GetWorld());
 	if (!sessionInterface.IsValid())
@@ -69,14 +69,14 @@ void USTSessionSubSystem::CreateSession(FName SessionName)
 
 	LastSessionSettings = MakeShareable(new FOnlineSessionSettings());
 	LastSessionSettings->NumPrivateConnections = 0;
-	LastSessionSettings->NumPublicConnections = 5;
+	LastSessionSettings->NumPublicConnections = PublicConnection;
 	LastSessionSettings->bAllowInvites = true;
 	LastSessionSettings->bAllowJoinInProgress = true;
 	LastSessionSettings->bAllowJoinViaPresence = true;
 	LastSessionSettings->bAllowJoinViaPresenceFriendsOnly = true;
 	LastSessionSettings->bIsDedicated = false;
 	LastSessionSettings->bUsesPresence = true;
-	LastSessionSettings->bIsLANMatch = true;
+	LastSessionSettings->bIsLANMatch = bUseLan;
 	LastSessionSettings->bShouldAdvertise = true;
 
 	LastSessionSettings->Set(FName("SessionName"), SessionName.ToString(), EOnlineDataAdvertisementType::ViaOnlineService);
@@ -162,7 +162,7 @@ void USTSessionSubSystem::OnStartSessionCompleted(FName SessionName, bool bWasSu
 	// If the start was successful, we can open a NewMap if we want. Make sure to use "listen" as a parameter!
 	if (bWasSuccessful)
 	{
-		UGameplayStatics::OpenLevel(GetWorld(), "LobbyMap", true, "listen");
+		UGameplayStatics::OpenLevel(GetWorld(), "Map_Airbase_Demo", true, "listen");
 	}
 }
 

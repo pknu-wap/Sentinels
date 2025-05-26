@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Actors/STPoolableActor.h"
 #include "GameFramework/Actor.h"
 #include "ProjectileBase.generated.h"
 
@@ -10,7 +11,7 @@ class USphereComponent;
 class UProjectileMovementComponent;
 
 UCLASS()
-class SENTINELS_LS_API AProjectileBase : public AActor
+class SENTINELS_LS_API AProjectileBase : public ASTPoolableActor
 {
 	GENERATED_BODY()
 	
@@ -21,6 +22,10 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+public:
+	virtual void Activate(const FVector ActivateLocation = FVector::ZeroVector, const FRotator ActivateRotation = FRotator::ZeroRotator) override;
+	virtual void Deactivate() override;
 
 public:
 	UFUNCTION(BlueprintCallable)

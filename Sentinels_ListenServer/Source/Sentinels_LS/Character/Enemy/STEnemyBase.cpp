@@ -20,6 +20,9 @@
 #include "STGameplayTags.h"
 #include "Character/STCharacterAnimInstanceBase.h"
 #include "Actors/Projectile/ProjectileBase.h"
+#include "Actors/Interact/Item/InteractableItem.h"
+#include "SubSystem/STProjectilePoolingSubSystem.h"
+#include "Particles/ParticleSystemComponent.h"
 
 ASTEnemyBase::ASTEnemyBase(const FObjectInitializer& object_initializer)
 	: Super(object_initializer.SetDefaultSubobjectClass<USkeletalMeshComponentBudgeted>(ACharacter::MeshComponentName))
@@ -59,15 +62,19 @@ void ASTEnemyBase::BeginPlay()
 
 	if (HasAuthority())
 	{
-		Activate(GetActorLocation(), GetActorRotation());
-	}
-
-	if (HasAuthority())
-	{
 		if (USTCharacterAnimInstanceBase* AnimInst = Cast<USTCharacterAnimInstanceBase>(GetMesh()->GetAnimInstance()))
 		{
 			AnimInst->Delegate_PrimaryFire.AddUObject(this, &ASTEnemyBase::PrimaryFire);
 			AnimInst->Delegate_DissolveStart.AddUObject(this, &ASTEnemyBase::DissolveStart);
+		}
+
+		if(bIsActivated)
+			Activate(GetActorLocation(), GetActorRotation());
+
+		if (ProjectileClass_PrimaryFire)
+		{
+			USTProjectilePoolingSubSystem* ProjectileSubSystem = GetWorld()->GetSubsystem<USTProjectilePoolingSubSystem>();
+			ProjectileSubSystem->InitProjectilePool(this, ProjectileClass_PrimaryFire, 100);
 		}
 	}
 }
@@ -165,6 +172,9 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 			// Delegate Broadcast
 			Delegate_OnEnemyDied.Broadcast(this);
 
+			// Drop Item
+			DropItem();
+
 			return ActualDamage;
 		}
 
@@ -179,7 +189,7 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 		{
 			StopCurrentAnimMontage_Multicast();
 			FVector LaunchDir = (GetActorLocation() - DamageCauser->GetActorLocation()).GetSafeNormal2D();
-			LaunchCharacter(LaunchDir * 750.f, false, false);
+			LaunchCharacter(LaunchDir * LaunchVelocity, false, false);
 		}
 	}
 
@@ -189,10 +199,14 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 void ASTEnemyBase::Activate(const FVector ActivateLocation, const FRotator ActivateRotation)
 {
 	Super::Activate(ActivateLocation, ActivateRotation);
-
-	DissolveReverseStart();
+	
 	StopAnimMontage();
 	StatusComponent->InitStatus();
+
+	if(!DissolveReverseStart())
+	{
+		DissolveReverseEnded();
+	}
 }
 
 void ASTEnemyBase::Deactivate()
@@ -259,10 +273,18 @@ void ASTEnemyBase::PlayNormalAttackMontage(int MontageIdx)
 
 void ASTEnemyBase::PrimaryFire()
 {
+	USTProjectilePoolingSubSystem* ProjectileSubSystem = GetWorld()->GetSubsystem<USTProjectilePoolingSubSystem>();
+
 	FVector SpawnLocation = GetMesh()->GetSocketLocation(SocketName_PrimaryFire);
-	AProjectileBase* projectile = GetWorld()->SpawnActor<AProjectileBase>(ProjectileClass_PrimaryFire, SpawnLocation, GetActorForwardVector().Rotation());
+	AProjectileBase* projectile = ProjectileSubSystem->GetActor<AProjectileBase>(ProjectileClass_PrimaryFire, SpawnLocation);
+	// AProjectileBase* projectile = GetWorld()->SpawnActor<AProjectileBase>(ProjectileClass_PrimaryFire, SpawnLocation, GetActorForwardVector().Rotation());
 	if (projectile)
 	{
+		UParticleSystemComponent* Particle = projectile->GetComponentByClass<UParticleSystemComponent>();
+		if (Particle)
+		{
+			Particle->ActivateSystem(true);
+		}
 		projectile->FireInDirection(GetActorForwardVector());
 	}
 }
@@ -290,6 +312,18 @@ void ASTEnemyBase::DissolveEnded()
 	}
 }
 
+void ASTEnemyBase::DissolveReverseEnded()
+{
+	if (HasAuthority())
+	{
+		ASTEnemyBase_AIController* AIController = Cast<ASTEnemyBase_AIController>(GetController());
+		if (AIController)
+		{
+			AIController->StartAILogic();
+		}
+	}
+}
+
 void ASTEnemyBase::PlayDiedMontage_Multicast_Implementation()
 {
 	PlayDiedMontage();
@@ -301,6 +335,34 @@ void ASTEnemyBase::PlayDiedMontage()
 	if (AnimInst)
 	{
 		AnimInst->Montage_Play(Montage_Died);
+	}
+}
+
+void ASTEnemyBase::SetAdditionalDropInfos(const TArray<FDropInfo>& inDropInfos)
+{
+	DropInfos_Additional = inDropInfos;
+}
+
+void ASTEnemyBase::DropItem()
+{
+	if (HasAuthority())
+	{
+		float rand = UKismetMathLibrary::RandomFloatInRange(0, 1);
+
+		if(DropInfo_Base.DropProbability >= rand)
+		{
+			GetWorld()->SpawnActor<AActor>(DropInfo_Base.DropItemClass, GetActorLocation(), GetActorRotation());
+		}
+		
+		for (const auto& dropInfo : DropInfos_Additional)
+		{
+			rand = UKismetMathLibrary::RandomFloatInRange(0, 1);
+			if (dropInfo.DropProbability >= rand)
+			{
+				GetWorld()->SpawnActor<AActor>(dropInfo.DropItemClass, GetActorLocation(), GetActorRotation());
+			}
+		}
+		
 	}
 }
 

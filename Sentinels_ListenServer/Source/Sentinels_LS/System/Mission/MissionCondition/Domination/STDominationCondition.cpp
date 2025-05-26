@@ -17,7 +17,7 @@ void USTDominationCondition::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	DOREPLIFETIME(USTDominationCondition, DominationPointInfos);
 }
 
-bool USTDominationCondition::IsSatisfied()
+bool USTDominationCondition::IsSatisfied_Implementation()
 {
 	for (int i = 0; i < DominationPointInfos.Num(); i++)
 	{
@@ -30,7 +30,7 @@ bool USTDominationCondition::IsSatisfied()
 	return true;
 }
 
-void USTDominationCondition::MissionActivated()
+void USTDominationCondition::MissionActivated_Implementation()
 {
 	// Set Time Limit
 	GetWorld()->GetTimerManager().SetTimer(
@@ -40,7 +40,7 @@ void USTDominationCondition::MissionActivated()
 	FVector SpawnLocation; FRotator SpawnRotation;
 
 	TArray<ASpawnPointBase*> SpawnPoints;
-	GetAllSpawnPointsWithTag(FSTGameplayTags::Get().SpawnPoint_DominationPoint, SpawnPoints);
+	GetAllSpawnPointsWithTag(FSTGameplayTags::Get().Mission_Domination, SpawnPoints);
 
 	if (SpawnPoints.IsEmpty())
 	{
@@ -88,7 +88,7 @@ void USTDominationCondition::MissionActivated()
 	}
 }
 
-void USTDominationCondition::MissionDeactivated(bool IsCleared)
+void USTDominationCondition::MissionDeactivated_Implementation(bool IsCleared)
 {
 
 }
@@ -110,14 +110,9 @@ void USTDominationCondition::ConditionUpdated(int ObjectID, bool Success)
 
 	if (IsSatisfied())
 	{
-		ASTGameState* GameState = Cast<ASTGameState>(GetWorld()->GetGameState());
-		if (GameState)
+		if (Mission)
 		{
-			USTMissionBase* Mission = GameState->GetMission(MissionTag);
-			if (Mission)
-			{
-				Mission->CheckMissionClearable();
-			}
+			Mission->CheckMissionClearable();
 		}
 	}
 
@@ -132,13 +127,8 @@ void USTDominationCondition::OnRep_DominationPointInfos()
 void USTDominationCondition::TimeLimitEnded()
 {
 	// Time Limit Success
-	ASTGameState* GameState = Cast<ASTGameState>(GetWorld()->GetGameState());
-	if (GameState)
+	if (Mission)
 	{
-		USTMissionBase* Mission = GameState->GetMission(MissionTag);
-		if (Mission)
-		{
-			Mission->DeactivateMission(false);
-		}
+		Mission->DeactivateMission(false);
 	}
 }
