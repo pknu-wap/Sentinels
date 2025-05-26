@@ -55,23 +55,26 @@ void ASTPlayerCharacter_GreatSword::Skill_Passive_Pressed_Server_Implementation(
 	FVector start = GetActorLocation();
 	FVector end = start + TraceRange_Passive * GetActorForwardVector();
 
-	ETraceTypeQuery TraceType = UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Pawn);
-
-	FHitResult hitResult;
-	UKismetSystemLibrary::SphereTraceSingle(this, start, end, TraceRadius_Passive,
+	ETraceTypeQuery TraceType = UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel6);
+	
+	TArray<FHitResult> hitResults;
+	UKismetSystemLibrary::SphereTraceMulti(this, start, end, TraceRadius_Passive,
 		TraceType, false, IgnoreActors,
-		EDrawDebugTrace::None, hitResult, true);
+		EDrawDebugTrace::None, hitResults, true);
 
-	if (hitResult.bBlockingHit)
+	for (auto& hitResult : hitResults)
 	{
-		ASTCharacterBase* newTarget = Cast<ASTCharacterBase>(hitResult.GetActor());
-		if (newTarget && newTarget->HasTag(FSTGameplayTags::Get().Character_State_Stunned))
+		if (hitResult.bBlockingHit)
 		{
-			TargetActor_Passive = newTarget;
-
-			AddTag(FSTGameplayTags::Get().Character_State_Skill);
-			Skill_Passive_Pressed_Multicast();
-			PlayMontage_Skill_Passive();
+			ASTCharacterBase* newTarget = Cast<ASTCharacterBase>(hitResult.GetActor());
+			if (newTarget && newTarget->HasTag(FSTGameplayTags::Get().Character_State_Stunned))
+			{
+				TargetActor_Passive = newTarget;
+				AddTag(FSTGameplayTags::Get().Character_State_Skill);
+				Skill_Passive_Pressed_Multicast();
+				PlayMontage_Skill_Passive();
+				break;
+			}
 		}
 	}
 }
