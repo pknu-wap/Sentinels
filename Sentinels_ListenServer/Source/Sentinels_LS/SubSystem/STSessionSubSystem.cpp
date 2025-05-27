@@ -162,7 +162,7 @@ void USTSessionSubSystem::OnStartSessionCompleted(FName SessionName, bool bWasSu
 	// If the start was successful, we can open a NewMap if we want. Make sure to use "listen" as a parameter!
 	if (bWasSuccessful)
 	{
-		UGameplayStatics::OpenLevel(GetWorld(), "Map_Airbase_Demo", true, "listen");
+		UGameplayStatics::OpenLevel(GetWorld(), "LobbyMap", true, "listen");
 	}
 }
 

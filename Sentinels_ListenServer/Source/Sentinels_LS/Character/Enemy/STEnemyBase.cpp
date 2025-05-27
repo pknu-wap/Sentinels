@@ -202,11 +202,7 @@ void ASTEnemyBase::Activate(const FVector ActivateLocation, const FRotator Activ
 	
 	StopAnimMontage();
 	StatusComponent->InitStatus();
-
-	if(!DissolveReverseStart())
-	{
-		DissolveReverseEnded();
-	}
+	DissolveReverseStart_Multicast();
 }
 
 void ASTEnemyBase::Deactivate()
@@ -300,6 +296,19 @@ void ASTEnemyBase::PlayKnockbackMontage()
 	if (AnimInst)
 	{
 		AnimInst->Montage_Play(Montage_Knockback);
+	}
+}
+
+void ASTEnemyBase::DissolveStart_Multicast_Implementation()
+{
+	DissolveStart();
+}
+
+void ASTEnemyBase::DissolveReverseStart_Multicast_Implementation()
+{
+	if (!DissolveReverseStart())
+	{
+		DissolveReverseEnded();
 	}
 }
 

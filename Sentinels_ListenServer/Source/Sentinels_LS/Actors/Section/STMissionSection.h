@@ -35,6 +35,9 @@ public:
 	void RegisterRandomMission();
 
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<class APlayerStart*> PlayerStarts;
+
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 	TArray<FRegisterMissionInfo> MissionInfos;
 
