@@ -24,3 +24,8 @@ void USTWorldSpawnSubsystem::NewCharacterSpawned(AActor* NewSpawnedCharacter)
 {
 	CurrentSpawnedCharacters++;
 }
+
+void USTWorldSpawnSubsystem::CharacterDeactivated(AActor* DeactivatedCharacter)
+{
+	CurrentSpawnedCharacters--;
+}

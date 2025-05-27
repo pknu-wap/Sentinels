@@ -280,6 +280,12 @@ bool AWorldBoxAISpawner::GetSpawnNavLocationForPlayer(int playerIdx, int infoIdx
 
 void AWorldBoxAISpawner::OnEnemyDied(AActor* DiedEnemy)
 {
+	USTWorldSpawnSubsystem* SpawnSystem = GetWorld()->GetSubsystem<USTWorldSpawnSubsystem>();
+	if (SpawnSystem)
+	{
+		SpawnSystem->CharacterDeactivated(DiedEnemy);
+	}
+
 	UE_LOG(LogTemp, Display, TEXT("AWorldBoxAISpawner::OnEnemyDied"));
 	// Called when enemy died
 	if (DiedEnemy)
