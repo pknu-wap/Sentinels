@@ -37,6 +37,7 @@ enum class ESTStatusType : uint8
 {
 	None,
 	HP,
+	HPRegen,
 	ATK,
 	DEF,
 	MovementSpeed,
@@ -52,6 +53,7 @@ enum class ESTBuffType : uint8
 {
 	None,
 	HP,
+	HPRegen,
 	ATK,
 	DEF,
 	MovementSpeed,
@@ -60,4 +62,14 @@ enum class ESTBuffType : uint8
 	CriticalDamagePercent,
 	CriticalRate,
 	CDR,
+};
+
+UENUM(BlueprintType)
+enum class EMissionProgressState : uint8
+{
+	None,
+	Registered,
+	Activated,
+	Cleared,
+	Failed
 };

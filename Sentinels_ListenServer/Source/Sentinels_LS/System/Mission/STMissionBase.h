@@ -7,16 +7,22 @@
 #include "System/NetworkObject.h"
 #include "Tickable.h"
 #include "GameplayTagContainer.h"
+#include "STEnums.h"
 #include "STMissionBase.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMissionEnded, FGameplayTag, MissionTag, bool, IsSuccessed);
-
 class USTMissionConditionBase;
+class USTMissionBase;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMissionEnded, FGameplayTag, MissionTag, bool, IsSuccessed);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMissionStateChanged, USTMissionBase*, Mission, EMissionProgressState, NewState);
 
 UCLASS()
 class SENTINELS_LS_API USTMissionBase : public UNetworkObject, public FTickableGameObject
 {
 	GENERATED_BODY()
+
+public:
+	USTMissionBase();
 
 protected:
 	virtual void BeginDestroy() override;
@@ -24,23 +30,35 @@ protected:
 
 public:
 	// Spawn Mission Object
-	virtual void RegisterMission();
+	UFUNCTION(BlueprintCallable)
+	void RegisterMission();
 
 	// Show Widget & Set Mission
-	virtual void ActivateMission();
+	UFUNCTION(BlueprintCallable)
+	void ActivateMission();
 
 	// Hide Widget & Clear Mission
-	virtual void DeactivateMission(bool IsCleared);
+	UFUNCTION(BlueprintCallable)
+	void DeactivateMission(bool IsCleared);
 
 	// Check Mission is clearable
-	virtual void CheckMissionClearable();
+	UFUNCTION(BlueprintCallable)
+	void CheckMissionClearable();
 
 	// Define Mission Clear
-	virtual bool IsMissionCleared();
+	UFUNCTION(BlueprintCallable)
+	bool IsMissionCleared();
 
 protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void MissionEnded_Multicast(bool IsCleared);
+
+public:
+	EMissionProgressState GetProgressState() const { return ProgressState; }
+
+protected:
+	UFUNCTION()
+	void OnRep_ProgressState();
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -48,6 +66,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FGameplayTag MissionTag;
+
+	UPROPERTY(ReplicatedUsing = OnRep_ProgressState, VisibleAnywhere, BlueprintReadOnly)
+	EMissionProgressState ProgressState;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<TSubclassOf<USTMissionConditionBase>> SubclassOfMissionConditions;
@@ -60,19 +81,11 @@ protected:
 		On Mission Ended Delegate
 	*/
 public:
-	FORCEINLINE bool IsActivated() { return bIsMisionActivated; }
-
 	UPROPERTY(BlueprintAssignable)
 	FOnMissionEnded Delegate_MissionEnded;
-
-
-protected:
-	UFUNCTION()
-	virtual void OnRep_bIsMisionActivated();
-
-	UPROPERTY(ReplicatedUsing = OnRep_bIsMisionActivated, EditAnywhere, BlueprintReadWrite)
-	bool bIsMisionActivated = false;
-
+	
+	UPROPERTY(BlueprintAssignable)
+	FOnMissionStateChanged Delegate_MissionStateChanged;
 
 
 /*

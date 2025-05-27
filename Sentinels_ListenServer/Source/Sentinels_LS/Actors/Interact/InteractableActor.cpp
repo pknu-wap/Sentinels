@@ -13,6 +13,8 @@ AInteractableActor::AInteractableActor()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
+	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
 	Mesh->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 }
@@ -48,7 +50,7 @@ void AInteractableActor::ShowInteractiveUI_Implementation(UInteractComponent* In
 		InteractWidget_ForDebug->RemoveFromParent();
 	}
 
-	if (InteractWidgetClass_ForDebug)
+	/*if (InteractWidgetClass_ForDebug)
 	{
 		APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
 		if (PC)
@@ -59,7 +61,7 @@ void AInteractableActor::ShowInteractiveUI_Implementation(UInteractComponent* In
 				InteractWidget_ForDebug->AddToViewport();
 			}
 		}
-	}
+	}*/
 }
 
 void AInteractableActor::HideInteractiveUI_Implementation(UInteractComponent* InteractingComponent)

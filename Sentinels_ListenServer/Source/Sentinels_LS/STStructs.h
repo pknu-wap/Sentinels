@@ -4,7 +4,32 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
+#include "GameplayTagContainer.h"
 #include "STStructs.generated.h"
+
+USTRUCT(BlueprintType)
+struct SENTINELS_LS_API FDropInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	float DropProbability = 0.1f;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AInteractableItem> DropItemClass;
+};
+
+USTRUCT(BlueprintType)
+struct FRegisterMissionInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGameplayTag MissionTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<class USTMissionBase> MissionSubClass;
+};
 
 USTRUCT(BlueprintType)
 struct SENTINELS_LS_API FSkillStruct : public FTableRowBase
@@ -35,14 +60,22 @@ struct SENTINELS_LS_API FSkillStruct : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float SkillCoolTime = 5.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString SkillName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString SkillDescription;
 };
 
 USTRUCT(BlueprintType)
 struct SENTINELS_LS_API FInvSlotStruct : public FTableRowBase
 {
 	GENERATED_BODY()
+
 	FInvSlotStruct() {};
-	FInvSlotStruct(int InItemID, int InQuantity) : ItemID(InItemID), Quantity(InQuantity)
+	FInvSlotStruct(int InItemID, int InQuantity, class UItemObject* InItemObject)
+		: ItemID(InItemID), Quantity(InQuantity), ItemObject(InItemObject)
 	{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -50,6 +83,9 @@ struct SENTINELS_LS_API FInvSlotStruct : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int Quantity = 0;
+
+	UPROPERTY()
+	class UItemObject* ItemObject;
 };
 
 USTRUCT(BlueprintType)
@@ -63,26 +99,8 @@ struct SENTINELS_LS_API FItemStruct : public FTableRowBase
 	int ItemID = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float MaxHP = 0;
+	TSubclassOf<class UItemObject> ItemClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int DEF = 0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float MovementSpeedIncreaseRate = 0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float AttackSpeedIncreaseRate = 0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float DamageIncreaseRate = 0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float CDR = 0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float CriticalDamagePercent = 0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float CriticalRate = 0;
+	UTexture2D* Icon;
 };

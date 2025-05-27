@@ -71,6 +71,13 @@ protected:
 	UFUNCTION(Server, Reliable)
 	void Fire_Pressed_Server();
 
+protected:
+	UPROPERTY(Replicated, VisibleAnywhere)
+	int RemainedBullet;
+
+	UPROPERTY(EditAnywhere)
+	int MaxBullet;
+
 
 /*
 	Convert Fire Mode

@@ -34,16 +34,6 @@ ASTEnemyBase_AIController::ASTEnemyBase_AIController(const FObjectInitializer& o
 void ASTEnemyBase_AIController::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// SetAIPerception();
-
-	if (IsValid(BehaviorTree) && IsValid(BTComponent) && IsValid(Blackboard))
-	{
-		RunBehaviorTree(BehaviorTree);
-		BTComponent->StartTree(*BehaviorTree);
-		Blackboard->SetValueAsFloat(BBKey_TargetDistance, 10000);
-		Blackboard->SetValueAsFloat(BBKey_Time_Stunned, 1.f);
-	}
 }
 
 void ASTEnemyBase_AIController::OnPossess(APawn* InPawn)
@@ -57,6 +47,23 @@ void ASTEnemyBase_AIController::OnPossess(APawn* InPawn)
 	}
 	else
 		UE_LOG(LogTemp, Warning, TEXT("ASTEnemyBase_AIController : Blackboard is not valid."));
+}
+
+void ASTEnemyBase_AIController::StartAILogic()
+{
+	if (IsValid(BehaviorTree) && IsValid(BTComponent) && IsValid(Blackboard))
+	{
+		RunBehaviorTree(BehaviorTree);
+		BTComponent->StartTree(*BehaviorTree);
+		Blackboard->SetValueAsFloat(BBKey_TargetDistance, 10000);
+		Blackboard->SetValueAsFloat(BBKey_Time_Stunned, 1.f);
+
+		APawn* pawn = GetPawn();
+		if (pawn)
+		{
+			Blackboard->SetValueAsVector(FName("StartLocation"), pawn->GetActorLocation());
+		}
+	}
 }
 
 void ASTEnemyBase_AIController::OnTargetDetected(AActor* actor, const FAIStimulus Stimulus)

@@ -10,7 +10,7 @@ void USTKillCountCondition::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 	DOREPLIFETIME(USTKillCountCondition, KillInfos);
 }
 
-bool USTKillCountCondition::IsSatisfied()
+bool USTKillCountCondition::IsSatisfied_Implementation()
 {
 	for (int i = 0; i < KillInfos.Num(); i++)
 	{
@@ -21,11 +21,11 @@ bool USTKillCountCondition::IsSatisfied()
 	return true;
 }
 
-void USTKillCountCondition::MissionActivated()
+void USTKillCountCondition::MissionActivated_Implementation()
 {
 }
 
-void USTKillCountCondition::MissionDeactivated(bool IsCleared)
+void USTKillCountCondition::MissionDeactivated_Implementation(bool IsCleared)
 {
 }
 

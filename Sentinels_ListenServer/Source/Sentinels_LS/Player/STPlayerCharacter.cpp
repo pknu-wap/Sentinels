@@ -20,8 +20,10 @@
 #include "Components/STPlayerStatusComponent.h"
 #include "Components/CameraModeManagerComponent.h"
 #include "Components/InteractComponent.h"
+#include "Components/STEnemyStatusComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "STGameplayTags.h"
+#include "Player/Inventory/ItemObject.h"
 
 ASTPlayerCharacter::ASTPlayerCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<USTCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
@@ -81,6 +83,11 @@ void ASTPlayerCharacter::BeginPlay()
 		{
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
+
+		if (USkillComponent* SkillComp = PlayerController->GetComponentByClass<USkillComponent>())
+		{
+			SkillComp->InitSkillInfos(DataTable_Skill);
+		}
 	}
 
 	BindAttackDelegate();
@@ -95,6 +102,7 @@ void ASTPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(Skill_W_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_W_Pressed);
 		EnhancedInputComponent->BindAction(Skill_E_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_E_Pressed);
 		EnhancedInputComponent->BindAction(Skill_R_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_R_Pressed);
+		EnhancedInputComponent->BindAction(Skill_Passive_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_Passive_Pressed);
 		EnhancedInputComponent->BindAction(NormalAttack_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::NormalAttack_Pressed);
 		EnhancedInputComponent->BindAction(Step_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Step_Pressed);
 
@@ -224,15 +232,16 @@ void ASTPlayerCharacter::Jump()
 
 void ASTPlayerCharacter::OnMontageEnded_Callback(UAnimMontage* Montage, bool bInterrupted)
 {
-	RemoveTag(FSTGameplayTags::Get().Character_State_Skill);
-	RemoveTag(FSTGameplayTags::Get().Character_State_Step);
-
-	if (bInterrupted && Montage == Montage_NormalAttack)
-		return;
-	else
+	if (!bInterrupted)
 	{
+		RemoveTag(FSTGameplayTags::Get().Character_State_Skill);
+		RemoveTag(FSTGameplayTags::Get().Character_State_Step);
 		RemoveTag(FSTGameplayTags::Get().Character_State_Attack);
 		ResetAttackInfo();
+	}
+	else if(bInterrupted && IsSkillMontage(GetCurrentMontage()))
+	{
+		AddTag(FSTGameplayTags::Get().Character_State_Skill);
 	}
 }
 
@@ -423,6 +432,15 @@ bool ASTPlayerCharacter::CanDoSkill() const
 	return true;
 }
 
+bool ASTPlayerCharacter::IsSkillMontage(const UAnimMontage* inMontage) const
+{
+	return inMontage == Montage_Skill_Q 
+			|| inMontage == Montage_Skill_W 
+			|| inMontage == Montage_Skill_E 
+			|| inMontage == Montage_Skill_R
+			|| inMontage == Montage_Skill_Passive;
+}
+
 void ASTPlayerCharacter::Skill_Q_Pressed()
 {
 	if (!CanDoSkill()) return;
@@ -571,4 +589,78 @@ void ASTPlayerCharacter::Skill_R_Pressed_Multicast_Implementation()
 	}
 }
 
+void ASTPlayerCharacter::Skill_Passive_Pressed()
+{
+}
+
+void ASTPlayerCharacter::PlayMontage_Skill_Passive()
+{
+	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+	if (AnimInst)
+	{
+		AnimInst->Montage_Play(Montage_Skill_Passive);
+	}
+}
+
+void ASTPlayerCharacter::Skill_Passive_Pressed_Server_Implementation()
+{
+}
+
+void ASTPlayerCharacter::Skill_Passive_Pressed_Multicast_Implementation()
+{
+	if (!IsLocallyControlled())
+	{
+		PlayMontage_Skill_Passive();
+	}
+}
+
 #pragma endregion
+
+void ASTPlayerCharacter::AdjustFinalDamage(float& DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor)
+{
+	if (!HasAuthority()) return;
+
+	// Item (Combo Amplifier)
+	const FInvSlotStruct& ItemInfo_CA = InventoryComponent->GetItem(8);
+	if (ItemInfo_CA.ItemID != 0 && ItemInfo_CA.Quantity > 0)
+	{
+		if (ItemInfo_CA.ItemObject)
+		{
+			DamageAmount = ItemInfo_CA.ItemObject->AdjustFinalDamage(DamageAmount, DamageEvent, DamagedActor);
+		}
+	}
+}
+
+
+void ASTPlayerCharacter::OnAttackSuccess_Server_Implementation(float DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor)
+{
+	OnAttackSuccess_Client();
+
+	USTEnemyStatusComponent* EnemyStatusComp = DamagedActor->GetComponentByClass<USTEnemyStatusComponent>();
+	if (!EnemyStatusComp) return;
+
+	// Item (Severance Matrix)
+	const FInvSlotStruct& ItemInfo_SM = InventoryComponent->GetItem(7);
+	if (ItemInfo_SM.ItemID != 0 && ItemInfo_SM.Quantity > 0)
+	{
+		if ((DamageAmount / EnemyStatusComp->GetMaxHP()) > 0.5f)
+		{
+			DamagedActor->TakeDamage(5.f * ItemInfo_SM.Quantity, DamageEvent, GetController(), this);
+		}
+	}
+
+	// Item (Combo Amplifier)
+	const FInvSlotStruct& ItemInfo_CA = InventoryComponent->GetItem(8);
+	if (ItemInfo_CA.ItemID != 0 && ItemInfo_CA.Quantity > 0)
+	{
+		if(ItemInfo_CA.ItemObject)
+		{
+			ItemInfo_CA.ItemObject->OnAttackSuccess(DamageAmount, DamageEvent, DamagedActor);
+		}
+	}
+
+}
+
+void ASTPlayerCharacter::OnAttackSuccess_Client_Implementation()
+{
+}

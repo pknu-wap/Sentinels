@@ -11,6 +11,8 @@
  * 
  */
 
+class UWidget;
+
 UCLASS()
 class SENTINELS_LS_API USTPlayerUIComponent : public USTUIComponent_Base
 {
@@ -37,15 +39,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FString GetPlayerIDString(const FUniqueNetIdRepl& ID) { return *ID.ToString(); }
 
+	/*
+		Blueprint Function
+	*/
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	static UWidget* GetWidgetByName(UUserWidget* WidgetInstance, const FString& Name);
+
 public:
 	UFUNCTION(BlueprintCallable)
 	const bool GetbIsReady() const { return bIsReady; }
-
-	UFUNCTION(BlueprintCallable)
-	const FGameplayTag GetCurrentLevelTag();
-
-	UFUNCTION(BlueprintCallable)
-	void SetCurrentLevelTag(FGameplayTag LevelTag);
 
 	UFUNCTION(BlueprintCallable)
 	const TArray<FUniqueNetIdRepl>& GetPlayerID() const { return PlayerID; }
@@ -54,29 +56,28 @@ public:
 	/*
 		RPC
 	*/
-	UFUNCTION(Client, Reliable, BlueprintCallable)
-	void ClientRPCRegisterWidget(FGameplayTag WidgetTag, TSubclassOf<UUserWidget> WidgetClass);
-
-	UFUNCTION(Client, Reliable, BlueprintCallable)
-	void ClientRPCUnRegisterWidget(FGameplayTag WidgetTag);
-
-	UFUNCTION(Client, UnReliable, BlueprintCallable)
-	void ClientRPCAddToViewport(FGameplayTag WidgetTag);
-
-	UFUNCTION(Client, UnReliable, BlueprintCallable)
-	void ClientRPCRemoveFromParent(FGameplayTag WidgetTag);
-
-	UFUNCTION(Client, UnReliable, BlueprintCallable)
-	void ClientRPCUpdateUI(FGameplayTag WidgetTag);
-
-	UFUNCTION(Server, Reliable, BlueprintCallable)
-	void ServerRPCUpdateUI(FGameplayTag WidgetTag);
-
 	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void ServerRPCRegisterPlayerID(const FUniqueNetIdRepl& ID);
 
 	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void ServerRPCRegisterWidget(FGameplayTag WidgetTag, TSubclassOf<UUserWidget> WidgetClass);
+
+	UFUNCTION(Client, Reliable, BlueprintCallable)
+	void ClientRPCRegisterWidget(FGameplayTag WidgetTag, TSubclassOf<UUserWidget> WidgetClass);
+
+	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void ServerRPCUnRegisterPlayerID(const FUniqueNetIdRepl& ID);
+
+	UFUNCTION(Client, Reliable, BlueprintCallable)
+	void ClientRPCUnRegisterWidget(FGameplayTag WidgetTag);
+
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void ServerRPCUpdateUI(FGameplayTag WidgetTag);
+
+	UFUNCTION(Client, UnReliable, BlueprintCallable)
+	void ClientRPCUpdateUI(FGameplayTag WidgetTag);
+
+	//
 
 	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void ServerRPCSetbIsReady(bool Value);
@@ -84,21 +85,53 @@ public:
 	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void ServerRPCCheckbIsReady(FGameplayTag WidgetTag);
 
+	//
+
+	UFUNCTION(Client, UnReliable, BlueprintCallable)
+	void ClientRPCAddToViewport(FGameplayTag WidgetTag);
+
+	UFUNCTION(Client, UnReliable, BlueprintCallable)
+	void ClientRPCRemoveFromParent(FGameplayTag WidgetTag);
+
 public:
 	/*
 		Local
 	*/
 	UFUNCTION(BlueprintCallable)
-	void UpdateLoadoutUI();
+	void UpdateUI(FGameplayTag WidgetTag);
 
 	UFUNCTION(BlueprintCallable)
-	void UpdateCurrentGameLevelUI();
+	void UpdatePlayerAvatarLayer();
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateCurrentGameLevelLayer();
 
 	UFUNCTION(BlueprintCallable)
 	void UpdateCharacterSelectUI();
 
+	UFUNCTION(BlueprintCallable)
+	void UpdateMapUI();
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateQuestUI();
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateInventoryUI();
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateTeamInfoUI();
+
+	UFUNCTION(BlueprintCallable)
+	void RegisterWidget(FGameplayTag WidgetTag, TSubclassOf<UUserWidget> WidgetClass);
+
+	UFUNCTION(BlueprintCallable)
+	void UnRegisterWidget(FGameplayTag WidgetTag);
+
+	UFUNCTION(BlueprintCallable)
+	void AddToViewport(FGameplayTag WidgetTag);
+
 	/*
-		Server
+		Only Server
 	*/
 	UFUNCTION(BlueprintCallable)
 	void AddPlayerID(const FUniqueNetIdRepl& ID);

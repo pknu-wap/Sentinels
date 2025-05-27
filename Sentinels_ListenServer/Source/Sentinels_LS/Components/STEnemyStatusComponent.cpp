@@ -2,6 +2,8 @@
 
 
 #include "Components/STEnemyStatusComponent.h"
+#include "System/STGameState.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values for this component's properties
 USTEnemyStatusComponent::USTEnemyStatusComponent()
@@ -10,7 +12,8 @@ USTEnemyStatusComponent::USTEnemyStatusComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
 
-	// ...
+	StatusCurve_Mission = LoadObject<UCurveFloat>(this, TEXT("/Script/Engine.CurveFloat'/Game/Sentinels/Enemy/Curve/Curve_AI_Status_Mission.Curve_AI_Status_Mission'"));
+	StatusCurve_Time = LoadObject<UCurveFloat>(this, TEXT("/Script/Engine.CurveFloat'/Game/Sentinels/Enemy/Curve/Curve_AI_Status_Time.Curve_AI_Status_Time'"));
 }
 
 
@@ -19,7 +22,43 @@ void USTEnemyStatusComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	CurrentHP = MaxHP;
+	StatusCurve_Current = StatusCurve_Mission;
+
+	InitStatus();
+}
+
+void USTEnemyStatusComponent::InitStatus()
+{
+	if (GetOwner() && GetOwner()->HasAuthority())
+	{
+		float weight = GetStatusCurveValue();
+
+		CurrentHP = MaxHP * weight;
+		CurrentATK = BaseATK * weight;
+
+		bIsDied = false;
+	}
+}
+
+float USTEnemyStatusComponent::GetStatusCurveValue() const
+{
+	if (!StatusCurve_Current) return 1.f;
+
+	ASTGameState* GameState = Cast<ASTGameState>(UGameplayStatics::GetGameState(this));
+	if (StatusCurve_Current == StatusCurve_Mission)
+	{
+		return StatusCurve_Current->GetFloatValue(GameState->GetClearedMissionNum());
+	}
+	else if(StatusCurve_Current == StatusCurve_Time)
+	{
+		float minTime, maxTime;
+		StatusCurve_Current->GetTimeRange(minTime, maxTime);
+
+		float TimeSeconds = UGameplayStatics::GetTimeSeconds(this);
+		return StatusCurve_Current->GetFloatValue(FMath::Clamp(TimeSeconds, 0.f, maxTime));
+	}
+
+	return 1.f;
 }
 
 float USTEnemyStatusComponent::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -31,4 +70,3 @@ float USTEnemyStatusComponent::TakeDamage(float Damage, FDamageEvent const& Dama
 
 	return CurrentHP;
 }
-

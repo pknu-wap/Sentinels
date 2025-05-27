@@ -21,6 +21,8 @@
 #include "EngineUtils.h"
 #include "Net/UnrealNetwork.h"
 #include "Components/UI/STPlayerUIComponent.h"
+#include "SubSystem/STGameTravelDataSubsystem.h"
+#include "Player/STLocalPlayer.h"
 
 
 ASTPlayerController::ASTPlayerController()
@@ -36,6 +38,26 @@ ASTPlayerController::ASTPlayerController()
 
 	UIComponent = CreateDefaultSubobject<USTPlayerUIComponent>(TEXT("UIComponent"));
 	UIComponent->SetIsReplicated(true);
+}
+
+void ASTPlayerController::OnPossess(APawn* aPawn)
+{
+	Super::OnPossess(aPawn);
+
+	if(InteractComponent)
+		InteractComponent->BindDelegates();
+}
+
+void ASTPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	/*USTLocalPlayer* LocalPlayer = Cast<USTLocalPlayer>(GetLocalPlayer());
+	if (LocalPlayer && !(LocalPlayer->bIsRegistered))
+	{
+		RegisterSelfToSession(LocalPlayer->GetSessionName());
+		LocalPlayer->bIsRegistered = true;
+	}*/
 }
 
 void ASTPlayerController::Tick(float DeltaTime)
@@ -108,9 +130,18 @@ void ASTPlayerController::UpdatePlayerClass_Implementation(ESTClassType InClass)
 
 	AController* PC = this;
 	GetWorldTimerManager().SetTimerForNextTick([GameMode, PC]() { GameMode->RestartPlayer(PC); });
+}
 
-	//GetWorld()->GetGameInstance()->
-	// GameMode->RestartPlayer(this);
+void ASTPlayerController::ServerRPCImportPlayerClass_Implementation()
+{
+	//USTGameInstance* gameInstance = Cast<USTGameInstance>(GetWorld()->GetGameInstance());
+
+	ESTClassType inClass = ESTClassType::GreatSword;
+
+	//if (gameInstance->PlayerInfos.Contains(PlayerState->GetUniqueId()))
+	//	inClass = gameInstance->PlayerInfos.Find(PlayerState->GetUniqueId())->PlayerClass;
+
+	UpdatePlayerClass(inClass);
 }
 
 void ASTPlayerController::MoveClick_Started()
@@ -197,49 +228,77 @@ void ASTPlayerController::Interact_Released()
 		InteractComponent->Interact_Finish_Server();
 }
 
-void ASTPlayerController::RegisterSelfToSession(FName SessionName)
+void ASTPlayerController::RegisterSelfToSession_Client_Implementation()
 {
+	USTLocalPlayer* localPlayer = Cast<USTLocalPlayer>(GetLocalPlayer());
+
+	if (!localPlayer || localPlayer->GetSessionName() == FName()) return;
+
 	const IOnlineSessionPtr sessionInterface = Online::GetSessionInterface(GetWorld());
 	if (sessionInterface)
 	{
-		ULocalPlayer* localPlayer = GetLocalPlayer();
+		
 		if (localPlayer)
 		{
-			if (!sessionInterface->RegisterPlayer(SessionName, *localPlayer->GetPreferredUniqueNetId(), false))
+			if (!sessionInterface->RegisterPlayer(localPlayer->GetSessionName(), *localPlayer->GetPreferredUniqueNetId(), false))
 			{
-				UE_LOG(LogTemp, Warning, TEXT("ASTPlayerController Failed To Register Player To Session."));
+				UE_LOG(LogTemp, Warning, TEXT("Client : ASTPlayerController Failed To Register Player To Session."));
 			}
-		}
-		else if (PlayerState)
-		{
-			if (!sessionInterface->RegisterPlayer(SessionName, *PlayerState->GetUniqueId(), false))
+			else
 			{
-				UE_LOG(LogTemp, Warning, TEXT("ASTPlayerController Failed To Register Player To Session."));
+				UE_LOG(LogTemp, Warning, TEXT("Client : ASTPlayerController Success To Register Player To Session."));
 			}
 		}
 	}
 
-	RegisterSelfToSession_Server(SessionName);
+	RegisterSelfToSession_Server(localPlayer->GetSessionName());
+}
+
+void ASTPlayerController::ServerRPCRegisterPlayerInfo_Implementation(FPlayerInfo PlayerInfo)
+{
+	//USTGameInstance* gameInstance = Cast<USTGameInstance>(GetWorld()->GetGameInstance());
+
+	FUniqueNetIdRepl playerID = PlayerState->GetUniqueId();
+
+	//if (gameInstance->PlayerInfos.Find(playerID) != nullptr || !playerID.IsValid())
+	//{
+	//	gameInstance->PlayerInfos.Find(playerID)->PlayerClass = PlayerInfo.PlayerClass;
+	//}
+	//else
+	//{
+	//	ESTClassType playerClass = ESTClassType::GreatSword;
+	//	gameInstance->PlayerInfos.Add(playerID, {playerClass});
+	//}
 }
 
 void ASTPlayerController::RegisterSelfToSession_Server_Implementation(FName SessionName)
 {
+	UWorld* world = GetWorld();
+	if (!world || SessionName == FName()) return;
+
 	const IOnlineSessionPtr sessionInterface = Online::GetSessionInterface(GetWorld());
 	if (sessionInterface)
 	{
-		ULocalPlayer* localPlayer = GetLocalPlayer();
-		if (localPlayer)
+		if (USTLocalPlayer* localPlayer = Cast<USTLocalPlayer>(GetLocalPlayer()))
 		{
 			if (!sessionInterface->RegisterPlayer(SessionName, *localPlayer->GetPreferredUniqueNetId(), false))
 			{
-				UE_LOG(LogTemp, Warning, TEXT("ASTPlayerController Failed To Register Player To Session."));
+				UE_LOG(LogTemp, Warning, TEXT("Client : ASTPlayerController Failed To Register Player To Session."));
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Client : ASTPlayerController Success To Register Player To Session."));
 			}
 		}
-		else if (PlayerState)
+		else if(PlayerState)
 		{
 			if (!sessionInterface->RegisterPlayer(SessionName, *PlayerState->GetUniqueId(), false))
 			{
-				UE_LOG(LogTemp, Warning, TEXT("ASTPlayerController Failed To Register Player To Session."));
+				UE_LOG(LogTemp, Warning, TEXT("Client : ASTPlayerController Failed To Register Player To Session."));
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Client : ASTPlayerController Success To Register Player To Session."));
 			}
 		}
 	}

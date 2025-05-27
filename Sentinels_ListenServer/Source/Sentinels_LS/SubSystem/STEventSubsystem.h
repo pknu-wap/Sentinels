@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Subsystems/GameInstanceSubsystem.h"
+#include "Subsystems/WorldSubsystem.h"
 #include "GameplayTagContainer.h"
 #include "STEventSubsystem.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEventOccur, FGameplayTag, Tag);
 
 UCLASS()
-class SENTINELS_LS_API USTEventSubsystem : public UGameInstanceSubsystem
+class SENTINELS_LS_API USTEventSubsystem : public UWorldSubsystem
 {
 	GENERATED_BODY()
 
@@ -22,5 +22,7 @@ protected:
 
 public:
 	UPROPERTY(BlueprintCallable, BlueprintAssignable)
-	FOnEventOccur Delegate_ExplosionEvent;
+	FOnEventOccur Delegate_EventOccur;
+
+
 };

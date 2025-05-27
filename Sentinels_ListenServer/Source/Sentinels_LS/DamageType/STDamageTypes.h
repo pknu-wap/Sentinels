@@ -37,3 +37,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float StunnedTime = 1.f;
 };
+
+UCLASS()
+class SENTINELS_LS_API USTKatanaDamageType : public USTBaseDamageType
+{
+	GENERATED_BODY()
+
+public:
+};

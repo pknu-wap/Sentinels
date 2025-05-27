@@ -40,13 +40,22 @@ protected:
 	class UAISenseConfig_Sight* SightConfig;
 	class UAISenseConfig_Hearing* HearingConfig;
 
+/*
+	AI Logic
+*/
+public:
+	void StartAILogic();
+
 public:
 	UFUNCTION()
 	virtual void OnTargetDetected(AActor* actor, const FAIStimulus Stimulus);
 
 	// Target
 	AActor* GetCurrentTarget() const;
+
+	UFUNCTION(BlueprintCallable)
 	void SetTarget(AActor* InTarget);
+
 	void RestoreTarget();
 
 	// Stunned

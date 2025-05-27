@@ -15,7 +15,7 @@ void USTCollectItemCondition::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 	DOREPLIFETIME(USTCollectItemCondition, CollectedItemInfos);
 }
 
-bool USTCollectItemCondition::IsSatisfied()
+bool USTCollectItemCondition::IsSatisfied_Implementation()
 {
 	for (int i = 0; i < CollectedItemInfos.Num(); i++)
 	{
@@ -28,7 +28,7 @@ bool USTCollectItemCondition::IsSatisfied()
 	return true;
 }
 
-void USTCollectItemCondition::MissionActivated()
+void USTCollectItemCondition::MissionActivated_Implementation()
 {
 	/*
 		Set Mission
@@ -41,7 +41,7 @@ void USTCollectItemCondition::MissionActivated()
 	FVector SpawnLocation; FRotator SpawnRotation;
 
 	TArray<ASpawnPointBase*> SpawnPoints;
-	GetAllSpawnPointsWithTag(FSTGameplayTags::Get().SpawnPoint_Spawner, SpawnPoints);
+	GetAllSpawnPointsWithTag(FSTGameplayTags::Get().Mission_Collect_QuestItems, SpawnPoints);
 
 	if (SpawnPoints.IsEmpty())
 	{
@@ -77,7 +77,7 @@ void USTCollectItemCondition::MissionActivated()
 	}
 }
 
-void USTCollectItemCondition::MissionDeactivated(bool IsCleared)
+void USTCollectItemCondition::MissionDeactivated_Implementation(bool IsCleared)
 {
 }
 

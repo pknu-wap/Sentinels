@@ -21,18 +21,40 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	void InitStatus();
+
+public:
 	float TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
 
 public:
 	FORCEINLINE bool IsDied() { return bIsDied; }
 
+public:
+	FORCEINLINE float GetMaxHP() const { return MaxHP; }
+	FORCEINLINE float GetCurrentHP() const { return CurrentHP; }
+	float GetStatusCurveValue() const;
 
 protected:
+	UPROPERTY()
+	UCurveFloat* StatusCurve_Current;
+
+	UPROPERTY(EditAnywhere)
+	UCurveFloat* StatusCurve_Time;
+
+	UPROPERTY(EditAnywhere)
+	UCurveFloat* StatusCurve_Mission;
+
 	UPROPERTY(EditAnywhere)
 	float MaxHP = 500.f;
 
 	UPROPERTY(EditAnywhere)
 	float CurrentHP;
+
+	UPROPERTY(EditAnywhere)
+	float BaseATK = 10.f;
+
+	UPROPERTY(VisibleAnywhere)
+	float CurrentATK;
 
 	UPROPERTY()
 	bool bIsDied = false;

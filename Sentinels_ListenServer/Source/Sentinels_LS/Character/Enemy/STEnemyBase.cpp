@@ -20,6 +20,9 @@
 #include "STGameplayTags.h"
 #include "Character/STCharacterAnimInstanceBase.h"
 #include "Actors/Projectile/ProjectileBase.h"
+#include "Actors/Interact/Item/InteractableItem.h"
+#include "SubSystem/STProjectilePoolingSubSystem.h"
+#include "Particles/ParticleSystemComponent.h"
 
 ASTEnemyBase::ASTEnemyBase(const FObjectInitializer& object_initializer)
 	: Super(object_initializer.SetDefaultSubobjectClass<USkeletalMeshComponentBudgeted>(ACharacter::MeshComponentName))
@@ -59,22 +62,19 @@ void ASTEnemyBase::BeginPlay()
 
 	if (HasAuthority())
 	{
-		AAIController* AIController = Cast<AAIController>(GetController());
-		if (AIController)
-		{
-			UBlackboardComponent* BBComp = AIController->GetBlackboardComponent();
-			if (BBComp)
-			{
-				BBComp->SetValueAsVector(FName("StartLocation"), GetActorLocation());
-			}
-		}
-	}
-
-	if (HasAuthority())
-	{
 		if (USTCharacterAnimInstanceBase* AnimInst = Cast<USTCharacterAnimInstanceBase>(GetMesh()->GetAnimInstance()))
 		{
 			AnimInst->Delegate_PrimaryFire.AddUObject(this, &ASTEnemyBase::PrimaryFire);
+			AnimInst->Delegate_DissolveStart.AddUObject(this, &ASTEnemyBase::DissolveStart);
+		}
+
+		if(bIsActivated)
+			Activate(GetActorLocation(), GetActorRotation());
+
+		if (ProjectileClass_PrimaryFire)
+		{
+			USTProjectilePoolingSubSystem* ProjectileSubSystem = GetWorld()->GetSubsystem<USTProjectilePoolingSubSystem>();
+			ProjectileSubSystem->InitProjectilePool(this, ProjectileClass_PrimaryFire, 100);
 		}
 	}
 }
@@ -95,9 +95,9 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 
 	if (HasAuthority())
 	{
-		ASTEnemyBase_AIController* controller = Cast<ASTEnemyBase_AIController>(GetController());
-		USTBaseDamageType* STDamageType = Cast<USTBaseDamageType>(DamageEvent.DamageTypeClass.GetDefaultObject());
-
+		/*
+			Critical
+		*/
 		if (DamageEvent.GetTypeID() == FSTPointDamageEvent::ClassID)
 		{
 			const FSTPointDamageEvent& PointDamageEvent = static_cast<const FSTPointDamageEvent&>(DamageEvent);
@@ -108,7 +108,14 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 		{
 			UE_LOG(LogTemp, Warning, TEXT("ASTEnemyBase : Damage %f"), Damage);
 		}
+		
 
+		/*
+			Set Target & Apply DamageType
+		*/
+		ASTEnemyBase_AIController* controller = Cast<ASTEnemyBase_AIController>(GetController());
+		USTBaseDamageType* STDamageType = Cast<USTBaseDamageType>(DamageEvent.DamageTypeClass.GetDefaultObject());
+		USTKatanaDamageType* KatanaDamageType = Cast<USTKatanaDamageType>(DamageEvent.DamageTypeClass.GetDefaultObject());
 		if (controller)
 		{
 			/*
@@ -133,6 +140,12 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 						STDamageType->StunnedTime, false);
 				}
 			}
+
+			if (KatanaDamageType)
+			{
+				AddTag(FSTGameplayTags::Get().Character_State_Bleed);
+				UE_LOG(LogTemp, Display, TEXT("Katana Damage Type ! ! !"));
+			}
 		}
 
 		/*
@@ -141,6 +154,12 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 		if (StatusComponent && StatusComponent->TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser) <= 0)
 		{
 			// Play Died Montage
+			GetWorld()->GetTimerManager().SetTimer(Handle_Deactivate,
+				[this]()
+				{
+					this->Deactivate();
+				}, 5.f, false);
+
 			PlayDiedMontage_Multicast();
 			
 			// Stop Behavior Tree
@@ -152,6 +171,9 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 
 			// Delegate Broadcast
 			Delegate_OnEnemyDied.Broadcast(this);
+
+			// Drop Item
+			DropItem();
 
 			return ActualDamage;
 		}
@@ -167,11 +189,29 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 		{
 			StopCurrentAnimMontage_Multicast();
 			FVector LaunchDir = (GetActorLocation() - DamageCauser->GetActorLocation()).GetSafeNormal2D();
-			LaunchCharacter(LaunchDir * 750.f, false, false);
+			LaunchCharacter(LaunchDir * LaunchVelocity, false, false);
 		}
 	}
 
 	return 0.0f;
+}
+
+void ASTEnemyBase::Activate(const FVector ActivateLocation, const FRotator ActivateRotation)
+{
+	Super::Activate(ActivateLocation, ActivateRotation);
+	
+	StopAnimMontage();
+	StatusComponent->InitStatus();
+
+	if(!DissolveReverseStart())
+	{
+		DissolveReverseEnded();
+	}
+}
+
+void ASTEnemyBase::Deactivate()
+{
+	Super::Deactivate();
 }
 
 bool ASTEnemyBase::IsNormalAttackMontage(UAnimMontage* InMontage)
@@ -215,7 +255,8 @@ void ASTEnemyBase::ActivateNormalAttack_Server_Implementation()
 
 void ASTEnemyBase::ActivateNormalAttack_Multicast_Implementation(int MontageIdx)
 {
-	PlayNormalAttackMontage(MontageIdx);
+	if(!HasAuthority())
+		PlayNormalAttackMontage(MontageIdx);
 }
 
 void ASTEnemyBase::PlayNormalAttackMontage(int MontageIdx)
@@ -232,10 +273,18 @@ void ASTEnemyBase::PlayNormalAttackMontage(int MontageIdx)
 
 void ASTEnemyBase::PrimaryFire()
 {
+	USTProjectilePoolingSubSystem* ProjectileSubSystem = GetWorld()->GetSubsystem<USTProjectilePoolingSubSystem>();
+
 	FVector SpawnLocation = GetMesh()->GetSocketLocation(SocketName_PrimaryFire);
-	AProjectileBase* projectile = GetWorld()->SpawnActor<AProjectileBase>(ProjectileClass_PrimaryFire, SpawnLocation, GetActorForwardVector().Rotation());
+	AProjectileBase* projectile = ProjectileSubSystem->GetActor<AProjectileBase>(ProjectileClass_PrimaryFire, SpawnLocation);
+	// AProjectileBase* projectile = GetWorld()->SpawnActor<AProjectileBase>(ProjectileClass_PrimaryFire, SpawnLocation, GetActorForwardVector().Rotation());
 	if (projectile)
 	{
+		UParticleSystemComponent* Particle = projectile->GetComponentByClass<UParticleSystemComponent>();
+		if (Particle)
+		{
+			Particle->ActivateSystem(true);
+		}
 		projectile->FireInDirection(GetActorForwardVector());
 	}
 }
@@ -254,6 +303,27 @@ void ASTEnemyBase::PlayKnockbackMontage()
 	}
 }
 
+void ASTEnemyBase::DissolveEnded()
+{
+	if (HasAuthority())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(Handle_Deactivate);
+		Deactivate();
+	}
+}
+
+void ASTEnemyBase::DissolveReverseEnded()
+{
+	if (HasAuthority())
+	{
+		ASTEnemyBase_AIController* AIController = Cast<ASTEnemyBase_AIController>(GetController());
+		if (AIController)
+		{
+			AIController->StartAILogic();
+		}
+	}
+}
+
 void ASTEnemyBase::PlayDiedMontage_Multicast_Implementation()
 {
 	PlayDiedMontage();
@@ -265,6 +335,34 @@ void ASTEnemyBase::PlayDiedMontage()
 	if (AnimInst)
 	{
 		AnimInst->Montage_Play(Montage_Died);
+	}
+}
+
+void ASTEnemyBase::SetAdditionalDropInfos(const TArray<FDropInfo>& inDropInfos)
+{
+	DropInfos_Additional = inDropInfos;
+}
+
+void ASTEnemyBase::DropItem()
+{
+	if (HasAuthority())
+	{
+		float rand = UKismetMathLibrary::RandomFloatInRange(0, 1);
+
+		if(DropInfo_Base.DropProbability >= rand)
+		{
+			GetWorld()->SpawnActor<AActor>(DropInfo_Base.DropItemClass, GetActorLocation(), GetActorRotation());
+		}
+		
+		for (const auto& dropInfo : DropInfos_Additional)
+		{
+			rand = UKismetMathLibrary::RandomFloatInRange(0, 1);
+			if (dropInfo.DropProbability >= rand)
+			{
+				GetWorld()->SpawnActor<AActor>(dropInfo.DropItemClass, GetActorLocation(), GetActorRotation());
+			}
+		}
+		
 	}
 }
 

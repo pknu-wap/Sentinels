@@ -20,14 +20,27 @@ public:
 	FGameplayTag Character_State_Skill;
 	FGameplayTag Character_State_Step;
 	FGameplayTag Character_State_Stunned;
+	FGameplayTag Character_State_Bleed;
 	FGameplayTag Character_Player_State_RepairRift;
 	FGameplayTag Character_Player_State_RescueHostage;
 	FGameplayTag Character_Player_State_Lifting;
 
 	//////////  Widget   /////////
+	FGameplayTag Widget_OutGame_MainMenu;
+	FGameplayTag Widget_OutGame_System;
 	FGameplayTag Widget_Lobby_Loadout;
-	FGameplayTag Widget_Lobby_CharacterSelect;
+	FGameplayTag Widget_Lobby_WeaponSelect;
 	FGameplayTag Widget_Lobby_LevelSelect;
+	FGameplayTag Widget_Lobby_Customize;
+	FGameplayTag Widget_InGame;
+	FGameplayTag Widget_InGame_Map;
+	FGameplayTag Widget_InGame_Minimap;
+	FGameplayTag Widget_InGame_PlayerSkill;
+	FGameplayTag Widget_InGame_PlayerState;
+	FGameplayTag Widget_InGame_Quest;
+	FGameplayTag Widget_InGame_Inventory;
+	FGameplayTag Widget_InGame_TeamInfo;
+
 
 	//////////  Mission  /////////
 	FGameplayTag Mission_Domination;
@@ -42,6 +55,7 @@ public:
 
 	FGameplayTag SubMission_Explosion;
 
+
 	/////////  SpawnPoint  /////////
 	FGameplayTag SpawnPoint_DefenseCore;
 	FGameplayTag SpawnPoint_DominationPoint;
@@ -53,7 +67,13 @@ public:
 	/////////  Level  /////////
 	FGameplayTag Level_Lobby;
 	FGameplayTag Level_AbandonedFactory;
+	FGameplayTag Level_MilitaryAirport;
 	FGameplayTag Level_EX2;
+
+	/////////  Event  /////////
+	FGameplayTag Level_MilitaryAirport_Event_Interact_ControlTower;
+	FGameplayTag Level_MilitaryAirport_Event_Destroy_Vehicle;
+	FGameplayTag Level_MilitaryAirport_Event_Destroy_ControlTower;
 
 private:
 	static FSTGameplayTags GameplayTags;
