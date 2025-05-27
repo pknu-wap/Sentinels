@@ -15,6 +15,7 @@
 #include "Components/BoxComponent.h"
 #include "Player/STPlayerCharacter.h"
 #include "SubSystem/STAIPoolingWorldSubsystem.h"
+#include "SubSystem/STWorldSpawnSubsystem.h"
 
 // Sets default values
 AWorldBoxAISpawner::AWorldBoxAISpawner()
@@ -120,7 +121,8 @@ void AWorldBoxAISpawner::StopSpawnEnemy()
 void AWorldBoxAISpawner::SpawnEnemy(int InfoIdx)
 {
 	USTAIPoolingWorldSubsystem* PoolingSystem = GetWorld()->GetSubsystem<USTAIPoolingWorldSubsystem>();
-	if (!PoolingSystem || !SpawnInfos.IsValidIndex(InfoIdx) || Players.Num() == 0)
+	USTWorldSpawnSubsystem* SpawnSystem = GetWorld()->GetSubsystem<USTWorldSpawnSubsystem>();
+	if (!PoolingSystem || !SpawnSystem || !SpawnInfos.IsValidIndex(InfoIdx) || Players.Num() == 0)
 	{
 		return;
 	}
@@ -131,6 +133,9 @@ void AWorldBoxAISpawner::SpawnEnemy(int InfoIdx)
 	for (int i = 0; i < Info.SpawnRate; i++)
 	{
 		if (Info.CurrentSpawned >= Info.MaxSpawnCount)
+			break;
+
+		if (!SpawnSystem->CanSpawnCharacter()) 
 			break;
 
 		int playerIdx = UKismetMathLibrary::RandomIntegerInRange(0, Players.Num() - 1);
@@ -159,6 +164,7 @@ void AWorldBoxAISpawner::SpawnEnemy(int InfoIdx)
 
 			Info.CurrentSpawned++;
 			CurrentSpawned++;
+			SpawnSystem->NewCharacterSpawned(Enemy);
 		}
 		else
 		{
@@ -274,6 +280,12 @@ bool AWorldBoxAISpawner::GetSpawnNavLocationForPlayer(int playerIdx, int infoIdx
 
 void AWorldBoxAISpawner::OnEnemyDied(AActor* DiedEnemy)
 {
+	USTWorldSpawnSubsystem* SpawnSystem = GetWorld()->GetSubsystem<USTWorldSpawnSubsystem>();
+	if (SpawnSystem)
+	{
+		SpawnSystem->CharacterDeactivated(DiedEnemy);
+	}
+
 	UE_LOG(LogTemp, Display, TEXT("AWorldBoxAISpawner::OnEnemyDied"));
 	// Called when enemy died
 	if (DiedEnemy)

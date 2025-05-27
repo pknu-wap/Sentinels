@@ -90,14 +90,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RegisterMission(FGameplayTag InMissionTag, TSubclassOf<USTMissionBase> MissionSubClass, ASTMissionSection* MissionSection);
 
-	UFUNCTION(BlueprintCallable)
-	void UnRegisterMission(FGameplayTag InMissionTag, bool IsCleared);
-
 	UFUNCTION()
-	void OnMissionEnded(FGameplayTag InMissionTag, bool IsCleared);
+	void OnMissionEnded(USTMissionBase* InMission, bool IsCleared);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void OnMissionEnded_Multicast(FGameplayTag InMissionTag, bool IsCleared);
+	void OnMissionEnded_Multicast(USTMissionBase* InMission, bool IsCleared);
 
 public:
 	UFUNCTION(BlueprintCallable)
@@ -134,10 +131,10 @@ public:
 	void RegisterSubMission(FGameplayTag InMissionTag, TSubclassOf<USTMissionBase> SubMissionSubClass);
 
 	UFUNCTION()
-	void OnSubMissionEnded(FGameplayTag InMissionTag, bool IsCleared);
+	void OnSubMissionEnded(USTMissionBase* InMission, bool IsCleared);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void OnSubMissionEnded_Multicast(FGameplayTag InMissionTag, bool IsCleared);
+	void OnSubMissionEnded_Multicast(USTMissionBase* InMission, bool IsCleared);
 
 protected:
 	UFUNCTION()

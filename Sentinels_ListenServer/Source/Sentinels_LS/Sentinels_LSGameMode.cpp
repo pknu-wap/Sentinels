@@ -13,7 +13,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "System/STGameState.h"
 #include "SubSystem/STGameTravelDataSubsystem.h"
+#include "SubSystem/STWorldSpawnSubsystem.h"
 #include "Player/STLocalPlayer.h"
+#include "Kismet/GameplayStatics.h"
 
 ASentinels_LSGameMode::ASentinels_LSGameMode()
 	: Delegate_RegisterPlayerComplete(FOnRegisterPlayersCompleteDelegate::CreateUObject(this, &ASentinels_LSGameMode::OnRegisterPlayerComplete))
@@ -38,6 +40,17 @@ void ASentinels_LSGameMode::InitGame(const FString& MapName, const FString& Opti
 void ASentinels_LSGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
+
+	UWorld* world = GetWorld();
+	if (world)
+	{
+		USTWorldSpawnSubsystem* WorldSpawnSystem = world->GetSubsystem<USTWorldSpawnSubsystem>();
+		if (WorldSpawnSystem)
+		{
+			WorldSpawnSystem->PlayerNumUpdated(world->GetNumPlayerControllers());
+		}
+	}
+
 
     IOnlineSubsystem* OnlineSub = IOnlineSubsystem::Get();
     if (!OnlineSub) return;

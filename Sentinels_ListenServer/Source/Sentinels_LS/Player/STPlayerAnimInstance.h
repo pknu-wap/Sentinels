@@ -12,6 +12,7 @@ DECLARE_MULTICAST_DELEGATE(FCheckNextAttack);
 DECLARE_MULTICAST_DELEGATE(FSetWarpTarget_Q);
 DECLARE_MULTICAST_DELEGATE(FSpawnSlash_Q);
 DECLARE_MULTICAST_DELEGATE(FSetWarpTarget_Passive);
+DECLARE_MULTICAST_DELEGATE(FSetWarpTarget_Step);
 
 UCLASS()
 class SENTINELS_LS_API USTPlayerAnimInstance : public USTCharacterAnimInstanceBase
@@ -70,6 +71,10 @@ protected:
 	UFUNCTION()
 	void AnimNotify_ThrowLiftingActor();
 
+	UFUNCTION()
+	void AnimNotify_SetWarpTarget_Step();
+
 public:
 	FThrowLiftingActor Delegate_ThrowLiftingActor;
+	FSetWarpTarget_Step Delegate_SetWarpTarget_Step;
 };

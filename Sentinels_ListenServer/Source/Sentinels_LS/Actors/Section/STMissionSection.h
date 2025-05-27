@@ -42,7 +42,7 @@ public:
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TArray<APlayerStart*> PlayerStarts;
+	TArray<class APlayerStart*> PlayerStarts;
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 	TArray<FRegisterMissionInfo> MissionInfos;
