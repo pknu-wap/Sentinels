@@ -178,59 +178,27 @@ void ASTGameState::RegisterMission(FGameplayTag InMissionTag, TSubclassOf<USTMis
     }
 }
 
-void ASTGameState::UnRegisterMission(FGameplayTag InMissionTag, bool IsCleared)
-{
-    if (!HasAuthority())
-    {
-        ST_LOG(LogSTNetwork, Log, TEXT("UnRegisterMission should be called on server!"));
-        return;
-    }
-
-    for (int i = 0; i < Missions.Num(); i++)
-    {
-        if (Missions[i].MissionTag == InMissionTag)
-        {
-        }
-    }
-
-    for (int i = 0; i < ActivatedMissions.Num(); i++)
-    {
-        if (ActivatedMissions[i].MissionTag == InMissionTag)
-        {
-            return;
-        }
-    }
-
-    for (int i = 0; i < SubMissions.Num(); i++)
-    {
-        if (SubMissions[i].MissionTag == InMissionTag)
-        {
-            return;
-        }
-    }
-}
-
-void ASTGameState::OnMissionEnded(FGameplayTag InMissionTag, bool IsCleared)
+void ASTGameState::OnMissionEnded(USTMissionBase* InMission, bool IsCleared)
 {
     // Mission Clear On Client
-    OnMissionEnded_Multicast(InMissionTag, IsCleared);
-
-    // UnRegister Mission On Server
-    UnRegisterMission(InMissionTag, IsCleared);
+    OnMissionEnded_Multicast(InMission, IsCleared);
 
     // Start Next Random Mission
     ActivateRandomMission();
 }
 
-void ASTGameState::OnMissionEnded_Multicast_Implementation(FGameplayTag InMissionTag, bool IsCleared)
+void ASTGameState::OnMissionEnded_Multicast_Implementation(USTMissionBase* InMission, bool IsCleared)
 {
-    if (IsCleared)
+    if (InMission)
     {
-        ST_LOG(LogSTNetwork, Log, TEXT(" %s Mission Cleared!"), *InMissionTag.GetTagName().ToString());
-    }
-    else
-    {
-        ST_LOG(LogSTNetwork, Log, TEXT(" %s Mission Failed!"), *InMissionTag.GetTagName().ToString());
+        if (IsCleared)
+        {
+            ST_LOG(LogSTNetwork, Log, TEXT(" %s Mission Cleared!"), *InMission->GetName());
+        }
+        else
+        {
+            ST_LOG(LogSTNetwork, Log, TEXT(" %s Mission Failed!"), *InMission->GetName());
+        }
     }
 }
 
@@ -276,24 +244,24 @@ void ASTGameState::RegisterSubMission(FGameplayTag InMissionTag, TSubclassOf<UST
     }
 }
 
-void ASTGameState::OnSubMissionEnded(FGameplayTag InMissionTag, bool IsCleared)
+void ASTGameState::OnSubMissionEnded(USTMissionBase* InMission, bool IsCleared)
 {
     // Mission Clear On Client
-    OnSubMissionEnded_Multicast(InMissionTag, IsCleared);
-
-    // UnRegister Mission On Server
-    UnRegisterMission(InMissionTag, IsCleared);
+    OnSubMissionEnded_Multicast(InMission, IsCleared);
 }
 
-void ASTGameState::OnSubMissionEnded_Multicast_Implementation(FGameplayTag InMissionTag, bool IsCleared)
+void ASTGameState::OnSubMissionEnded_Multicast_Implementation(USTMissionBase* InMission, bool IsCleared)
 {
-    if (IsCleared)
+    if (InMission)
     {
-        ST_LOG(LogSTNetwork, Log, TEXT(" %s SubMission Cleared!"), *InMissionTag.GetTagName().ToString());
-    }
-    else
-    {
-        ST_LOG(LogSTNetwork, Log, TEXT(" %s SubMission Failed!"), *InMissionTag.GetTagName().ToString());
+        if (IsCleared)
+        {
+            ST_LOG(LogSTNetwork, Log, TEXT(" %s SubMission Cleared!"), *InMission->GetName());
+        }
+        else
+        {
+            ST_LOG(LogSTNetwork, Log, TEXT(" %s SubMission Failed!"), *InMission->GetName());
+        }
     }
 }
 

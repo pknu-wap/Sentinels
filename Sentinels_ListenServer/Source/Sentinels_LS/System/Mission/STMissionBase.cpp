@@ -86,7 +86,7 @@ void USTMissionBase::DeactivateMission(bool IsCleared)
 
 void USTMissionBase::MissionEnded_Multicast_Implementation(bool IsCleared)
 {
-	Delegate_MissionEnded.Broadcast(MissionTag, IsCleared);
+	Delegate_MissionEnded.Broadcast(this, IsCleared);
 }
 
 void USTMissionBase::CheckMissionClearable()
