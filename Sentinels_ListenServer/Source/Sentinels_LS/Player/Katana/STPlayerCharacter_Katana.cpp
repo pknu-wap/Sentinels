@@ -8,6 +8,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
 #include "STGameplayTags.h"
+#include "SubSystem/STProjectilePoolingSubSystem.h"
 
 void ASTPlayerCharacter_Katana::BeginPlay()
 {
@@ -19,6 +20,13 @@ void ASTPlayerCharacter_Katana::BeginPlay()
 		AnimInst->Delegate_SetWarpTarget_Q.AddUObject(this, &ASTPlayerCharacter_Katana::SetWrapTarget_Q);
 		AnimInst->Delegate_SpawnSlash_Q.AddUObject(this, &ASTPlayerCharacter_Katana::SpawnSlash_Q);
 		AnimInst->Delegate_SetWarpTarget_Passive.AddUObject(this, &ASTPlayerCharacter_Katana::SetWrapTarget_Passive);
+	}
+
+	if (HasAuthority())
+	{
+		USTProjectilePoolingSubSystem* PoolingSystem = GetWorld()->GetSubsystem<USTProjectilePoolingSubSystem>();
+		PoolingSystem->InitProjectilePool(this, SubclassOfSlash_Q, 50);
+		PoolingSystem->InitProjectilePool(this, SubclassOfSlash_R, 50);
 	}
 }
 

@@ -72,7 +72,10 @@ protected:
 	float WarpDistance_Q = 500.f;
 
 	UPROPERTY(EditAnywhere, Category = "Skill")
-	TSubclassOf<AActor> SubclassOfSlash_Q;
+	TSubclassOf<AProjectileBase> SubclassOfSlash_Q;
+
+	UPROPERTY(EditAnywhere, Category = "Skill")
+	TSubclassOf<AProjectileBase> SubclassOfSlash_R;
 
 private:
 	FVector SpawnLocation_Slash_Q;
