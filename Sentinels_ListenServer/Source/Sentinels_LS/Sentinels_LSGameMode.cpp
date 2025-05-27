@@ -30,6 +30,13 @@ ASentinels_LSGameMode::ASentinels_LSGameMode()
 	GameStateClass = ASTGameState::StaticClass();
 }
 
+void ASentinels_LSGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
+{
+	Super::InitGame(MapName, Options, ErrorMessage);
+
+	
+}
+
 void ASentinels_LSGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);

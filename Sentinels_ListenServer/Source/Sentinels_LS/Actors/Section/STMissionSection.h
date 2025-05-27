@@ -34,6 +34,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RegisterRandomMission();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void MissionActivated();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void MissionDeactivated();
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<class APlayerStart*> PlayerStarts;

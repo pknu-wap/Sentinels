@@ -37,6 +37,6 @@ void ASTMissionSection::RegisterRandomMission()
 	if (gameState)
 	{
 		int rand = UKismetMathLibrary::RandomIntegerInRange(0, MissionInfos.Num() - 1);
-		gameState->RegisterMission(MissionInfos[rand].MissionTag, MissionInfos[rand].MissionSubClass);
+		gameState->RegisterMission(MissionInfos[rand].MissionTag, MissionInfos[rand].MissionSubClass, this);
 	}
 }
