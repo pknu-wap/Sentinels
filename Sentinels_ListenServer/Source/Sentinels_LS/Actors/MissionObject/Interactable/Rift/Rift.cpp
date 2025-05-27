@@ -18,14 +18,19 @@ void ARift::BeginPlay()
 {
 	Super::BeginPlay();
 
-	bIsInteractable = false;
-	SpawnComponent->Delegate_OnEnemyAllDied.AddLambda( 
-		[&]()
-		{
-			UE_LOG(LogTemp, Display, TEXT("ARift : bIsInteractable = true "));
-			bIsInteractable = true; 
-		} 
-	);
+	if (HasAuthority())
+	{
+		bIsInteractable = true;
+
+		/*bIsInteractable = false;
+		SpawnComponent->Delegate_OnEnemyAllDied.AddLambda(
+			[&]()
+			{
+				UE_LOG(LogTemp, Display, TEXT("ARift : bIsInteractable = true "));
+				bIsInteractable = true;
+			}
+		);*/
+	}
 }
 
 void ARift::Interact_Implementation(UInteractComponent* InteractingComponent)
