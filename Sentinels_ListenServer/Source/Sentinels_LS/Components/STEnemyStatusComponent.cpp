@@ -50,17 +50,20 @@ float USTEnemyStatusComponent::GetStatusCurveValue() const
 	if (!StatusCurve_Current) return 1.f;
 
 	ASTGameState* GameState = Cast<ASTGameState>(UGameplayStatics::GetGameState(this));
-	if (StatusCurve_Current == StatusCurve_Mission)
+	if (GameState)
 	{
-		return StatusCurve_Current->GetFloatValue(GameState->GetClearedMissionNum());
-	}
-	else if(StatusCurve_Current == StatusCurve_Time)
-	{
-		float minTime, maxTime;
-		StatusCurve_Current->GetTimeRange(minTime, maxTime);
+		if (StatusCurve_Current == StatusCurve_Mission)
+		{
+			return StatusCurve_Current->GetFloatValue(GameState->GetClearedMissionNum());
+		}
+		else if (StatusCurve_Current == StatusCurve_Time)
+		{
+			float minTime, maxTime;
+			StatusCurve_Current->GetTimeRange(minTime, maxTime);
 
-		float TimeSeconds = UGameplayStatics::GetTimeSeconds(this);
-		return StatusCurve_Current->GetFloatValue(FMath::Clamp(TimeSeconds, 0.f, maxTime));
+			float TimeSeconds = UGameplayStatics::GetTimeSeconds(this);
+			return StatusCurve_Current->GetFloatValue(FMath::Clamp(TimeSeconds, 0.f, maxTime));
+		}
 	}
 
 	return 1.f;

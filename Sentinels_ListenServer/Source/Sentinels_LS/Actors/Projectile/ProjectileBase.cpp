@@ -45,10 +45,17 @@ void AProjectileBase::Activate(const FVector ActivateLocation, const FRotator Ac
 
     UE_LOG(LogTemp, Display, TEXT("%s"), *GetActorLocation().ToString());
 
+    SetHidden(false);
     SetActorTickEnabled(true);
 
     CollisionComponent->SetRelativeLocation(FVector(0, 0, 0));
-    CollisionComponent->Activate();
+    TSet<UActorComponent*> components = GetComponents();
+    for (UActorComponent* component : components)
+    {
+        component->Activate();
+    }
+
+    /*CollisionComponent->Activate();
     CollisionComponent->SetComponentTickEnabled(true);
     ProjectileMovementComponent->Activate();
     ProjectileMovementComponent->SetComponentTickEnabled(true);
@@ -57,7 +64,7 @@ void AProjectileBase::Activate(const FVector ActivateLocation, const FRotator Ac
     if (Particle)
     {
         Particle->SetComponentTickEnabled(true);
-    }
+    }*/
 
     FTimerHandle DeactivateHandle;
     GetWorldTimerManager().SetTimer(DeactivateHandle, this, &AProjectileBase::Deactivate, LifeTime, false);
@@ -67,9 +74,16 @@ void AProjectileBase::Deactivate()
 {
     Super::Deactivate();
 
+    SetHidden(true);
     SetActorTickEnabled(false);
 
-    CollisionComponent->Deactivate();
+    TSet<UActorComponent*> components = GetComponents();
+    for (UActorComponent* component : components)
+    {
+        component->Deactivate();
+    }
+
+    /*CollisionComponent->Deactivate();
     CollisionComponent->SetComponentTickEnabled(false);
     ProjectileMovementComponent->Deactivate();
     ProjectileMovementComponent->SetComponentTickEnabled(false);
@@ -79,7 +93,7 @@ void AProjectileBase::Deactivate()
     {
         Particle->SetComponentTickEnabled(false);
         Particle->DeactivateSystem();
-    }
+    }*/
 }
 
 void AProjectileBase::FireInDirection(const FVector& ShootDirection)
