@@ -462,21 +462,22 @@ void USTPlayerUIComponent::AddPlayerID(const FUniqueNetIdRepl& ID)
 
 void USTPlayerUIComponent::RegisterIDToDummyPlayer(const FUniqueNetIdRepl& ID)
 {
-	for (ASTDummyPlayer* dummyCharacter : TActorRange<ASTDummyPlayer>(GetWorld()))
+	for (ASTDummyPlayer* dummyPlayer : TActorRange<ASTDummyPlayer>(GetWorld()))
 	{
-		if (dummyCharacter->GetPlayerID() == ID)
+		if (dummyPlayer->GetPlayerID() == ID)
 			return;
 
-		if (dummyCharacter->GetPlayerID().IsValid())
+		if (dummyPlayer->GetPlayerID().IsValid())
 			continue;
 		
-		dummyCharacter->SetPlayerID(ID);
+		dummyPlayer->SetPlayerID(ID);
 
 		for (ASTPlayerController* playerController : TActorRange<ASTPlayerController>(GetWorld()))
 		{
 			if (playerController->PlayerState->GetUniqueId() == ID)
 			{
-				dummyCharacter->SetOwner(playerController);
+				dummyPlayer->SetOwner(playerController);
+				break;
 			}
 		}
 

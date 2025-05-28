@@ -52,10 +52,10 @@ public:
 	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void UpdatePlayerClass(ESTClassType InClass);
 
-	UFUNCTION(Server, Reliable, BlueprintCallable)
-	void ServerRPCImportPlayerClass();
-
 	TSubclassOf<APawn> GetDefaultPlayerClass() { return DefaultPlayerClass; }
+
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void RequestUpdateSKMeshParts();
 
 
 /*

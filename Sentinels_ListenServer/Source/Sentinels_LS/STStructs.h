@@ -104,3 +104,20 @@ struct SENTINELS_LS_API FItemStruct : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UTexture2D* Icon;
 };
+
+USTRUCT(BlueprintType)
+struct SENTINELS_LS_API FCustomizeStruct : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	FCustomizeStruct() {};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int ID = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<USkeletalMesh> SkeletalMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTexture2D* Icon;
+};

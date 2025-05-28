@@ -23,6 +23,7 @@
 #include "Components/UI/STPlayerUIComponent.h"
 #include "SubSystem/STGameTravelDataSubsystem.h"
 #include "Player/STLocalPlayer.h"
+#include "Player/STPlayerCharacter.h"
 
 
 ASTPlayerController::ASTPlayerController()
@@ -46,6 +47,25 @@ void ASTPlayerController::OnPossess(APawn* aPawn)
 
 	if(InteractComponent)
 		InteractComponent->BindDelegates();
+
+	if (HasAuthority())
+	{
+		USTGameTravelDataSubsystem* gameTravelData = GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
+		FPlayerInfo playerInfo = gameTravelData->LoadPlayerInfo(PlayerState->GetUniqueId());
+
+		ASTPlayerCharacter* player = Cast<ASTPlayerCharacter>(GetCharacter());
+
+		player->UpdateSKMeshParts(playerInfo.PlayerSKMeshesRowName);
+
+		// ADD CLIENT RPC
+	}
+	else
+	{
+		// CHANGE SERVER ONLY
+		RequestUpdateSKMeshParts();
+
+		// NEED CLINET CHANGE
+	}
 }
 
 void ASTPlayerController::BeginPlay()
@@ -132,16 +152,14 @@ void ASTPlayerController::UpdatePlayerClass_Implementation(ESTClassType InClass)
 	GetWorldTimerManager().SetTimerForNextTick([GameMode, PC]() { GameMode->RestartPlayer(PC); });
 }
 
-void ASTPlayerController::ServerRPCImportPlayerClass_Implementation()
+void ASTPlayerController::RequestUpdateSKMeshParts_Implementation()
 {
-	//USTGameInstance* gameInstance = Cast<USTGameInstance>(GetWorld()->GetGameInstance());
+	USTGameTravelDataSubsystem* gameTravelData = GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
+	FPlayerInfo playerInfo = gameTravelData->LoadPlayerInfo(PlayerState->GetUniqueId());
 
-	ESTClassType inClass = ESTClassType::GreatSword;
+	ASTPlayerCharacter* player = Cast<ASTPlayerCharacter>(GetCharacter());
 
-	//if (gameInstance->PlayerInfos.Contains(PlayerState->GetUniqueId()))
-	//	inClass = gameInstance->PlayerInfos.Find(PlayerState->GetUniqueId())->PlayerClass;
-
-	UpdatePlayerClass(inClass);
+	player->UpdateSKMeshParts(playerInfo.PlayerSKMeshesRowName);
 }
 
 void ASTPlayerController::MoveClick_Started()

@@ -16,6 +16,7 @@ class USTPlayerStatusComponent;
 class UCameraModeManagerComponent;
 class UCameraShakeBase;
 struct FInputActionValue;
+struct FPlayerSKMeshes;
 
 UCLASS()
 class SENTINELS_LS_API ASTPlayerCharacter : public ASTCharacterBase
@@ -46,6 +47,12 @@ protected:
 	UFUNCTION()
 	void OnMontageEnded_Callback(UAnimMontage* Montage, bool bInterrupted);
 
+public:
+	/*
+		Customize SKMesh Parts
+	*/
+	UFUNCTION(BlueprintImplementableEvent)
+	void UpdateSKMeshParts(FPlayerSKMeshesRowName PlayerSKMeshesRowName);
 
 	/*
 		Input	

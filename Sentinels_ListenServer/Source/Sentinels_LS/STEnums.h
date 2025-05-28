@@ -16,6 +16,7 @@ enum class ESTClassType : uint8
 UENUM(BlueprintType)
 enum class ESKParts : uint8
 {
+	Head UMETA(DisplayName = "Head"),
 	Hood UMETA(DisplayName = "Hood"),
 	LongHair UMETA(DisplayName = "LongHair"),
 	Glasses UMETA(DisplayName = "Glasses"),

@@ -16,11 +16,26 @@
 #include "Sentinels_LS.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "SubSystem/STGameTravelDataSubsystem.h"
+#include "STStructs.h"
 
 // Sets default values
 ASTDummyPlayer::ASTDummyPlayer() :
 	bIsShow(false),
-	CurrentClass(ESTClassType::GreatSword)
+	CurrentClass(ESTClassType::GreatSword),
+	Name_Head("0"),
+	Name_Hood("0"),
+	Name_LongHair("0"),
+	Name_Glasses("0"),
+	Name_UpperBody("0"),
+	Name_Backpack("0"),
+	Name_Hand_L("0"),
+	Name_Hand_R("0"),
+	Name_BottomBody("0"),
+	Name_Feet("0"),
+	Name_GreatSword("0"),
+	Name_Katana("0"),
+	Name_Blade_L("0"),
+	Name_Blade_R("0")
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -34,28 +49,34 @@ ASTDummyPlayer::ASTDummyPlayer() :
 	CaptureComponent = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("Capture Component"));
 	CaptureComponent->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform);
 
-	for (uint8 i = 0; i <= static_cast<uint8>(ESKParts::Feet); i++)
-	{
-		FName componentName = *FString::Printf(TEXT("SkeletalMeshComponent_%d"), i);
-		AddSKComponents(componentName);
-	}
-	// FAttachmentTransformRules::SnapToTargetIncludingScale
-	FName greatSword = *FString::Printf(TEXT("GreatSword"));
-	AddSKComponents(greatSword, TEXT("Weapon_R"));
-
-	FName katana = *FString::Printf(TEXT("Katana"));
-	AddSKComponents(katana, TEXT("Weapon_R"));
-
-	FName blade_L = *FString::Printf(TEXT("Blade_L"));
-	AddSKComponents(blade_L, TEXT("Weapon_L"));
-
-	FName blade_R = *FString::Printf(TEXT("Blade_R"));
-	AddSKComponents(blade_R, TEXT("Weapon_R"));
-
-	// GetSKMeshComponent(ESKParts::GreatSword)->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform, TEXT("Weapon_R"));
-	// GetSKMeshComponent(ESKParts::Katana)->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform, TEXT("Weapon_R"));
-	// GetSKMeshComponent(ESKParts::Blade_L)->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform, TEXT("Weapon_L"));
-	// GetSKMeshComponent(ESKParts::Blade_R)->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform, TEXT("Weapon_R"));
+	HeadComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Head"));
+	HeadComponent->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	HoodComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Hood"));
+	HoodComponent->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	LongHairComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("LongHair"));
+	LongHairComponent->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	GlassesComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Glassess"));
+	GlassesComponent->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	UpperBodyComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("UpperBody"));
+	UpperBodyComponent->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	BackpackComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Backpack"));
+	BackpackComponent->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	Hand_LComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Hand_L"));
+	Hand_LComponent->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	Hand_RComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Hand_R"));
+	Hand_RComponent->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	BottomBodyComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("BottomBody"));
+	BottomBodyComponent->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	FeetComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Feet"));
+	FeetComponent->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	GreatSwordComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("GreatSword"));
+	GreatSwordComponent->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform, TEXT("Weapon_R"));
+	KatanaComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Katana"));
+	KatanaComponent->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform, TEXT("Weapon_R"));
+	Blade_LComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Blade_L"));
+	Blade_LComponent->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform, ("Weapon_L"));
+	Blade_RComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Blade_R"));
+	Blade_RComponent->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform, TEXT("Weapon_R"));
 }
 
 // Called when the game starts or when spawned
@@ -79,9 +100,23 @@ void ASTDummyPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 
 	DOREPLIFETIME(ASTDummyPlayer, PlayerID);
 	DOREPLIFETIME(ASTDummyPlayer, CurrentClass);
+	DOREPLIFETIME(ASTDummyPlayer, Name_Head);
+	DOREPLIFETIME(ASTDummyPlayer, Name_Hood);
+	DOREPLIFETIME(ASTDummyPlayer, Name_LongHair);
+	DOREPLIFETIME(ASTDummyPlayer, Name_Glasses);
+	DOREPLIFETIME(ASTDummyPlayer, Name_UpperBody);
+	DOREPLIFETIME(ASTDummyPlayer, Name_Backpack);
+	DOREPLIFETIME(ASTDummyPlayer, Name_Hand_L);
+	DOREPLIFETIME(ASTDummyPlayer, Name_Hand_R);
+	DOREPLIFETIME(ASTDummyPlayer, Name_BottomBody);
+	DOREPLIFETIME(ASTDummyPlayer, Name_Feet);
+	DOREPLIFETIME(ASTDummyPlayer, Name_GreatSword);
+	DOREPLIFETIME(ASTDummyPlayer, Name_Katana);
+	DOREPLIFETIME(ASTDummyPlayer, Name_Blade_L);
+	DOREPLIFETIME(ASTDummyPlayer, Name_Blade_R);
 }
 
-void ASTDummyPlayer::ServerRPCChangeCurrentClass_Implementation(FUniqueNetIdRepl playerID, ESTClassType InClass)
+void ASTDummyPlayer::ServerRPCChangeCurrentClass_Implementation(ESTClassType InClass)
 {
 	CurrentClass = InClass;
 
@@ -89,12 +124,93 @@ void ASTDummyPlayer::ServerRPCChangeCurrentClass_Implementation(FUniqueNetIdRepl
 	if (!gameTravelDataSubsystem)
 		return;
 
-	FPlayerInfo playerInfo = FPlayerInfo();
-	playerInfo.PlayerClass = InClass;
+	gameTravelDataSubsystem->SavePlayerCurrentClass(PlayerID, CurrentClass);
+}
 
-	gameTravelDataSubsystem->ChangePlayerInfo(playerID, playerInfo);
+void ASTDummyPlayer::ServerRPCChangeSKMesh_Implementation(ESKParts Part, FName SKMeshRowName)
+{
+	USTGameTravelDataSubsystem* gameTravelDataSubsystem = GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
+	if (!gameTravelDataSubsystem)
+		return;
 
-	OnRep_CurrentClass();
+	FPlayerInfo playerInfo = gameTravelDataSubsystem->LoadPlayerInfo(PlayerID);
+	FPlayerSKMeshesRowName playerSKMeshesRowName = playerInfo.PlayerSKMeshesRowName;
+
+	switch (Part)
+	{
+	case ESKParts::Head:
+		playerSKMeshesRowName.Name_Head = SKMeshRowName;
+		break;
+	case ESKParts::Hood:
+		playerSKMeshesRowName.Name_Hood = SKMeshRowName;
+		break;
+	case ESKParts::LongHair:
+		playerSKMeshesRowName.Name_LongHair = SKMeshRowName;
+		break;
+	case ESKParts::Glasses:
+		playerSKMeshesRowName.Name_Glasses = SKMeshRowName;
+		break;
+	case ESKParts::UpperBody:
+		playerSKMeshesRowName.Name_UpperBody = SKMeshRowName;
+		break;
+	case ESKParts::Backpack:
+		playerSKMeshesRowName.Name_Backpack = SKMeshRowName;
+		break;
+	case ESKParts::Hand_L:
+		playerSKMeshesRowName.Name_Hand_L = SKMeshRowName;
+		break;
+	case ESKParts::Hand_R:
+		playerSKMeshesRowName.Name_Hand_R = SKMeshRowName;
+		break;
+	case ESKParts::BottomBody:
+		playerSKMeshesRowName.Name_BottomBody = SKMeshRowName;
+		break;
+	case ESKParts::Feet:
+		playerSKMeshesRowName.Name_Feet = SKMeshRowName;
+		break;
+	}
+
+	gameTravelDataSubsystem->SavePlayerSKMeshes(PlayerID, playerSKMeshesRowName);
+	ChangeSKMeshName(Part, SKMeshRowName);
+}
+
+void ASTDummyPlayer::ChangeSKMeshName(ESKParts Part, FName SKMeshRowName)
+{
+	ST_LOG(LogSTNetwork, Log, TEXT("ChangeSKMeshName"));
+
+	switch (Part)
+	{
+	case ESKParts::Head:
+		Name_Head = SKMeshRowName;
+		break;
+	case ESKParts::Hood:
+		Name_Hood = SKMeshRowName;
+		break;
+	case ESKParts::LongHair:
+		Name_LongHair = SKMeshRowName;
+		break;
+	case ESKParts::Glasses:
+		Name_Glasses = SKMeshRowName;
+		break;
+	case ESKParts::UpperBody:
+		Name_UpperBody = SKMeshRowName;
+		break;
+	case ESKParts::Backpack:
+		Name_Backpack = SKMeshRowName;
+		break;
+	case ESKParts::Hand_L:
+		Name_Hand_L = SKMeshRowName;
+		break;
+	case ESKParts::Hand_R:
+		Name_Hand_R = SKMeshRowName;
+		break;
+	case ESKParts::BottomBody:
+		Name_BottomBody = SKMeshRowName;
+		break;
+	case ESKParts::Feet:
+		Name_Feet = SKMeshRowName;
+		break;
+	}
 }
 
 UTextureRenderTarget2D* ASTDummyPlayer::GetTextureRenderTarget2D()
@@ -102,9 +218,41 @@ UTextureRenderTarget2D* ASTDummyPlayer::GetTextureRenderTarget2D()
 	return CaptureComponent->TextureTarget;
 }
 
-USkeletalMeshComponent* ASTDummyPlayer::GetSKMeshComponent(ESKParts partName)
+USkeletalMeshComponent* ASTDummyPlayer::GetSKMeshComponent(ESKParts Part)
 {
-	return SKMeshComponents[static_cast<uint8>(partName)];
+	switch (Part)
+	{
+	case ESKParts::Head:
+		return HeadComponent;
+	case ESKParts::Hood:
+		return HoodComponent;
+	case ESKParts::LongHair:
+		return LongHairComponent;
+	case ESKParts::Glasses:
+		return GlassesComponent;
+	case ESKParts::UpperBody:
+		return UpperBodyComponent;
+	case ESKParts::Backpack:
+		return BackpackComponent;
+	case ESKParts::Hand_L:
+		return Hand_LComponent;
+	case ESKParts::Hand_R:
+		return Hand_RComponent;
+	case ESKParts::BottomBody:
+		return BottomBodyComponent;
+	case ESKParts::Feet:
+		return FeetComponent;
+	case ESKParts::GreatSword:
+		return GreatSwordComponent;
+	case ESKParts::Katana:
+		return KatanaComponent;
+	case ESKParts::Blade_L:
+		return Blade_LComponent;
+	case ESKParts::Blade_R:
+		return Blade_RComponent;
+	default:
+		return HeadComponent;
+	}
 }
 
 ASTDummyPlayer* ASTDummyPlayer::FindByID(UObject* WorldContextObject, FUniqueNetIdRepl ID)
@@ -121,22 +269,6 @@ ASTDummyPlayer* ASTDummyPlayer::FindByID(UObject* WorldContextObject, FUniqueNet
 	}
 
 	return nullptr;
-}
-
-void ASTDummyPlayer::AddSKComponents(FName ComponentName, FString SocketName)
-{
-	USkeletalMeshComponent* newComp = CreateDefaultSubobject<USkeletalMeshComponent>(ComponentName);
-	if (SocketName.IsEmpty())
-	{
-		newComp->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform);
-	}
-	else
-	{
-		newComp->AttachToComponent(SKMeshComponent, FAttachmentTransformRules::KeepRelativeTransform, FName(*SocketName));
-	}
-
-	newComp->SetIsReplicated(true);
-	SKMeshComponents.Add(newComp);
 }
 
 void ASTDummyPlayer::OnRep_PlayerID()
@@ -161,8 +293,10 @@ void ASTDummyPlayer::OnRep_CurrentClass()
 	if (weapon == nullptr || animInstance == nullptr)
 		return;
 
-	for (int i = static_cast<uint8>(ESKParts::GreatSword); i <= static_cast<uint8>(ESKParts::Blade_R); i++)
-		SKMeshComponents[i]->SetSkeletalMesh(nullptr);
+	GreatSwordComponent->SetSkeletalMesh(nullptr);
+	KatanaComponent->SetSkeletalMesh(nullptr);
+	Blade_LComponent->SetSkeletalMesh(nullptr);
+	Blade_RComponent->SetSkeletalMesh(nullptr);
 
 	switch (CurrentClass)
 	{
@@ -183,3 +317,20 @@ void ASTDummyPlayer::OnRep_CurrentClass()
 	SKMeshComponent->SetAnimInstanceClass(*animInstance);
 }
 
+void ASTDummyPlayer::OnRep_SKName()
+{
+	USTGameTravelDataSubsystem* gameTravelDataSubsystem = GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
+	if (!gameTravelDataSubsystem)
+		return;
+
+	HeadComponent->SetSkeletalMesh(gameTravelDataSubsystem->GetSKMeshDT(ESKParts::Head)->FindRow<FCustomizeStruct>(Name_Head, "")->SkeletalMesh);
+	HoodComponent->SetSkeletalMesh(gameTravelDataSubsystem->GetSKMeshDT(ESKParts::Hood)->FindRow<FCustomizeStruct>(Name_Hood, "")->SkeletalMesh);
+	LongHairComponent->SetSkeletalMesh(gameTravelDataSubsystem->GetSKMeshDT(ESKParts::LongHair)->FindRow<FCustomizeStruct>(Name_LongHair, "")->SkeletalMesh);
+	GlassesComponent->SetSkeletalMesh(gameTravelDataSubsystem->GetSKMeshDT(ESKParts::Glasses)->FindRow<FCustomizeStruct>(Name_Glasses, "")->SkeletalMesh);
+	UpperBodyComponent->SetSkeletalMesh(gameTravelDataSubsystem->GetSKMeshDT(ESKParts::UpperBody)->FindRow<FCustomizeStruct>(Name_UpperBody, "")->SkeletalMesh);
+	BackpackComponent->SetSkeletalMesh(gameTravelDataSubsystem->GetSKMeshDT(ESKParts::Backpack)->FindRow<FCustomizeStruct>(Name_Backpack, "")->SkeletalMesh);
+	Hand_LComponent->SetSkeletalMesh(gameTravelDataSubsystem->GetSKMeshDT(ESKParts::Hand_L)->FindRow<FCustomizeStruct>(Name_Hand_L, "")->SkeletalMesh);
+	Hand_RComponent->SetSkeletalMesh(gameTravelDataSubsystem->GetSKMeshDT(ESKParts::Hand_R)->FindRow<FCustomizeStruct>(Name_Hand_R, "")->SkeletalMesh);
+	BottomBodyComponent->SetSkeletalMesh(gameTravelDataSubsystem->GetSKMeshDT(ESKParts::BottomBody)->FindRow<FCustomizeStruct>(Name_BottomBody, "")->SkeletalMesh);
+	FeetComponent->SetSkeletalMesh(gameTravelDataSubsystem->GetSKMeshDT(ESKParts::Feet)->FindRow<FCustomizeStruct>(Name_Feet, "")->SkeletalMesh);
+}

@@ -11,6 +11,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnServerTravelReady, FGameplayTag, LevelTag);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRepActivatedMission);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRepSubMissions);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRegisterMission);
 
 class USTMissionBase;
 
@@ -66,6 +67,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RegisterMission(FGameplayTag InMissionTag, TSubclassOf<USTMissionBase> MissionSubClass);
 
+	UPROPERTY(BlueprintAssignable)
+	FOnRegisterMission OnRegisterMission;
+
 	UFUNCTION(BlueprintCallable)
 	void UnRegisterMission(FGameplayTag InMissionTag, bool IsCleared);
 
@@ -93,7 +97,7 @@ protected:
 	FOnRepActivatedMission Delegate_OnRepActivatedMission;
 
 private:
-	UPROPERTY(Replicated)
+	UPROPERTY(Replicated, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TArray<FMissionInfo> Missions;
 
 	UPROPERTY(ReplicatedUsing = OnRep_ActivatedMission, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))

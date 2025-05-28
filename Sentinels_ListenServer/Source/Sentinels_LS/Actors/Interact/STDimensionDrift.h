@@ -28,6 +28,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FString GetLevelName(const FGameplayTag LevelTag) { return LevelMap.Find(LevelTag)->GetAssetName(); }
 
+	//UFUNCTION(BlueprintCallable)
+	//USkeletalMesh* GetSKMeshByID(int Parts, FName RowName);
+
 protected:
 	virtual void Interact_Implementation(UInteractComponent* InteractingComponent) override;
 	virtual void Interact_Finish_Implementation(UInteractComponent* InteractingComponent) override;
@@ -42,6 +45,10 @@ protected:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class USkeletalMeshComponent> SKMesh;
 
+	/*
+		Widget
+	*/
+
 	UPROPERTY(EditAnywhere, Category = "WBP")
 	TSubclassOf<UUserWidget> Widget_LoadoutClass;
 
@@ -54,6 +61,17 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "WBP")
 	TSubclassOf<UUserWidget> Widget_LevelSelectClass;
 
+	/*
+		Level Info
+	*/
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level", meta = (AllowPrivateAccess = "true"))
 	TMap<FGameplayTag, TSoftObjectPtr<UWorld>> LevelMap;
+
+	/*
+		DataTable
+	*/
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTableRowHandle", meta = (AllowPrivateAccess = "true"))
+	TArray<FDataTableRowHandle> DTRowHandle_Ary;
 };

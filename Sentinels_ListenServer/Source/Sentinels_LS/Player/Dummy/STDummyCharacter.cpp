@@ -168,10 +168,7 @@ void ASTDummyCharacter::ServerRPCChangeCurrentClass_Implementation(FUniqueNetIdR
 	if (!gameTravelDataSubsystem)
 		return;
 
-	FPlayerInfo playerInfo = FPlayerInfo();
-	playerInfo.PlayerClass = InClass;
-
-	gameTravelDataSubsystem->ChangePlayerInfo(playerID, playerInfo);
+	gameTravelDataSubsystem->SavePlayerCurrentClass(playerID, CurrentClass);
 
 	OnRep_CurrentClass();
 }
