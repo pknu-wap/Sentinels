@@ -24,11 +24,7 @@ void UCameraModeManagerComponent::BeginPlay()
 	Super::BeginPlay();
 
 	SpringArm = GetOwner()->FindComponentByClass<USpringArmComponent>();
-
-	if (DefaultCameraMode)
-	{
-		SetCameraMode(DefaultCameraMode);
-	}
+	InitCameraMode();
 }
 
 
@@ -40,6 +36,14 @@ void UCameraModeManagerComponent::TickComponent(float DeltaTime, ELevelTick Tick
 	if (CurrentMode)
 	{
 		CurrentMode->Tick(DeltaTime);
+	}
+}
+
+void UCameraModeManagerComponent::InitCameraMode()
+{
+	if (DefaultCameraMode)
+	{
+		SetCameraMode(DefaultCameraMode);
 	}
 }
 

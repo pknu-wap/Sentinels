@@ -50,7 +50,7 @@ void AInteractableActor::ShowInteractiveUI_Implementation(UInteractComponent* In
 		InteractWidget_ForDebug->RemoveFromParent();
 	}
 
-	if (InteractWidgetClass_ForDebug)
+	/*if (InteractWidgetClass_ForDebug)
 	{
 		APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
 		if (PC)
@@ -61,7 +61,7 @@ void AInteractableActor::ShowInteractiveUI_Implementation(UInteractComponent* In
 				InteractWidget_ForDebug->AddToViewport();
 			}
 		}
-	}
+	}*/
 }
 
 void AInteractableActor::HideInteractiveUI_Implementation(UInteractComponent* InteractingComponent)

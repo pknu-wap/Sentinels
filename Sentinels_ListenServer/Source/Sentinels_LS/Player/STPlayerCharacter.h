@@ -79,11 +79,18 @@ protected:
 	void Step_Pressed();
 	void PlayMontage_Step();
 
+	UFUNCTION()
+	void SetWarpTarget_Step();
+
 	UFUNCTION(Server, Reliable)
 	virtual void Step_Pressed_Server();
 
 	UFUNCTION(NetMulticast, Reliable)
 	virtual void Step_Pressed_Multicast();
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float StepDistance = 200.f;
 
 
 	/*
@@ -94,6 +101,7 @@ protected:
 
 	bool CanDoAttack() const;
 	virtual void NormalAttack_Pressed();
+	virtual void NormalAttack_Released();
 	void PlayMontage_NormalAttack(int currentCombo);
 
 	UFUNCTION(Server, Reliable)
@@ -115,6 +123,7 @@ protected:
 	int MaxCombo = 3;
 	bool bIsCheckingNextInput = false;
 	bool bShouldDoNextAttack = false;
+	bool bIsAttackPressinng = false;
 
 
 	/*

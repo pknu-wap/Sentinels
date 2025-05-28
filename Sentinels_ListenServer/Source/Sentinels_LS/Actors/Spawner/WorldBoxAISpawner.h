@@ -20,9 +20,18 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+protected:
+    UFUNCTION()
+    void BoxBeginOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+    
+    UFUNCTION()
+    void BoxEndOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    int NumOfOverlappedPlayers;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    TArray<AActor*> Players;
 
 /*
        Spawn Enemy
@@ -37,8 +46,10 @@ public:
 protected:
     void SpawnEnemy(int InfoIdx);
     bool IsVectorInBoundingBox(const FVector& InLocation) const;
+    bool IsInFrontalCone(const FVector& locationToCheck, const FVector& originLocation, const FVector& forwardVector, float angleDeg) const;
     bool GetSpawnNavLocation(int infoIdx, FNavLocation& OutLocation) const;
     bool GetSpawnNavLocationInBox(int infoIdx, FNavLocation& OutLocation) const;
+    bool GetSpawnNavLocationForPlayer(int playerIdx, int infoIdx, FNavLocation& OutLocation) const;
 
 protected:
     UFUNCTION()

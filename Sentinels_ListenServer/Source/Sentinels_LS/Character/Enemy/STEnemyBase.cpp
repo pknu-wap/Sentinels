@@ -70,11 +70,12 @@ void ASTEnemyBase::BeginPlay()
 			AnimInst->Delegate_DissolveStart.AddUObject(this, &ASTEnemyBase::DissolveStart);
 		}
 
-		Activate(GetActorLocation(), GetActorRotation());
+		if(bIsActivated)
+			Activate(GetActorLocation(), GetActorRotation());
 
 		if (ProjectileClass_PrimaryFire)
 		{
-			USTProjectilePoolingSubSystem* ProjectileSubSystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<USTProjectilePoolingSubSystem>();
+			USTProjectilePoolingSubSystem* ProjectileSubSystem = GetWorld()->GetSubsystem<USTProjectilePoolingSubSystem>();
 			ProjectileSubSystem->InitProjectilePool(this, ProjectileClass_PrimaryFire, 100);
 		}
 	}
@@ -186,6 +187,7 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 				}, 5.f, false);
 
 			PlayDiedMontage_Multicast();
+			// GetCharacterMovement()->Deactivate();
 			
 			// Stop Behavior Tree
 			AAIController* AIController = Cast<AAIController>(GetController());
@@ -214,7 +216,7 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 		{
 			StopCurrentAnimMontage_Multicast();
 			FVector LaunchDir = (GetActorLocation() - DamageCauser->GetActorLocation()).GetSafeNormal2D();
-			LaunchCharacter(LaunchDir * 750.f, false, false);
+			LaunchCharacter(LaunchDir * LaunchVelocity, false, false);
 		}
 	}
 
@@ -224,10 +226,10 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 void ASTEnemyBase::Activate(const FVector ActivateLocation, const FRotator ActivateRotation)
 {
 	Super::Activate(ActivateLocation, ActivateRotation);
-
-	DissolveReverseStart();
+	
 	StopAnimMontage();
 	StatusComponent->InitStatus();
+	DissolveReverseStart_Multicast();
 }
 
 void ASTEnemyBase::Deactivate()
@@ -294,7 +296,7 @@ void ASTEnemyBase::PlayNormalAttackMontage(int MontageIdx)
 
 void ASTEnemyBase::PrimaryFire()
 {
-	USTProjectilePoolingSubSystem* ProjectileSubSystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<USTProjectilePoolingSubSystem>();
+	USTProjectilePoolingSubSystem* ProjectileSubSystem = GetWorld()->GetSubsystem<USTProjectilePoolingSubSystem>();
 
 	FVector SpawnLocation = GetMesh()->GetSocketLocation(SocketName_PrimaryFire);
 	AProjectileBase* projectile = ProjectileSubSystem->GetActor<AProjectileBase>(ProjectileClass_PrimaryFire, SpawnLocation);
@@ -324,12 +326,37 @@ void ASTEnemyBase::PlayKnockbackMontage()
 	}
 }
 
+void ASTEnemyBase::DissolveStart_Multicast_Implementation()
+{
+	DissolveStart();
+}
+
+void ASTEnemyBase::DissolveReverseStart_Multicast_Implementation()
+{
+	if (!DissolveReverseStart())
+	{
+		DissolveReverseEnded();
+	}
+}
+
 void ASTEnemyBase::DissolveEnded()
 {
 	if (HasAuthority())
 	{
 		GetWorld()->GetTimerManager().ClearTimer(Handle_Deactivate);
 		Deactivate();
+	}
+}
+
+void ASTEnemyBase::DissolveReverseEnded()
+{
+	if (HasAuthority())
+	{
+		ASTEnemyBase_AIController* AIController = Cast<ASTEnemyBase_AIController>(GetController());
+		if (AIController)
+		{
+			AIController->StartAILogic();
+		}
 	}
 }
 

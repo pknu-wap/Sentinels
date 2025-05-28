@@ -94,14 +94,23 @@ public:
 /*
 	Die
 */
+	UFUNCTION(NetMulticast, Reliable)
+	void DissolveStart_Multicast();
+
 	UFUNCTION(BlueprintImplementableEvent)
 	void DissolveStart();
 
+	UFUNCTION(NetMulticast, Reliable)
+	void DissolveReverseStart_Multicast();
+
 	UFUNCTION(BlueprintImplementableEvent)
-	void DissolveReverseStart();
+	bool DissolveReverseStart();
 
 	UFUNCTION(BlueprintCallable)
 	void DissolveEnded();
+
+	UFUNCTION(BlueprintCallable)
+	void DissolveReverseEnded();
 
 	UFUNCTION(NetMulticast, Reliable)
 	void PlayDiedMontage_Multicast();
@@ -111,6 +120,10 @@ public:
 protected:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<USTEnemyStatusComponent> StatusComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Damaged")
+	float LaunchVelocity = 1000.f;
+
 
 /*
 	Drop

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Subsystems/GameInstanceSubsystem.h"
+#include "Subsystems/WorldSubsystem.h"
 #include "Actors/ObjectPool/ActorObjectPool.h"
 #include "STProjectilePoolingSubSystem.generated.h"
 
@@ -11,7 +11,7 @@ class AProjectileBase;
 class AActorObjectPool;
 
 UCLASS()
-class SENTINELS_LS_API USTProjectilePoolingSubSystem : public UGameInstanceSubsystem
+class SENTINELS_LS_API USTProjectilePoolingSubSystem : public UWorldSubsystem
 {
 	GENERATED_BODY()
 	

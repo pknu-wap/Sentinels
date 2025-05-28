@@ -44,7 +44,7 @@ protected:
 	AI Logic
 */
 public:
-	void StartAILogic(const FVector StartLocation = FVector::ZeroVector, const FRotator StartRotation = FRotator::ZeroRotator);
+	void StartAILogic();
 
 public:
 	UFUNCTION()

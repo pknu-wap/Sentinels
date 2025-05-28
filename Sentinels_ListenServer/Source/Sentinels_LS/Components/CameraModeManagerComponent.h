@@ -27,6 +27,8 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
+	void InitCameraMode();
+
 	UFUNCTION(BlueprintCallable)
     void SetCameraMode(TSubclassOf<UCameraMode> NewModeClass);
 

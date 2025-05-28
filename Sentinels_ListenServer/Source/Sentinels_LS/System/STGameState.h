@@ -14,6 +14,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRepSubMissions);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRegisterMission);
 
 class USTMissionBase;
+class ASTMissionSection;
 
 USTRUCT(BlueprintType)
 struct FMissionInfo
@@ -22,7 +23,28 @@ struct FMissionInfo
 
 	FMissionInfo() {};
 
-	FMissionInfo(class USTMissionBase* InMission, FGameplayTag InMissionTag)
+	FMissionInfo(class USTMissionBase* InMission, FGameplayTag InMissionTag, ASTMissionSection* InMissionSection)
+		: Mission(InMission), MissionTag(InMissionTag), MissionSection(InMissionSection)
+	{};
+
+	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<class USTMissionBase> Mission;
+
+	UPROPERTY(BlueprintReadOnly)
+	FGameplayTag MissionTag;
+
+	UPROPERTY()
+	ASTMissionSection* MissionSection;
+};
+
+USTRUCT(BlueprintType)
+struct FSubMissionInfo
+{
+	GENERATED_BODY()
+
+	FSubMissionInfo() {};
+
+	FSubMissionInfo(class USTMissionBase* InMission, FGameplayTag InMissionTag)
 		: Mission(InMission), MissionTag(InMissionTag)
 	{};
 
@@ -57,15 +79,17 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ActivateMission(FGameplayTag InMissionTag);
 
+	void ActivateMission(ASTMissionSection* InMissionSection);
+
 	UFUNCTION(BlueprintCallable)
 	bool IsMissionCleared(FGameplayTag InMissionTag);
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void RegisterRandomMissions(int RegisterMissionNum, const TArray<FRegisterMissionInfo>& AvailableMissionInfos);
+	void RegisterRandomMissions(int RegisterMissionNum, const TArray<FRegisterMissionInfo>& AvailableMissionInfos, ASTMissionSection* MissionSection);
 
 	UFUNCTION(BlueprintCallable)
-	void RegisterMission(FGameplayTag InMissionTag, TSubclassOf<USTMissionBase> MissionSubClass);
+	void RegisterMission(FGameplayTag InMissionTag, TSubclassOf<USTMissionBase> MissionSubClass, ASTMissionSection* MissionSection);
 
 	UPROPERTY(BlueprintAssignable)
 	FOnRegisterMission OnRegisterMission;
@@ -128,7 +152,7 @@ protected:
 
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_SubMissions, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	TArray<FMissionInfo> SubMissions;
+	TArray<FSubMissionInfo> SubMissions;
 
 
 public:
