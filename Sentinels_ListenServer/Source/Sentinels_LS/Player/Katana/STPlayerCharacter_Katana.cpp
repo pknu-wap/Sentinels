@@ -25,7 +25,6 @@ void ASTPlayerCharacter_Katana::BeginPlay()
 	if (HasAuthority())
 	{
 		USTProjectilePoolingSubSystem* PoolingSystem = GetWorld()->GetSubsystem<USTProjectilePoolingSubSystem>();
-		PoolingSystem->InitProjectilePool(this, SubclassOfSlash_Q, 50);
 		PoolingSystem->InitProjectilePool(this, SubclassOfSlash_R, 50);
 	}
 }

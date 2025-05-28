@@ -72,7 +72,7 @@ protected:
 	float WarpDistance_Q = 500.f;
 
 	UPROPERTY(EditAnywhere, Category = "Skill")
-	TSubclassOf<AProjectileBase> SubclassOfSlash_Q;
+	TSubclassOf<AActor> SubclassOfSlash_Q;
 
 	UPROPERTY(EditAnywhere, Category = "Skill")
 	TSubclassOf<AProjectileBase> SubclassOfSlash_R;
