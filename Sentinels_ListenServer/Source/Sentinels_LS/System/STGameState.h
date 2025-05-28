@@ -69,6 +69,7 @@ protected:
 		Main Mission
 	*/
 public:
+	UFUNCTION(BlueprintCallable)
 	int GetClearedMissionNum() const;
 
 public:
@@ -76,12 +77,10 @@ public:
 	void ActivateRandomMission();
 
 	UFUNCTION(BlueprintCallable)
-	void ActivateMission(FGameplayTag InMissionTag);
-
-	void ActivateMission(ASTMissionSection* InMissionSection);
+	void ActivateSubMission(FGameplayTag InMissionTag);
 
 	UFUNCTION(BlueprintCallable)
-	bool IsMissionCleared(FGameplayTag InMissionTag);
+	void ActivateMission(ASTMissionSection* InMissionSection);
 
 public:
 	UFUNCTION(BlueprintCallable)
@@ -99,6 +98,9 @@ public:
 public:
 	UFUNCTION(BlueprintCallable)
 	USTMissionBase* GetMission(FGameplayTag InMissionTag);
+
+	UFUNCTION(BlueprintCallable)
+	USTMissionBase* GetSubMission(FGameplayTag InMissionTag);
 
 	UFUNCTION(BlueprintCallable)
 	FGameplayTag GetCurrentLevelTag() { return CurrentLevelTag; }
