@@ -19,8 +19,8 @@ void ASTPoolableCharacter::Activate(const FVector ActivateLocation, const FRotat
 	SetActorLocation(ActivateLocation); SetActorRotation(ActivateRotation);
 
 	// Enable Tick
-	GetMesh()->SetComponentTickEnabled(true);
-	GetCharacterMovement()->SetComponentTickEnabled(true);
+	GetMesh()->Activate();
+	GetCharacterMovement()->Activate();
 	SetActorTickEnabled(true);
 
 	AAIController* controller = Cast<AAIController>(GetController());
@@ -45,8 +45,8 @@ void ASTPoolableCharacter::Deactivate()
 
 	// Disable Tick
 	// GetMesh()->SetAnimationMode(EAnimationMode::AnimationCustomMode);
-	GetMesh()->SetComponentTickEnabled(false);
-	GetCharacterMovement()->SetComponentTickEnabled(false);
+	GetMesh()->Deactivate();
+	GetCharacterMovement()->Deactivate();
 	SetActorTickEnabled(false);
 
 	// Disable Gravity

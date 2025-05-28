@@ -161,6 +161,7 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 				}, 5.f, false);
 
 			PlayDiedMontage_Multicast();
+			// GetCharacterMovement()->Deactivate();
 			
 			// Stop Behavior Tree
 			AAIController* AIController = Cast<AAIController>(GetController());
@@ -202,11 +203,7 @@ void ASTEnemyBase::Activate(const FVector ActivateLocation, const FRotator Activ
 	
 	StopAnimMontage();
 	StatusComponent->InitStatus();
-
-	if(!DissolveReverseStart())
-	{
-		DissolveReverseEnded();
-	}
+	DissolveReverseStart_Multicast();
 }
 
 void ASTEnemyBase::Deactivate()
@@ -300,6 +297,19 @@ void ASTEnemyBase::PlayKnockbackMontage()
 	if (AnimInst)
 	{
 		AnimInst->Montage_Play(Montage_Knockback);
+	}
+}
+
+void ASTEnemyBase::DissolveStart_Multicast_Implementation()
+{
+	DissolveStart();
+}
+
+void ASTEnemyBase::DissolveReverseStart_Multicast_Implementation()
+{
+	if (!DissolveReverseStart())
+	{
+		DissolveReverseEnded();
 	}
 }
 

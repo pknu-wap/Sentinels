@@ -24,6 +24,7 @@
 #include "Net/UnrealNetwork.h"
 #include "STGameplayTags.h"
 #include "Player/Inventory/ItemObject.h"
+#include "MotionWarpingComponent.h"
 
 ASTPlayerCharacter::ASTPlayerCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<USTCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
@@ -91,6 +92,10 @@ void ASTPlayerCharacter::BeginPlay()
 	}
 
 	BindAttackDelegate();
+	if (USTPlayerAnimInstance* PAnimInst = Cast<USTPlayerAnimInstance>(GetMesh()->GetAnimInstance()))
+	{
+		PAnimInst->Delegate_SetWarpTarget_Step.AddUObject(this, &ASTPlayerCharacter::SetWarpTarget_Step);
+	}
 }
 
 void ASTPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -104,6 +109,7 @@ void ASTPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(Skill_R_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_R_Pressed);
 		EnhancedInputComponent->BindAction(Skill_Passive_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Skill_Passive_Pressed);
 		EnhancedInputComponent->BindAction(NormalAttack_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::NormalAttack_Pressed);
+		EnhancedInputComponent->BindAction(NormalAttack_Action, ETriggerEvent::Completed, this, &ASTPlayerCharacter::NormalAttack_Released);
 		EnhancedInputComponent->BindAction(Step_Action, ETriggerEvent::Started, this, &ASTPlayerCharacter::Step_Pressed);
 
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASTPlayerCharacter::Move);
@@ -218,8 +224,11 @@ void ASTPlayerCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
-	if(IsLocallyControlled())
+	if (IsLocallyControlled())
+	{
 		BindDefaultThirdPersonInput();
+		CameraManager->InitCameraMode();
+	}
 }
 
 void ASTPlayerCharacter::Jump()
@@ -276,6 +285,8 @@ bool ASTPlayerCharacter::CanDoAttack() const
 
 void ASTPlayerCharacter::NormalAttack_Pressed()
 {
+	bIsAttackPressinng = true;
+
 	if (!CanDoAttack()) return;
 
 	AddTag(FSTGameplayTags::Get().Character_State_Attack);
@@ -291,6 +302,11 @@ void ASTPlayerCharacter::NormalAttack_Pressed()
 	{
 		bShouldDoNextAttack = true;
 	}
+}
+
+void ASTPlayerCharacter::NormalAttack_Released()
+{
+	bIsAttackPressinng = false;
 }
 
 void ASTPlayerCharacter::PlayMontage_NormalAttack(int currentCombo)
@@ -331,7 +347,20 @@ void ASTPlayerCharacter::StartCheckNextInput()
 
 void ASTPlayerCharacter::CheckNextAttack()
 {
-	if (!bShouldDoNextAttack || CurrentCombo > MaxCombo)
+	if (bIsAttackPressinng || (bShouldDoNextAttack && CurrentCombo <= MaxCombo))
+	{
+		bIsCheckingNextInput = false; bShouldDoNextAttack = false;
+		CurrentCombo++;
+
+		PlayMontage_NormalAttack(CurrentCombo);
+		NormalAttack_Pressed_Server(CurrentCombo);
+	}
+	else
+	{
+		ResetAttackInfo();
+	}
+
+	/*if (!bShouldDoNextAttack || CurrentCombo > MaxCombo)
 	{
 		ResetAttackInfo();
 	}
@@ -342,7 +371,7 @@ void ASTPlayerCharacter::CheckNextAttack()
 
 		PlayMontage_NormalAttack(CurrentCombo);
 		NormalAttack_Pressed_Server(CurrentCombo);
-	}
+	}*/
 }
 
 void ASTPlayerCharacter::ResetAttackInfo()
@@ -400,6 +429,21 @@ void ASTPlayerCharacter::PlayMontage_Step()
 	if (AnimInst)
 	{
 		AnimInst->Montage_Play(Montage_Step_F);
+	}
+}
+
+void ASTPlayerCharacter::SetWarpTarget_Step()
+{
+	if (!HasAuthority()) return;
+
+	if (UMotionWarpingComponent* motionWarpComp = GetComponentByClass<UMotionWarpingComponent>())
+	{
+		FMotionWarpingTarget WarpTarget;
+		WarpTarget.Name = FName("WarpTarget");
+		WarpTarget.Location = GetActorLocation() + GetActorForwardVector() * StepDistance;
+		WarpTarget.Rotation = GetControlRotation();
+
+		motionWarpComp->AddOrUpdateWarpTarget(WarpTarget);
 	}
 }
 

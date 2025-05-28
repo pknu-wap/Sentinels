@@ -6,6 +6,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Sentinels_LS.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Actors/Section/STMissionSection.h"
 
 ASTGameState::ASTGameState() :
     CurrentLevelTag(FSTGameplayTags::Get().Level_Lobby)
@@ -69,11 +70,35 @@ void ASTGameState::ActivateMission(FGameplayTag InMissionTag)
     {
         if (Missions[i].MissionTag == InMissionTag)
         {
+            if (Missions[i].MissionSection)
+            {
+                Missions[i].MissionSection->MissionActivated();
+            }
+
             ActivatedMissions.Add(Missions[i]);
         }
     }
 
     OnRep_ActivatedMission();
+}
+
+void ASTGameState::ActivateMission(ASTMissionSection* InMissionSection)
+{
+    for (int i = 0; i < Missions.Num(); i++)
+    {
+        if (Missions[i].MissionSection == InMissionSection && Missions[i].Mission)
+        {
+            if(Missions[i].Mission)
+                Missions[i].Mission->ActivateMission();
+
+            if (Missions[i].MissionSection)
+                Missions[i].MissionSection->MissionActivated();
+
+            ActivatedMissions.Add(Missions[i]);
+
+            return;
+        }
+    }
 }
 
 bool ASTGameState::IsMissionCleared(FGameplayTag InMissionTag)
@@ -87,7 +112,7 @@ bool ASTGameState::IsMissionCleared(FGameplayTag InMissionTag)
     return false;
 }
 
-void ASTGameState::RegisterRandomMissions(int RegisterMissionNum, const TArray<FRegisterMissionInfo>& AvailableMissionInfos)
+void ASTGameState::RegisterRandomMissions(int RegisterMissionNum, const TArray<FRegisterMissionInfo>& AvailableMissionInfos, ASTMissionSection* MissionSection)
 {
     if (!HasAuthority())
     {
@@ -118,7 +143,7 @@ void ASTGameState::RegisterRandomMissions(int RegisterMissionNum, const TArray<F
         // Register Mission
         if (AvailableMissionInfos[rand].MissionSubClass)
         {
-            RegisterMission(AvailableMissionInfos[rand].MissionTag, AvailableMissionInfos[rand].MissionSubClass);
+            RegisterMission(AvailableMissionInfos[rand].MissionTag, AvailableMissionInfos[rand].MissionSubClass, MissionSection);
             Registered.Add(rand);
             registeredNum++;
         }
@@ -127,7 +152,7 @@ void ASTGameState::RegisterRandomMissions(int RegisterMissionNum, const TArray<F
     }
 }
 
-void ASTGameState::RegisterMission(FGameplayTag InMissionTag, TSubclassOf<USTMissionBase> MissionSubClass)
+void ASTGameState::RegisterMission(FGameplayTag InMissionTag, TSubclassOf<USTMissionBase> MissionSubClass, ASTMissionSection* MissionSection)
 {
     if (!HasAuthority())
     {
@@ -146,7 +171,7 @@ void ASTGameState::RegisterMission(FGameplayTag InMissionTag, TSubclassOf<USTMis
     if (NewMission)
     {
         AddReplicatedSubObject(NewMission);
-        Missions.Push(FMissionInfo(NewMission, InMissionTag));
+        Missions.Push(FMissionInfo(NewMission, InMissionTag, MissionSection));
 
         NewMission->RegisterMission();
         NewMission->Delegate_MissionEnded.AddDynamic(this, &ASTGameState::OnMissionEnded);
@@ -244,7 +269,7 @@ void ASTGameState::RegisterSubMission(FGameplayTag InMissionTag, TSubclassOf<UST
     if (NewSubMission)
     {
         AddReplicatedSubObject(NewSubMission);
-        SubMissions.Push(FMissionInfo(NewSubMission, InMissionTag));
+        SubMissions.Push(FSubMissionInfo(NewSubMission, InMissionTag));
 
         NewSubMission->RegisterMission();
         NewSubMission->Delegate_MissionEnded.AddDynamic(this, &ASTGameState::OnSubMissionEnded);

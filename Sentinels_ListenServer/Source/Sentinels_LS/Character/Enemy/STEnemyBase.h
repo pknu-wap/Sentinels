@@ -84,8 +84,14 @@ protected:
 /*
 	Die
 */
+	UFUNCTION(NetMulticast, Reliable)
+	void DissolveStart_Multicast();
+
 	UFUNCTION(BlueprintImplementableEvent)
 	void DissolveStart();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void DissolveReverseStart_Multicast();
 
 	UFUNCTION(BlueprintImplementableEvent)
 	bool DissolveReverseStart();

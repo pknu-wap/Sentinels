@@ -12,8 +12,13 @@ USTEnemyStatusComponent::USTEnemyStatusComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
 
-	StatusCurve_Mission = LoadObject<UCurveFloat>(this, TEXT("/Script/Engine.CurveFloat'/Game/Sentinels/Enemy/Curve/Curve_AI_Status_Mission.Curve_AI_Status_Mission'"));
-	StatusCurve_Time = LoadObject<UCurveFloat>(this, TEXT("/Script/Engine.CurveFloat'/Game/Sentinels/Enemy/Curve/Curve_AI_Status_Time.Curve_AI_Status_Time'"));
+	static ConstructorHelpers::FObjectFinder<UCurveFloat> OF_StatusCurve_Mission(TEXT("/Script/Engine.CurveFloat'/Game/Sentinels/Enemy/Curve/Curve_AI_Status_Mission.Curve_AI_Status_Mission'"));
+	static ConstructorHelpers::FObjectFinder<UCurveFloat> OF_StatusCurve_Time(TEXT("/Script/Engine.CurveFloat'/Game/Sentinels/Enemy/Curve/Curve_AI_Status_Time.Curve_AI_Status_Time'"));
+
+	StatusCurve_Mission = OF_StatusCurve_Mission.Object;
+	StatusCurve_Time = OF_StatusCurve_Time.Object;
+	// StatusCurve_Mission = LoadObject<UCurveFloat>(this, TEXT("/Script/Engine.CurveFloat'/Game/Sentinels/Enemy/Curve/Curve_AI_Status_Mission.Curve_AI_Status_Mission'"));
+	// StatusCurve_Time = LoadObject<UCurveFloat>(this, TEXT("/Script/Engine.CurveFloat'/Game/Sentinels/Enemy/Curve/Curve_AI_Status_Time.Curve_AI_Status_Time'"));
 }
 
 

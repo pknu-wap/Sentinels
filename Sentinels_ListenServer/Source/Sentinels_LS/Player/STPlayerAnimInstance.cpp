@@ -32,3 +32,8 @@ void USTPlayerAnimInstance::AnimNotify_ThrowLiftingActor()
 {
 	Delegate_ThrowLiftingActor.Broadcast();
 }
+
+void USTPlayerAnimInstance::AnimNotify_SetWarpTarget_Step()
+{
+	Delegate_SetWarpTarget_Step.Broadcast();
+}

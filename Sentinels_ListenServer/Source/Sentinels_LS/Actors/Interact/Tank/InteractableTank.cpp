@@ -36,6 +36,8 @@ void AInteractableTank::BeginPlay()
 	if (HasAuthority())
 	{
 		RemainedBullet = MaxBullet;
+
+		GetCharacterMovement()->Deactivate();
 	}
 }
 
@@ -237,6 +239,8 @@ void AInteractableTank::Interact_Implementation(UInteractComponent* InteractingC
 	if (!bIsInteractable) return;
 
 	if (RemainedBullet <= 0) return;
+
+	GetCharacterMovement()->Activate();
 
 	CachedPC = Cast<APlayerController>(InteractingComponent->GetOwner());
 	if (CachedPC)
