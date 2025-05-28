@@ -70,6 +70,7 @@ protected:
 		Main Mission
 	*/
 public:
+	UFUNCTION(BlueprintCallable)
 	int GetClearedMissionNum() const;
 
 public:
@@ -77,12 +78,10 @@ public:
 	void ActivateRandomMission();
 
 	UFUNCTION(BlueprintCallable)
-	void ActivateMission(FGameplayTag InMissionTag);
-
-	void ActivateMission(ASTMissionSection* InMissionSection);
+	void ActivateSubMission(FGameplayTag InMissionTag);
 
 	UFUNCTION(BlueprintCallable)
-	bool IsMissionCleared(FGameplayTag InMissionTag);
+	void ActivateMission(ASTMissionSection* InMissionSection);
 
 public:
 	UFUNCTION(BlueprintCallable)
@@ -91,21 +90,24 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RegisterMission(FGameplayTag InMissionTag, TSubclassOf<USTMissionBase> MissionSubClass, ASTMissionSection* MissionSection);
 
-	UPROPERTY(BlueprintAssignable)
-	FOnRegisterMission OnRegisterMission;
+	// UPROPERTY(BlueprintAssignable)
+	// FOnRegisterMission OnRegisterMission;
 
-	UFUNCTION(BlueprintCallable)
-	void UnRegisterMission(FGameplayTag InMissionTag, bool IsCleared);
+	// UFUNCTION(BlueprintCallable)
+	// void UnRegisterMission(FGameplayTag InMissionTag, bool IsCleared);
 
 	UFUNCTION()
-	void OnMissionEnded(FGameplayTag InMissionTag, bool IsCleared);
+	void OnMissionEnded(USTMissionBase* InMission, bool IsCleared);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void OnMissionEnded_Multicast(FGameplayTag InMissionTag, bool IsCleared);
+	void OnMissionEnded_Multicast(USTMissionBase* InMission, bool IsCleared);
 
 public:
 	UFUNCTION(BlueprintCallable)
 	USTMissionBase* GetMission(FGameplayTag InMissionTag);
+
+	UFUNCTION(BlueprintCallable)
+	USTMissionBase* GetSubMission(FGameplayTag InMissionTag);
 
 	UFUNCTION(BlueprintCallable)
 	FGameplayTag GetCurrentLevelTag() { return CurrentLevelTag; }
@@ -138,10 +140,10 @@ public:
 	void RegisterSubMission(FGameplayTag InMissionTag, TSubclassOf<USTMissionBase> SubMissionSubClass);
 
 	UFUNCTION()
-	void OnSubMissionEnded(FGameplayTag InMissionTag, bool IsCleared);
+	void OnSubMissionEnded(USTMissionBase* InMission, bool IsCleared);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void OnSubMissionEnded_Multicast(FGameplayTag InMissionTag, bool IsCleared);
+	void OnSubMissionEnded_Multicast(USTMissionBase* InMission, bool IsCleared);
 
 protected:
 	UFUNCTION()

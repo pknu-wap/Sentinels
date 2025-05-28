@@ -19,6 +19,10 @@ protected:
 	virtual void BeginPlay() override;
 
 protected:
+	UFUNCTION(BlueprintCallable)
+	void InitMissionInfos();
+
+protected:
 	UPROPERTY()
 	ASTMissionSection* CurrentMissionSection;
 };

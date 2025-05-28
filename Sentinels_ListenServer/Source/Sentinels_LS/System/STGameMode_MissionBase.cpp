@@ -45,7 +45,10 @@ AActor* ASTGameMode_MissionBase::ChoosePlayerStart_Implementation(AController* P
 void ASTGameMode_MissionBase::BeginPlay()
 {
 	Super::BeginPlay();
+}
 
+void ASTGameMode_MissionBase::InitMissionInfos()
+{
 	// Register All Missions
 	TArray<AActor*> Actors;
 	UGameplayStatics::GetAllActorsOfClass(this, ASTMissionSection::StaticClass(), Actors);

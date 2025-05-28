@@ -100,13 +100,13 @@ void USTRepairRiftCondition::MissionActivated_Implementation()
 	/*
 		Spawn Initial Enemy
 	*/
-	for (int i = 0; i < SpawnedRifts.Num(); i++)
+	/*for (int i = 0; i < SpawnedRifts.Num(); i++)
 	{
 		if (SpawnedRifts[i])
 		{
 			SpawnedRifts[i]->SpawnInitialEnemy();
 		}
-	}
+	}*/
 
 	/*
 	*	Show Related Widget on Server & Clients
