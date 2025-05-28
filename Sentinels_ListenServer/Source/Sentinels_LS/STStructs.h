@@ -42,6 +42,8 @@ struct SENTINELS_LS_API FSkillStruct : public FTableRowBase
 		ID = other.ID;
 		Icon = other.Icon;
 		SkillCoolTime = other.SkillCoolTime;
+		SkillName = other.SkillName;
+		SkillDescription = other.SkillDescription;
 	}
 
 	FSkillStruct& operator=(const FSkillStruct& other)
@@ -49,6 +51,9 @@ struct SENTINELS_LS_API FSkillStruct : public FTableRowBase
 		ID = other.ID;
 		Icon = other.Icon;
 		SkillCoolTime = other.SkillCoolTime;
+		SkillName = other.SkillName;
+		SkillDescription = other.SkillDescription;
+
 		return *this;
 	}
 

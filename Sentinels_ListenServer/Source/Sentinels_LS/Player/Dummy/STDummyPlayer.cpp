@@ -125,6 +125,8 @@ void ASTDummyPlayer::ServerRPCChangeCurrentClass_Implementation(ESTClassType InC
 		return;
 
 	gameTravelDataSubsystem->SavePlayerCurrentClass(PlayerID, CurrentClass);
+
+	OnRep_CurrentClass();
 }
 
 void ASTDummyPlayer::ServerRPCChangeSKMesh_Implementation(ESKParts Part, FName SKMeshRowName)
@@ -211,6 +213,8 @@ void ASTDummyPlayer::ChangeSKMeshName(ESKParts Part, FName SKMeshRowName)
 		Name_Feet = SKMeshRowName;
 		break;
 	}
+
+	OnRep_SKName();
 }
 
 UTextureRenderTarget2D* ASTDummyPlayer::GetTextureRenderTarget2D()

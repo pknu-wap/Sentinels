@@ -62,7 +62,7 @@ void ASTPlayerController::OnPossess(APawn* aPawn)
 	else
 	{
 		// CHANGE SERVER ONLY
-		RequestUpdateSKMeshParts();
+		RequestLoadSKMeshParts();
 
 		// NEED CLINET CHANGE
 	}
@@ -152,7 +152,7 @@ void ASTPlayerController::UpdatePlayerClass_Implementation(ESTClassType InClass)
 	GetWorldTimerManager().SetTimerForNextTick([GameMode, PC]() { GameMode->RestartPlayer(PC); });
 }
 
-void ASTPlayerController::RequestUpdateSKMeshParts_Implementation()
+void ASTPlayerController::RequestLoadSKMeshParts_Implementation()
 {
 	USTGameTravelDataSubsystem* gameTravelData = GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
 	FPlayerInfo playerInfo = gameTravelData->LoadPlayerInfo(PlayerState->GetUniqueId());

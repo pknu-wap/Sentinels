@@ -55,7 +55,7 @@ public:
 	TSubclassOf<APawn> GetDefaultPlayerClass() { return DefaultPlayerClass; }
 
 	UFUNCTION(Server, Reliable, BlueprintCallable)
-	void RequestUpdateSKMeshParts();
+	void RequestLoadSKMeshParts();
 
 
 /*

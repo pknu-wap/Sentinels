@@ -90,11 +90,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RegisterMission(FGameplayTag InMissionTag, TSubclassOf<USTMissionBase> MissionSubClass, ASTMissionSection* MissionSection);
 
-	// UPROPERTY(BlueprintAssignable)
-	// FOnRegisterMission OnRegisterMission;
-
-	// UFUNCTION(BlueprintCallable)
-	// void UnRegisterMission(FGameplayTag InMissionTag, bool IsCleared);
+	UPROPERTY(BlueprintAssignable)
+	FOnRegisterMission OnRegisterMission;
+	
+	//UFUNCTION(BlueprintCallable)
+	//void UnRegisterMission(FGameplayTag InMissionTag, bool IsCleared);
 
 	UFUNCTION()
 	void OnMissionEnded(USTMissionBase* InMission, bool IsCleared);

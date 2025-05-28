@@ -67,11 +67,4 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level", meta = (AllowPrivateAccess = "true"))
 	TMap<FGameplayTag, TSoftObjectPtr<UWorld>> LevelMap;
-
-	/*
-		DataTable
-	*/
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTableRowHandle", meta = (AllowPrivateAccess = "true"))
-	TArray<FDataTableRowHandle> DTRowHandle_Ary;
 };
