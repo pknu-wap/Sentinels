@@ -36,6 +36,7 @@ protected:
 protected:
 	virtual void Skill_Passive_Pressed() override;
 	virtual void Skill_Passive_Pressed_Server_Implementation() override;
+	virtual void Skill_Passive_Pressed_Multicast_Implementation() override;
 
 	UFUNCTION()
 	void SetWrapTarget_Passive();
