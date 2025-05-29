@@ -162,7 +162,7 @@ void USTSessionSubSystem::OnStartSessionCompleted(FName SessionName, bool bWasSu
 	// If the start was successful, we can open a NewMap if we want. Make sure to use "listen" as a parameter!
 	if (bWasSuccessful)
 	{
-		UGameplayStatics::OpenLevel(GetWorld(), "PreviewSceneIndoor", true, "listen");
+		UGameplayStatics::OpenLevel(GetWorld(), "LV_SessionLobby", true, "listen");
 	}
 }
 
