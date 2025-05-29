@@ -37,6 +37,9 @@ protected:
 	virtual void Skill_Passive_Pressed_Server_Implementation() override;
 
 	UFUNCTION()
+	void ApplyPassiveDamage();
+
+	UFUNCTION()
 	void SetWrapTarget_Passive();
 
 protected:

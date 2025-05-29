@@ -72,11 +72,15 @@ void ASTPlayerCharacter_GreatSword::Skill_Passive_Pressed_Server_Implementation(
 				TargetActor_Passive = newTarget;
 				AddTag(FSTGameplayTags::Get().Character_State_Skill);
 				Skill_Passive_Pressed_Multicast();
-				PlayMontage_Skill_Passive();
 				break;
 			}
 		}
 	}
+}
+
+void ASTPlayerCharacter_GreatSword::Skill_Passive_Pressed_Multicast_Implementation()
+{
+	PlayMontage_Skill_Passive();
 }
 
 void ASTPlayerCharacter_GreatSword::SetWrapTarget_Passive()

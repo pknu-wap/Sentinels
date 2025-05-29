@@ -55,7 +55,8 @@ void ASTPlayerController::OnPossess(APawn* aPawn)
 
 		ASTPlayerCharacter* player = Cast<ASTPlayerCharacter>(GetCharacter());
 
-		player->UpdateSKMeshParts(playerInfo.PlayerSKMeshesRowName);
+		if(player)
+			player->UpdateSKMeshParts(playerInfo.PlayerSKMeshesRowName);
 
 		// ADD CLIENT RPC
 	}
