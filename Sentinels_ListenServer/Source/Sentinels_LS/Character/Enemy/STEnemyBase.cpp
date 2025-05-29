@@ -118,6 +118,7 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 		}
 		else
 		{
+			damageTextColor = FSlateColor(FLinearColor::White);
 			UE_LOG(LogTemp, Warning, TEXT("ASTEnemyBase : Damage %f"), Damage);
 		}
 		
