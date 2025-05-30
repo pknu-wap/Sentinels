@@ -22,10 +22,10 @@ bool USTWorldSpawnSubsystem::CanSpawnCharacter() const
 
 void USTWorldSpawnSubsystem::NewCharacterSpawned(AActor* NewSpawnedCharacter)
 {
-	CurrentSpawnedCharacters++;
+	CurrentSpawnedCharacters = FMath::Clamp(CurrentSpawnedCharacters + 1, 0, MaxSpawnableCharacters);
 }
 
 void USTWorldSpawnSubsystem::CharacterDeactivated(AActor* DeactivatedCharacter)
 {
-	CurrentSpawnedCharacters--;
+	CurrentSpawnedCharacters = FMath::Clamp(CurrentSpawnedCharacters - 1, 0, MaxSpawnableCharacters);
 }

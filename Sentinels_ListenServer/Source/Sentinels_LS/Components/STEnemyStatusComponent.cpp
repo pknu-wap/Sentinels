@@ -27,7 +27,17 @@ void USTEnemyStatusComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	StatusCurve_Current = StatusCurve_Mission;
+	StatusCurve_Current = StatusCurve_Time;
+
+	FTimerHandle StatusHandle;
+	GetWorld()->GetTimerManager().SetTimer(StatusHandle, 
+		[&]() 
+		{ 
+			float weight = GetStatusCurveValue();
+			MaxHP = BaseMaxHP * weight;
+			CurrentATK = BaseATK * weight;
+		},
+		30.f, true);
 
 	InitStatus();
 }
@@ -38,7 +48,8 @@ void USTEnemyStatusComponent::InitStatus()
 	{
 		float weight = GetStatusCurveValue();
 
-		CurrentHP = MaxHP * weight;
+		MaxHP = BaseMaxHP * weight;
+		CurrentHP = MaxHP;
 		CurrentATK = BaseATK * weight;
 
 		bIsDied = false;

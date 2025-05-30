@@ -188,6 +188,10 @@ void ASTPlayerCharacter_Katana::SpawnSlash_Q()
 {
 	if (HasAuthority())
 	{
-		GetWorld()->SpawnActor<AActor>(SubclassOfSlash_Q, SpawnLocation_Slash_Q, FRotator::ZeroRotator);
+		AActor* Slash = GetWorld()->SpawnActor<AActor>(SubclassOfSlash_Q, SpawnLocation_Slash_Q, FRotator::ZeroRotator);
+		if (Slash)
+		{
+			Slash->SetInstigator(this);
+		}
 	}
 }

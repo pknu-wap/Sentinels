@@ -8,10 +8,19 @@
 #include "GameFramework/DamageType.h"
 #include "Perception/AISense_Damage.h"
 #include "Character/Enemy/STEnemyBase.h"
+#include "Components/STEnemyStatusComponent.h"
 
 void UANS_CheckAttackHit_Enemy::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
     Super::NotifyBegin(MeshComp, Animation, TotalDuration);
+
+    if (AActor* owner = MeshComp->GetOwner())
+    {
+        if (USTEnemyStatusComponent* StatusComp = owner->GetComponentByClass<USTEnemyStatusComponent>())
+        {
+            Damage = StatusComp->GetCurrentATK() * DamageMultiplier;
+        }
+    }
 }
 
 void UANS_CheckAttackHit_Enemy::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference)

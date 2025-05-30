@@ -32,6 +32,7 @@ public:
 public:
 	FORCEINLINE float GetMaxHP() const { return MaxHP; }
 	FORCEINLINE float GetCurrentHP() const { return CurrentHP; }
+	FORCEINLINE float GetCurrentATK() const { return CurrentATK; }
 	float GetStatusCurveValue() const;
 
 protected:
@@ -44,19 +45,22 @@ protected:
 	UPROPERTY(EditAnywhere)
 	UCurveFloat* StatusCurve_Mission;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float MaxHP = 500.f;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float BaseMaxHP = 500.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float CurrentHP;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float BaseATK = 10.f;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	float CurrentATK;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	bool bIsDied = false;
 
 };

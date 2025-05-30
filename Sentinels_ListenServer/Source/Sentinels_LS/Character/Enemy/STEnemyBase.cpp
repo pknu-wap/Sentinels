@@ -119,7 +119,7 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 		else
 		{
 			damageTextColor = FSlateColor(FLinearColor::White);
-			UE_LOG(LogTemp, Warning, TEXT("ASTEnemyBase : Damage %f"), Damage);
+			UE_LOG(LogTemp, Warning, TEXT("ASTEnemyBase : Extra Damage %f"), Damage);
 		}
 		
 
@@ -297,19 +297,21 @@ void ASTEnemyBase::PlayNormalAttackMontage(int MontageIdx)
 
 void ASTEnemyBase::PrimaryFire()
 {
-	USTProjectilePoolingSubSystem* ProjectileSubSystem = GetWorld()->GetSubsystem<USTProjectilePoolingSubSystem>();
-
-	FVector SpawnLocation = GetMesh()->GetSocketLocation(SocketName_PrimaryFire);
-	AProjectileBase* projectile = ProjectileSubSystem->GetActor<AProjectileBase>(ProjectileClass_PrimaryFire, SpawnLocation);
-	// AProjectileBase* projectile = GetWorld()->SpawnActor<AProjectileBase>(ProjectileClass_PrimaryFire, SpawnLocation, GetActorForwardVector().Rotation());
-	if (projectile)
+	if (HasAuthority())
 	{
-		UParticleSystemComponent* Particle = projectile->GetComponentByClass<UParticleSystemComponent>();
-		if (Particle)
+		USTProjectilePoolingSubSystem* ProjectileSubSystem = GetWorld()->GetSubsystem<USTProjectilePoolingSubSystem>();
+		FVector SpawnLocation = GetMesh()->GetSocketLocation(SocketName_PrimaryFire);
+		AProjectileBase* projectile = ProjectileSubSystem->GetActor<AProjectileBase>(ProjectileClass_PrimaryFire, SpawnLocation);
+		if (projectile)
 		{
-			Particle->ActivateSystem(true);
+			projectile->SetInstigator(this);
+			UParticleSystemComponent* Particle = projectile->GetComponentByClass<UParticleSystemComponent>();
+			if (Particle)
+			{
+				Particle->ActivateSystem(true);
+			}
+			projectile->FireInDirection(GetActorForwardVector());
 		}
-		projectile->FireInDirection(GetActorForwardVector());
 	}
 }
 
@@ -325,6 +327,14 @@ void ASTEnemyBase::PlayKnockbackMontage()
 	{
 		AnimInst->Montage_Play(Montage_Knockback);
 	}
+}
+
+bool ASTEnemyBase::IsAlive() const
+{
+	if (StatusComponent) 
+		return StatusComponent->GetCurrentHP() > 0;
+
+	return false;
 }
 
 void ASTEnemyBase::DissolveStart_Multicast_Implementation()

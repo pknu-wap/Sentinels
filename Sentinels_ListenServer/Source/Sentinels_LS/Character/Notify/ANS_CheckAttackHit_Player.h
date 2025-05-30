@@ -66,6 +66,9 @@ private:
 	float FinalDamage = 10.f;
 
 	UPROPERTY()
+	float CiriticalFinalDamage = 10.f;
+
+	UPROPERTY()
 	FSTPointDamageEvent DamageEvent;
 
 /*

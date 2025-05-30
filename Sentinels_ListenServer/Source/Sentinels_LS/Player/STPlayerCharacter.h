@@ -185,8 +185,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void AdjustFinalDamage(float& DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor);
 
-protected:
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<UDamageType> BaseDamageType;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<UDamageType> CriticalDamageType;
 	
 	/*
 		On Attack Success 
