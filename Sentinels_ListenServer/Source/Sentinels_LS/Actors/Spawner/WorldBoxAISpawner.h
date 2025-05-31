@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/SpawnEnemyComponent.h"
+#include "Containers/Queue.h"
 #include "WorldBoxAISpawner.generated.h"
 
 UCLASS()
@@ -44,6 +45,7 @@ public:
     void StopSpawnEnemy();
 
 protected:
+    void TrySpawnAI();
     void SpawnEnemy(int InfoIdx);
     bool IsVectorInBoundingBox(const FVector& InLocation) const;
     bool IsInFrontalCone(const FVector& locationToCheck, const FVector& originLocation, const FVector& forwardVector, float angleDeg) const;
@@ -75,5 +77,10 @@ protected:
     TArray<FSpawnInfo> SpawnInfos;
 
 private:
+    TQueue<int> SpawnReserveQue;
+
+    UPROPERTY()
+    TSet<int> SpawnReserveSet;
+
     float CurrentSpawned = 0;
 };

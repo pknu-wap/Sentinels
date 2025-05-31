@@ -103,11 +103,18 @@ void AWorldBoxAISpawner::StartSpawnEnemy()
 			GetWorld()->GetTimerManager().SetTimer(SpawnInfos[i].TimerHandle,
 				[this, i]()
 				{
-					SpawnEnemy(i);
+					if (!SpawnReserveSet.Contains(i))
+					{
+						SpawnReserveSet.Add(i);
+						SpawnReserveQue.Enqueue(i);
+					}
 				}
 			, SpawnInfos[i].SpawnPeriod, true);
 		}
 	}
+
+	FTimerHandle SpawnHandle;
+	GetWorld()->GetTimerManager().SetTimer(SpawnHandle, this, &AWorldBoxAISpawner::TrySpawnAI, 1.f, true);
 }
 
 void AWorldBoxAISpawner::StopSpawnEnemy()
@@ -115,6 +122,16 @@ void AWorldBoxAISpawner::StopSpawnEnemy()
 	for (int i = 0; i < SpawnInfos.Num(); i++)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(SpawnInfos[i].TimerHandle);
+	}
+}
+
+void AWorldBoxAISpawner::TrySpawnAI()
+{
+	if (!SpawnReserveQue.IsEmpty())
+	{
+		int idx = 0;
+		SpawnReserveQue.Dequeue(idx); SpawnReserveSet.Remove(idx);
+		SpawnEnemy(idx);
 	}
 }
 
@@ -136,8 +153,10 @@ void AWorldBoxAISpawner::SpawnEnemy(int InfoIdx)
 		if (Info.CurrentSpawned >= Info.MaxSpawnCount)
 			break;
 
-		if (!SpawnSystem->CanSpawnCharacter()) 
+		if (!SpawnSystem->CanSpawnCharacter())
+		{
 			break;
+		}
 
 		int playerIdx = UKismetMathLibrary::RandomIntegerInRange(0, Players.Num() - 1);
 
@@ -160,7 +179,7 @@ void AWorldBoxAISpawner::SpawnEnemy(int InfoIdx)
 				controller->SetTarget(Players[playerIdx]);
 
 			// Bind Function on Enemy Died!
-			Enemy->Delegate_OnEnemyDied.RemoveDynamic(this, &AWorldBoxAISpawner::OnEnemyDied);
+			Enemy->Delegate_OnEnemyDied.RemoveAll(this);
 			Enemy->Delegate_OnEnemyDied.AddDynamic(this, &AWorldBoxAISpawner::OnEnemyDied);
 
 			Info.CurrentSpawned++;
@@ -289,8 +308,10 @@ void AWorldBoxAISpawner::OnEnemyDied(AActor* DiedEnemy)
 
 	UE_LOG(LogTemp, Display, TEXT("AWorldBoxAISpawner::OnEnemyDied"));
 	// Called when enemy died
-	if (DiedEnemy)
+	ASTEnemyBase* Enemy = Cast<ASTEnemyBase>(DiedEnemy);
+	if (Enemy)
 	{
+		Enemy->Delegate_OnEnemyDied.RemoveAll(this);
 		for (int i = 0; i < SpawnInfos.Num(); i++)
 		{
 			for (auto& SubClass : SpawnInfos[i].SpawnPawnClasses)

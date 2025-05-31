@@ -25,6 +25,9 @@ protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
+	UFUNCTION(BlueprintCallable)
+	float AdjustFinalDamage(float DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor);
+
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	TArray<FInvSlotStruct> GetInventoryCopy() const { return Inventory; }
 

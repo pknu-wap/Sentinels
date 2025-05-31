@@ -51,3 +51,8 @@ void ASTPlayerCharacter_DualBlade::Skill_Passive_Pressed_Server_Implementation()
 		PlayMontage_Skill_Passive();
 	}
 }
+
+void ASTPlayerCharacter_DualBlade::Skill_Passive_Pressed_Multicast_Implementation()
+{
+	PlayMontage_Skill_Passive();
+}

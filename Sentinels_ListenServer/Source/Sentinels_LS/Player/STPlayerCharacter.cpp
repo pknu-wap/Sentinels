@@ -680,14 +680,9 @@ void ASTPlayerCharacter::AdjustFinalDamage(float& DamageAmount, FDamageEvent con
 {
 	if (!HasAuthority()) return;
 
-	// Item (Combo Amplifier)
-	const FInvSlotStruct& ItemInfo_CA = InventoryComponent->GetItem(8);
-	if (ItemInfo_CA.ItemID != 0 && ItemInfo_CA.Quantity > 0)
+	if (UInventoryComponent* InvComp = GetComponentByClass<UInventoryComponent>())
 	{
-		if (ItemInfo_CA.ItemObject)
-		{
-			DamageAmount = ItemInfo_CA.ItemObject->AdjustFinalDamage(DamageAmount, DamageEvent, DamagedActor);
-		}
+		DamageAmount = InvComp->AdjustFinalDamage(DamageAmount, DamageEvent, DamagedActor);
 	}
 }
 

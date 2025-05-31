@@ -247,12 +247,18 @@ void UInteractComponent::FindInteractiveActor()
 
 	if (hitResult.bBlockingHit)
 	{
-		InteractiveObject = Cast<IInteractiveInterface>(hitResult.GetActor());
+		IInteractiveInterface* newInteractiveObject = Cast<IInteractiveInterface>(hitResult.GetActor());
 
 		// Show Interactable UI 
-		if (InteractiveObject)
+		if (newInteractiveObject && InteractiveObject != newInteractiveObject)
 		{
-			IInteractiveInterface::Execute_ShowInteractiveUI(hitResult.GetActor(), this);
+			if (InteractiveObject)
+				IInteractiveInterface::Execute_HideInteractiveUI(Cast<UObject>(InteractiveObject), this);
+
+			InteractiveObject = newInteractiveObject;
+
+			if(InteractiveObject)
+				IInteractiveInterface::Execute_ShowInteractiveUI(Cast<UObject>(InteractiveObject), this);
 		}
 	}
 	else

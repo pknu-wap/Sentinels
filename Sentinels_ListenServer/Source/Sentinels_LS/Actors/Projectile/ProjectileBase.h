@@ -41,7 +41,7 @@ public:
 	void SetHomingTarget(AActor* InTarget);
 
 protected:
-	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Projectile)
 	TObjectPtr<USphereComponent> CollisionComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
