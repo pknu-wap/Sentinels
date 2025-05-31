@@ -6,6 +6,8 @@
 #include "GameFramework/GameState.h"
 #include "Perception/AISense_Damage.h"
 #include "DamageType/STDamageTypes.h"
+#include "Components/STPlayerStatusComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 void UAN_ApplyRadialDamage::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
@@ -14,7 +16,7 @@ void UAN_ApplyRadialDamage::Notify(USkeletalMeshComponent* MeshComp, UAnimSequen
 	AActor* Owner = MeshComp->GetOwner();
 	if (Owner && Owner->HasAuthority())
 	{
-		CalculateFinalDamage();
+		CalculateFinalDamage(MeshComp, Animation, EventReference);
 
 		TArray<TEnumAsByte<EObjectTypeQuery>> objectType;
 		objectType.Emplace(UEngineTypes::ConvertToObjectType(ECC_Pawn));
@@ -39,6 +41,7 @@ void UAN_ApplyRadialDamage::Notify(USkeletalMeshComponent* MeshComp, UAnimSequen
 
 		for (FHitResult hit : hitResults)
 		{
+			float damage = 0.f;
 			AActor* DamagedActor = hit.GetActor();
 			AActor* DamageCauser = MeshComp->GetOwner();
 
@@ -46,8 +49,18 @@ void UAN_ApplyRadialDamage::Notify(USkeletalMeshComponent* MeshComp, UAnimSequen
 			{
 				DamagedActors.Add(DamagedActor);
 
-				UGameplayStatics::ApplyPointDamage(DamagedActor, FinalDamage, hit.ImpactNormal, hit,
-					DamageCauser->GetInstigatorController(), DamageCauser, GetDamageType());
+				// Check Critical
+				bool bIsCritical = UKismetMathLibrary::RandomFloatInRange(0, 1) <= StatusComp->CriticalRate ? true : false;
+				damage = bIsCritical ? CiriticalFinalDamage : FinalDamage;
+
+				// Generate Damage Event With Critical
+				DamageEvent = FSTPointDamageEvent(bIsCritical, damage, hit, hit.ImpactNormal, GetDamageType());
+
+				// Apply Damage
+				DamagedActor->TakeDamage(damage, DamageEvent, DamageCauser->GetInstigatorController(), DamageCauser);
+
+				/*UGameplayStatics::ApplyPointDamage(DamagedActor, FinalDamage, hit.ImpactNormal, hit,
+					DamageCauser->GetInstigatorController(), DamageCauser, GetDamageType());*/
 
 				UAISense_Damage::ReportDamageEvent(DamagedActor, DamagedActor, DamageCauser,
 					FinalDamage, DamagedActor->GetActorLocation(), hit.ImpactPoint);
@@ -58,8 +71,18 @@ void UAN_ApplyRadialDamage::Notify(USkeletalMeshComponent* MeshComp, UAnimSequen
 	}
 }
 
-void UAN_ApplyRadialDamage::CalculateFinalDamage()
+void UAN_ApplyRadialDamage::CalculateFinalDamage(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
+	if (AActor* Owner = MeshComp->GetOwner())
+	{
+		StatusComp = Owner->GetComponentByClass<USTPlayerStatusComponent>();
+		if (!StatusComp) return;
+
+		FinalDamage = StatusComp->GetBaseDamage() * DamagePercent;
+		CiriticalFinalDamage = StatusComp->GetCriticalBaseDamage() * DamagePercent;
+		return;
+	}
+	
 	FinalDamage = 10 * DamagePercent;
 }
 

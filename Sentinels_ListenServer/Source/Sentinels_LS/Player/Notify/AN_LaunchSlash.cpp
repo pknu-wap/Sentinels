@@ -31,6 +31,7 @@ void UAN_LaunchSlash::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase
 
 		if (Slash)
 		{
+			Slash->SetInstigator(Cast<APawn>(MeshComp->GetOwner()));
 			if (LaunchRotationOffset == FRotator::ZeroRotator)
 			{
 				Slash->FireInDirection(OwningCharacter->GetActorForwardVector());

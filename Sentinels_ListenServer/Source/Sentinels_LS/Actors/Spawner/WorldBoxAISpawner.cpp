@@ -128,6 +128,7 @@ void AWorldBoxAISpawner::SpawnEnemy(int InfoIdx)
 	}
 
 	FSpawnInfo& Info = SpawnInfos[InfoIdx];
+	if (Info.SpawnPawnClasses.Num() == 0) return;
 
 	int rand; FNavLocation SpawnNavLocation;
 	for (int i = 0; i < Info.SpawnRate; i++)

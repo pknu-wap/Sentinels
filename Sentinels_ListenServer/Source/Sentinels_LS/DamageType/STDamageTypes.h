@@ -36,6 +36,9 @@ class SENTINELS_LS_API USTBaseDamageType : public UDamageType
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float StunnedTime = 1.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bIsCritical = false;
 };
 
 UCLASS()

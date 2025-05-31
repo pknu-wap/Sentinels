@@ -34,15 +34,16 @@ void USTPlayerStatusComponent::BeginPlay()
 	Super::BeginPlay();
 
 	SetDefaultStatus();
+	ApplyStatus();
+
+	HP = MaxHP;
+	OnRep_HPUpdated();
 
 	if (GetOwner() && GetOwner()->HasAuthority())
 	{
 		FTimerHandle HPRegenHandle;
 		GetWorld()->GetTimerManager().SetTimer(HPRegenHandle, 
-			[&]()
-			{
-				HP = FMath::Clamp(HP + HPRegen, 0, MaxHP);
-			},
+			this, &USTPlayerStatusComponent::RegenHP,
 			1.f, true);
 	}
 }
@@ -83,6 +84,26 @@ void USTPlayerStatusComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 
 	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, MaxCDR, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, CDR, COND_OwnerOnly);
+}
+
+float USTPlayerStatusComponent::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	HP = FMath::Clamp(HP - DamageAmount, 0, MaxHP);
+	OnRep_HPUpdated();
+
+	return HP;
+}
+
+float USTPlayerStatusComponent::GetBaseDamage() const
+{
+	UE_LOG(LogTemp, Display, TEXT("Damage : %f = %f * (1 + %f)"), ATK * (1 + DamageIncreaseRate), ATK, (1 + DamageIncreaseRate));
+	return ATK * (1 + DamageIncreaseRate);
+}
+
+float USTPlayerStatusComponent::GetCriticalBaseDamage() const
+{
+	UE_LOG(LogTemp, Display, TEXT("Critical Damage : %f = %f * %f * (1 + %f)"), ATK * (1 + DamageIncreaseRate), ATK, CriticalDamagePercent, (1 + DamageIncreaseRate));
+	return ATK * CriticalDamagePercent * (1 + DamageIncreaseRate);
 }
 
 void USTPlayerStatusComponent::SetStatus_Server_Implementation(ESTStatusType inType, float inValue, bool forceApply)
@@ -208,7 +229,8 @@ void USTPlayerStatusComponent::ClearBuff_Server_Implementation(ESTBuffType inTyp
 
 void USTPlayerStatusComponent::SetDefaultStatus()
 {
-	HP = BaseMaxHP;
+	MaxHP = BaseMaxHP;
+	HPRegen = BaseMaxHPRegen;
 	MovementSpeed = BaseMovementSpeed;
 	AttackSpeed = BaseAttackSpeed;
 	CriticalDamagePercent = BaseCriticalDamagePercent;
@@ -295,5 +317,11 @@ void USTPlayerStatusComponent::OnRep_HPUpdated()
 	// Update UI
 	OnHPDelegate.Broadcast(HP, MaxHP);
 	// Check Died
+}
+
+void USTPlayerStatusComponent::RegenHP()
+{
+	HP = FMath::Clamp(HP + HPRegen, 0, MaxHP);
+	OnRep_HPUpdated();
 }
 

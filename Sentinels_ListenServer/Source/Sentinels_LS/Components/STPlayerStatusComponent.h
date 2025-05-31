@@ -47,6 +47,16 @@ protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
+	// Return HP after damaged
+	float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser);
+
+public:
+	UFUNCTION(BlueprintCallable)
+	float GetBaseDamage() const;
+
+	UFUNCTION(BlueprintCallable)
+	float GetCriticalBaseDamage() const;
+
 	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void SetStatus_Server(ESTStatusType inType, float inValue, bool forceApply);
 
@@ -72,6 +82,9 @@ public:
 
 	UFUNCTION()
 	void OnRep_HPUpdated();
+
+protected:
+	void RegenHP();
 
 protected:
 	UPROPERTY(VisibleAnywhere)

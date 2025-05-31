@@ -37,20 +37,6 @@ void ASTGRIM::PlayUltimateMontage()
 	}
 }
 
-void ASTGRIM::PrimaryFire()
-{
-	if (HasAuthority())
-	{
-		FVector SpawnLocation = GetMesh()->GetSocketLocation(FName("Muzzle_01"));
-
-		AProjectileBase* Projectile = GetWorld()->SpawnActor<AProjectileBase>(SubclassOfPrimaryProjectile, SpawnLocation, FRotator::ZeroRotator);
-		if (Projectile)
-		{
-			Projectile->FireInDirection(GetActorForwardVector());
-		}
-	}
-}
-
 void ASTGRIM::UltimateFire()
 {
 	if (HasAuthority())
@@ -74,6 +60,8 @@ void ASTGRIM::UltimateFire()
 			AProjectileBase* Projectile = GetWorld()->SpawnActor<AProjectileBase>(SubclassOfUltimateProjectile, SpawnLocation, FRotator::ZeroRotator);
 			if (Projectile)
 			{
+				Projectile->SetInstigator(this);
+
 				FVector FireDirection = GetActorForwardVector();
 				FRotator FireRotation = FireDirection.Rotation();
 				FireRotation.Pitch += 67.5f;

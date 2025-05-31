@@ -202,19 +202,35 @@ float ASTPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 {
 	float actualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	if (HasTag(FSTGameplayTags::Get().Character_Player_State_RescueHostage))
+	if (HasAuthority())
 	{
-		// if damaged while Rescuing, Fail Interact
-
-		AController* controller = GetController();
-		if (controller)
+		if (HasTag(FSTGameplayTags::Get().Character_Player_State_RescueHostage) || HasTag(FSTGameplayTags::Get().Character_Player_State_RepairRift))
 		{
-			UInteractComponent* IC = controller->GetComponentByClass<UInteractComponent>();
-			if (IC)
+			// if damaged while Rescuing, Fail Interact
+
+			AController* controller = GetController();
+			if (controller)
 			{
-				IC->Interact_Finish_Server();
+				UInteractComponent* IC = controller->GetComponentByClass<UInteractComponent>();
+				if (IC)
+				{
+					IC->Interact_Finish_Server();
+				}
 			}
 		}
+
+		if (StatusComponent)
+		{
+			float HP = StatusComponent->TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+			if (HP <= 0)
+			{
+				if (APlayerController* PC = Cast<APlayerController>(GetController()))
+				{
+					PC->ServerRestartPlayer();
+				}
+			}
+		}
+
 	}
 
 	return 0.0f;

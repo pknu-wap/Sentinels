@@ -35,7 +35,10 @@ public:
 	TEnumAsByte<EDrawDebugTrace::Type> DebugType = EDrawDebugTrace::None;
 
 	UPROPERTY(EditAnywhere, Category = Damage)
-	float Damage = 10.f;
+	float DamageMultiplier = 1.f;
+
+	UPROPERTY()
+	float Damage = 1.f;
 
 	TArray<AActor*> DamagedActors;
 };

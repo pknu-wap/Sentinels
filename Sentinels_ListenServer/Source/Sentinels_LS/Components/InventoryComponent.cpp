@@ -84,8 +84,6 @@ void UInventoryComponent::AddItem_Server_Implementation(int InItemID)
 	{
 		AddReplicatedSubObject(NewItem);
 		Inventory.Add(FInvSlotStruct(InItemID, 1, NewItem));
-		/*if(NewItem)
-			NewItem->CalculateStatus(GetOwner());*/
 
 		if (StatusComp)
 			StatusComp->CalculateStatus();

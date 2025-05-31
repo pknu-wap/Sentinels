@@ -45,6 +45,7 @@ void ASTMurdock::UltimateFire()
 		AProjectileBase* projectile = GetWorld()->SpawnActor<AProjectileBase>(SubclassOfUltimateProjectile, SpawnLocation, GetActorForwardVector().Rotation());
 		if (projectile)
 		{
+			projectile->SetInstigator(this);
 			projectile->FireInDirection(GetActorForwardVector());
 		}
 	}

@@ -26,8 +26,6 @@ public:
 	void PlayUltimateMontage();
 
 protected:
-	virtual void PrimaryFire() override;
-
 	UFUNCTION()
 	void UltimateFire();
 

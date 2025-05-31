@@ -104,6 +104,8 @@ protected:
 /*
 	Die
 */
+	bool IsAlive() const;
+
 	UFUNCTION(NetMulticast, Reliable)
 	void DissolveStart_Multicast();
 

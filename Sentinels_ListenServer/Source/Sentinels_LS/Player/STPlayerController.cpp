@@ -24,7 +24,7 @@
 #include "SubSystem/STGameTravelDataSubsystem.h"
 #include "Player/STLocalPlayer.h"
 #include "Player/STPlayerCharacter.h"
-
+#include "SubSystem/STWorldSpawnSubsystem.h"
 
 ASTPlayerController::ASTPlayerController()
 {
@@ -54,6 +54,12 @@ void ASTPlayerController::OnPossess(APawn* aPawn)
 void ASTPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
+
+	USTWorldSpawnSubsystem* WorldSpawnSystem = GetWorld()->GetSubsystem<USTWorldSpawnSubsystem>();
+	if (WorldSpawnSystem)
+	{
+		WorldSpawnSystem->PlayerNumUpdated(GetWorld()->GetNumPlayerControllers());
+	}
 
 	/*USTLocalPlayer* LocalPlayer = Cast<USTLocalPlayer>(GetLocalPlayer());
 	if (LocalPlayer && !(LocalPlayer->bIsRegistered))
