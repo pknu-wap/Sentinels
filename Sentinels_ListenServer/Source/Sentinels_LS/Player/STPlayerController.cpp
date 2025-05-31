@@ -48,25 +48,7 @@ void ASTPlayerController::OnPossess(APawn* aPawn)
 	if(InteractComponent)
 		InteractComponent->BindDelegates();
 
-	if (HasAuthority())
-	{
-		USTGameTravelDataSubsystem* gameTravelData = GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
-		FPlayerInfo playerInfo = gameTravelData->LoadPlayerInfo(PlayerState->GetUniqueId());
-
-		ASTPlayerCharacter* player = Cast<ASTPlayerCharacter>(GetCharacter());
-
-		if(player)
-			player->UpdateSKMeshParts(playerInfo.PlayerSKMeshesRowName);
-
-		// ADD CLIENT RPC
-	}
-	else
-	{
-		// CHANGE SERVER ONLY
-		RequestLoadSKMeshParts();
-
-		// NEED CLINET CHANGE
-	}
+	RequestLoadSKMeshParts();
 }
 
 void ASTPlayerController::BeginPlay()

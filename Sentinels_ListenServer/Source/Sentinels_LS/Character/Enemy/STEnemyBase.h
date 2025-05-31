@@ -91,6 +91,16 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<class USTWidget_DamageInd> W_DamageIndClass;
+
+/*
+	Damage Indicate
+*/
+protected:
+	UFUNCTION(NetMulticast, Reliable)
+	void ShowDamageIndicateWidget_Multicast(float Damage, FLinearColor Color);
+
+	void ShowDamageIndicateWidget(float Damage, FLinearColor Color);
+
 /*
 	Die
 */

@@ -64,6 +64,8 @@ void UInventoryComponent::AddItem_Server_Implementation(int InItemID)
 			if (StatusComp)
 				StatusComp->CalculateStatus();
 
+			OnRep_Inventory();
+
 			return;
 		}
 	}
@@ -92,6 +94,8 @@ void UInventoryComponent::AddItem_Server_Implementation(int InItemID)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("UInventoryComponent : Failed to Create"));
 	}
+
+	OnRep_Inventory();
 }
 
 void UInventoryComponent::OnRep_Inventory()
@@ -105,7 +109,7 @@ void UInventoryComponent::OnRep_Inventory()
 	/*
 		Update Item UI
 	*/
-	OnUpdatreInventory.Broadcast();
+	OnUpdateInventory.Broadcast();
 }
 
 void UInventoryComponent::LogInventory()

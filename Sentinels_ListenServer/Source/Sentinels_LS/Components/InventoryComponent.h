@@ -51,6 +51,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void LogInventory();
 
+/*
+	Delegate
+*/
+public:
 	UPROPERTY(BlueprintAssignable)
-	FOnUpdateInventory OnUpdatreInventory;
+	FOnUpdateInventory OnUpdateInventory;
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	FString NetId;
 };
