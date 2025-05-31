@@ -35,6 +35,21 @@ void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(UInventoryComponent, Inventory);
 }
 
+float UInventoryComponent::AdjustFinalDamage(float DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor)
+{
+	// Item (Combo Amplifier)
+	const FInvSlotStruct& ItemInfo_CA = GetItem(8);
+	if (ItemInfo_CA.ItemID != 0 && ItemInfo_CA.Quantity > 0)
+	{
+		if (ItemInfo_CA.ItemObject)
+		{
+			DamageAmount = ItemInfo_CA.ItemObject->AdjustFinalDamage(DamageAmount, DamageEvent, DamagedActor);
+		}
+	}
+
+	return DamageAmount;
+}
+
 const FInvSlotStruct& UInventoryComponent::GetItem(int InItemID) const
 {
 	for (auto& slot : Inventory)

@@ -50,6 +50,10 @@ public:
 	// Return HP after damaged
 	float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser);
 
+protected:
+	UPROPERTY()
+	class UInventoryComponent* CachedInventory;
+
 public:
 	UFUNCTION(BlueprintCallable)
 	float GetBaseDamage() const;

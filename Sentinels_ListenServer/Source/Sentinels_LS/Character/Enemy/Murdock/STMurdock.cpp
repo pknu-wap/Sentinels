@@ -38,15 +38,17 @@ void ASTMurdock::PlayUltimateMontage()
 
 void ASTMurdock::UltimateFire()
 {
-	if (HasAuthority())
-	{
-		FVector SpawnLocation = GetMesh()->GetSocketLocation(FName("Muzzle_01"));
+	UltimateFire_Multicast();
+}
 
-		AProjectileBase* projectile = GetWorld()->SpawnActor<AProjectileBase>(SubclassOfUltimateProjectile, SpawnLocation, GetActorForwardVector().Rotation());
-		if (projectile)
-		{
-			projectile->SetInstigator(this);
-			projectile->FireInDirection(GetActorForwardVector());
-		}
+void ASTMurdock::UltimateFire_Multicast_Implementation()
+{
+	FVector SpawnLocation = GetMesh()->GetSocketLocation(FName("Muzzle_01"));
+
+	AProjectileBase* projectile = GetWorld()->SpawnActor<AProjectileBase>(SubclassOfUltimateProjectile, SpawnLocation, GetActorForwardVector().Rotation());
+	if (projectile)
+	{
+		projectile->SetInstigator(this);
+		projectile->FireInDirection(GetActorForwardVector());
 	}
 }

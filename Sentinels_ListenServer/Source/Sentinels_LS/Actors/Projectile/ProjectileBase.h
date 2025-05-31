@@ -22,6 +22,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaSeconds) override;
 
 public:
 	virtual void Activate(const FVector ActivateLocation = FVector::ZeroVector, const FRotator ActivateRotation = FRotator::ZeroRotator) override;
@@ -41,7 +42,7 @@ public:
 	void SetHomingTarget(AActor* InTarget);
 
 protected:
-	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Projectile)
 	TObjectPtr<USphereComponent> CollisionComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

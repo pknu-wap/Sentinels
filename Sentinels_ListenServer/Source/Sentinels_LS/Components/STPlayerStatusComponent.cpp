@@ -33,6 +33,9 @@ void USTPlayerStatusComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (GetOwner())
+		CachedInventory = GetOwner()->GetComponentByClass<UInventoryComponent>();
+
 	SetDefaultStatus();
 	ApplyStatus();
 

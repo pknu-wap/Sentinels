@@ -29,6 +29,9 @@ protected:
 	UFUNCTION()
 	void UltimateFire();
 
+	UFUNCTION(NetMulticast, Reliable)
+	void UltimateFire_Multicast(AActor* TargetPlayer);
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<AProjectileBase> SubclassOfPrimaryProjectile;

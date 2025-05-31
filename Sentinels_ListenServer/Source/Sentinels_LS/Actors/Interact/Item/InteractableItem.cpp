@@ -32,6 +32,8 @@ void AInteractableItem::BeginPlay()
 
 void AInteractableItem::Interact_Implementation(UInteractComponent* InteractingComponent)
 {
+	Super::Interact_Implementation(InteractingComponent);
+
 	APlayerController* PC = Cast<APlayerController>(InteractingComponent->GetOwner());
 	if (!PC) return;
 
@@ -44,5 +46,7 @@ void AInteractableItem::Interact_Implementation(UInteractComponent* InteractingC
 		// bIsInteractable = false;
 		InvComp->AddItem_Server(ItemID);
 		UE_LOG(LogTemp, Display, TEXT(" AInteractableItem::Interact - Item ID : %d"), ItemID);
+
+		Destroy();
 	}
 }

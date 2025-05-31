@@ -66,6 +66,9 @@ protected:
 	UFUNCTION()
 	virtual void PrimaryFire();
 
+	UFUNCTION(NetMulticast, Reliable)
+	void PrimaryFire_Multicast();
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<AProjectileBase> ProjectileClass_PrimaryFire;
