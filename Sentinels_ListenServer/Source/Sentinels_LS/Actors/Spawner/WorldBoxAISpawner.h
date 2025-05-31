@@ -46,7 +46,7 @@ public:
 
 protected:
     void TrySpawnAI();
-    bool SpawnEnemy(int InfoIdx);
+    void SpawnEnemy(int InfoIdx);
     bool IsVectorInBoundingBox(const FVector& InLocation) const;
     bool IsInFrontalCone(const FVector& locationToCheck, const FVector& originLocation, const FVector& forwardVector, float angleDeg) const;
     bool GetSpawnNavLocation(int infoIdx, FNavLocation& OutLocation) const;

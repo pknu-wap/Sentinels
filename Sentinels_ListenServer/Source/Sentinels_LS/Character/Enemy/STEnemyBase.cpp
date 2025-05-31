@@ -89,6 +89,13 @@ void ASTEnemyBase::BeginPlay()
 	}
 }
 
+void ASTEnemyBase::Destroyed()
+{
+	UE_LOG(LogTemp, Warning, TEXT("%s is destroyed!"), *GetName());
+
+	Super::Destroyed();
+}
+
 void ASTEnemyBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
