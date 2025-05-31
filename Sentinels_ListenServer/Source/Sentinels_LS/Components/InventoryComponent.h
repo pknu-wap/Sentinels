@@ -57,8 +57,4 @@ public:
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnUpdateInventory OnUpdateInventory;
-
-protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	FString NetId;
 };

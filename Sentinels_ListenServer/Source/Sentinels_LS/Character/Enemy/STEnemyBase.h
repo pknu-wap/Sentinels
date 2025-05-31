@@ -104,6 +104,7 @@ protected:
 /*
 	Die
 */
+public:
 	bool IsAlive() const;
 
 	UFUNCTION(NetMulticast, Reliable)

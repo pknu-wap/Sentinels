@@ -100,6 +100,17 @@ struct SENTINELS_LS_API FItemStruct : public FTableRowBase
 
 	FItemStruct() {};
 
+	FItemStruct& operator=(const FItemStruct& other)
+	{
+		ItemID = other.ItemID;
+		ItemClass = other.ItemClass;
+		Icon = other.Icon;
+		ItemName = other.ItemName;
+		ItemDescription = other.ItemDescription;
+
+		return *this;
+	}
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int ItemID = 0;
 
@@ -108,6 +119,12 @@ struct SENTINELS_LS_API FItemStruct : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UTexture2D* Icon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString ItemName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString ItemDescription;
 };
 
 USTRUCT(BlueprintType)
