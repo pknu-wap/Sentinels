@@ -6,6 +6,9 @@
 #include "Components/InventoryComponent.h"
 #include "Components/InteractComponent.h"
 #include "SubSystem/InventorySubsystem.h"
+#include "Widget/STWidget_Interactive.h"
+#include "STGameplayTags.h"
+#include "SubSystem/STUISubSystem.h"
 
 void AInteractableItem::BeginPlay()
 {
@@ -49,4 +52,48 @@ void AInteractableItem::Interact_Implementation(UInteractComponent* InteractingC
 
 		Destroy();
 	}
+}
+
+void AInteractableItem::ShowInteractiveUI_Implementation(UInteractComponent* InteractingComponent)
+{
+	USTUISubSystem* UISubSystem = GetGameInstance()->GetSubsystem<USTUISubSystem>();
+	USTWidget_Interactive* widget = Cast<USTWidget_Interactive>(UISubSystem->GetWidget(FSTGameplayTags::Get().Widget_InGame_Interactive));
+
+	if (bUseItemHandle && ItemHandle_DataRow.DataTable)
+	{
+		FItemStruct* itemData = ItemHandle_DataRow.DataTable->FindRow<FItemStruct>(ItemHandle_DataRow.RowName, ItemHandle_DataRow.RowName.ToString());
+		if (!itemData)
+			return;
+
+		if (widget)
+		{
+			widget->SetInteractiveUI(itemData);
+			widget->SetVisibility(ESlateVisibility::HitTestInvisible);
+		}
+	}
+	else
+	{
+		UInventorySubsystem* InvSubSystem = GetGameInstance()->GetSubsystem<UInventorySubsystem>();
+		if (!InvSubSystem) return;
+
+		if (widget)
+		{
+			widget->SetInteractiveUI(InvSubSystem->GetItemInfo(ItemID));
+			widget->SetVisibility(ESlateVisibility::HitTestInvisible);
+		}
+
+	}
+}
+
+void AInteractableItem::HideInteractiveUI_Implementation(UInteractComponent* InteractingComponent)
+{
+	USTUISubSystem* UISubSystem = GetGameInstance()->GetSubsystem<USTUISubSystem>();
+
+	USTWidget_Interactive* widget = Cast<USTWidget_Interactive>(UISubSystem->GetWidget(FSTGameplayTags::Get().Widget_InGame_Interactive));
+	if (widget)
+	{
+		widget->SetVisibility(ESlateVisibility::Collapsed);
+		widget->ClearInteractiveUI();
+	}
+			
 }

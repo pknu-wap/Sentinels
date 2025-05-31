@@ -40,6 +40,7 @@ public:
 	FGameplayTag Widget_InGame_Quest;
 	FGameplayTag Widget_InGame_Inventory;
 	FGameplayTag Widget_InGame_TeamInfo;
+	FGameplayTag Widget_InGame_Interactive;
 
 
 	//////////  Mission  /////////

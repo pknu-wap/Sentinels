@@ -54,6 +54,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void LogInventory();
 
+/*
+	Delegate
+*/
+public:
 	UPROPERTY(BlueprintAssignable)
-	FOnUpdateInventory OnUpdatreInventory;
+	FOnUpdateInventory OnUpdateInventory;
 };

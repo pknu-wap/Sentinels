@@ -115,17 +115,17 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 		/*
 			Critical
 		*/
-		FSlateColor damageTextColor;
+		FLinearColor damageTextColor = FLinearColor::White;
 		if (DamageEvent.GetTypeID() == FSTPointDamageEvent::ClassID)
 		{
 			const FSTPointDamageEvent& PointDamageEvent = static_cast<const FSTPointDamageEvent&>(DamageEvent);
 			FString Str_DamageType = PointDamageEvent.bIsCritical ? FString("Critical") : FString("Normal");
-			damageTextColor = PointDamageEvent.bIsCritical ? FSlateColor(FLinearColor::Yellow) : FSlateColor(FLinearColor::White);
+			damageTextColor = PointDamageEvent.bIsCritical ? FLinearColor::Yellow : FLinearColor::White;
 			UE_LOG(LogTemp, Warning, TEXT("ASTEnemyBase : %s Damage %f"), *Str_DamageType, Damage);
 		}
 		else
 		{
-			damageTextColor = FSlateColor(FLinearColor::White);
+			damageTextColor = FLinearColor::White;
 			UE_LOG(LogTemp, Warning, TEXT("ASTEnemyBase : Extra Damage %f"), Damage);
 		}
 		
@@ -171,16 +171,7 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 		/*
 			Damage Indicate
 		*/
-		if (WC_DamageInd)
-		{
-			USTWidget_DamageInd* WDamageInd = Cast<USTWidget_DamageInd>(WC_DamageInd->GetWidget());
-			if (IsValid(WDamageInd))
-			{
-				WDamageInd->SetTextColor(damageTextColor);
-				WDamageInd->SetDamage(Damage);
-				WDamageInd->PlayCustomAnimation();
-			}
-		}
+		ShowDamageIndicateWidget_Multicast(Damage, damageTextColor);
 
 		/*
 			Calculate Current HP & Check Died
@@ -299,6 +290,26 @@ void ASTEnemyBase::PlayNormalAttackMontage(int MontageIdx)
 	if (AnimInst)
 	{
 		AnimInst->Montage_Play(Montage_NormalAttackSet[MontageIdx]);
+	}
+}
+
+void ASTEnemyBase::ShowDamageIndicateWidget_Multicast_Implementation(float Damage, FLinearColor Color)
+{
+	ShowDamageIndicateWidget(Damage, Color);
+}
+
+void ASTEnemyBase::ShowDamageIndicateWidget(float Damage, FLinearColor Color)
+{
+	if (WC_DamageInd)
+	{
+		USTWidget_DamageInd* WDamageInd = Cast<USTWidget_DamageInd>(WC_DamageInd->GetWidget());
+		FSlateColor damageTextColor = FSlateColor(Color);
+		if (IsValid(WDamageInd))
+		{
+			WDamageInd->SetTextColor(damageTextColor);
+			WDamageInd->SetDamage(Damage);
+			WDamageInd->PlayCustomAnimation();
+		}
 	}
 }
 

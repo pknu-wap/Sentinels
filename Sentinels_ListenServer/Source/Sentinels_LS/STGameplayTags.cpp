@@ -81,6 +81,11 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 		FString("Team Info")
 	);
 
+	GameplayTags.Widget_InGame_Interactive = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Widget.InGame.Interactive"),
+		FString("Interactive")
+	);
+
 	/*	
 		Character
 	*/
