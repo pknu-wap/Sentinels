@@ -72,12 +72,12 @@ void ASTEnemyBase::BeginPlay()
 
 		if(bIsActivated)
 			Activate(GetActorLocation(), GetActorRotation());
+	}
 
-		if (ProjectileClass_PrimaryFire)
-		{
-			USTProjectilePoolingSubSystem* ProjectileSubSystem = GetWorld()->GetSubsystem<USTProjectilePoolingSubSystem>();
-			ProjectileSubSystem->InitProjectilePool(this, ProjectileClass_PrimaryFire, 100);
-		}
+	if (ProjectileClass_PrimaryFire)
+	{
+		USTProjectilePoolingSubSystem* ProjectileSubSystem = GetWorld()->GetSubsystem<USTProjectilePoolingSubSystem>();
+		ProjectileSubSystem->InitProjectilePool(this, ProjectileClass_PrimaryFire, 100);
 	}
 
 	if (W_DamageIndClass)
@@ -297,21 +297,24 @@ void ASTEnemyBase::PlayNormalAttackMontage(int MontageIdx)
 
 void ASTEnemyBase::PrimaryFire()
 {
-	if (HasAuthority())
+	PrimaryFire_Multicast();
+}
+
+void ASTEnemyBase::PrimaryFire_Multicast_Implementation()
+{
+	USTProjectilePoolingSubSystem* ProjectileSubSystem = GetWorld()->GetSubsystem<USTProjectilePoolingSubSystem>();
+
+	FVector SpawnLocation = GetMesh()->GetSocketLocation(SocketName_PrimaryFire);
+	AProjectileBase* projectile = ProjectileSubSystem->GetActor<AProjectileBase>(ProjectileClass_PrimaryFire, SpawnLocation);
+	if (projectile)
 	{
-		USTProjectilePoolingSubSystem* ProjectileSubSystem = GetWorld()->GetSubsystem<USTProjectilePoolingSubSystem>();
-		FVector SpawnLocation = GetMesh()->GetSocketLocation(SocketName_PrimaryFire);
-		AProjectileBase* projectile = ProjectileSubSystem->GetActor<AProjectileBase>(ProjectileClass_PrimaryFire, SpawnLocation);
-		if (projectile)
+		projectile->SetInstigator(this);
+		UParticleSystemComponent* Particle = projectile->GetComponentByClass<UParticleSystemComponent>();
+		if (Particle)
 		{
-			projectile->SetInstigator(this);
-			UParticleSystemComponent* Particle = projectile->GetComponentByClass<UParticleSystemComponent>();
-			if (Particle)
-			{
-				Particle->ActivateSystem(true);
-			}
-			projectile->FireInDirection(GetActorForwardVector());
+			Particle->ActivateSystem(true);
 		}
+		projectile->FireInDirection(GetActorForwardVector());
 	}
 }
 

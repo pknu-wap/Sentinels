@@ -41,34 +41,40 @@ void ASTGRIM::UltimateFire()
 {
 	if (HasAuthority())
 	{
-		FVector SpawnLocation = GetMesh()->GetSocketLocation(FName("Muzzle_04"));
-
 		ASTEnemyBase_AIController* controller = Cast<ASTEnemyBase_AIController>(GetController());
 		AActor* TargetPlayer = controller->GetCurrentTarget();
 		if (!TargetPlayer) return;
 
-		FVector TargetLocation = TargetPlayer->GetActorLocation() - FVector(0, 0, 45.f);
+		UltimateFire_Multicast(TargetPlayer);
+	}
+}
 
-		// Spawn Target Actor
-		AActor* TargetActor = GetWorld()->SpawnActor<AActor>(SubclassOfTargetActor, TargetLocation, FRotator::ZeroRotator);
-		if (TargetActor)
+void ASTGRIM::UltimateFire_Multicast_Implementation(AActor* TargetPlayer)
+{
+	if (!TargetPlayer) return;
+
+	FVector SpawnLocation = GetMesh()->GetSocketLocation(FName("Muzzle_04"));
+	FVector TargetLocation = TargetPlayer->GetActorLocation() - FVector(0, 0, 45.f);
+
+	// Spawn Target Actor
+	AActor* TargetActor = GetWorld()->SpawnActor<AActor>(SubclassOfTargetActor, TargetLocation, FRotator::ZeroRotator);
+	if (TargetActor)
+	{
+		TargetActor->SetActorLocation(TargetLocation);
+		// TargetActor->AttachToActor(TargetPlayer, FAttachmentTransformRules::KeepRelativeTransform);
+
+		// Spawn Projectile && Set Homing Target
+		AProjectileBase* Projectile = GetWorld()->SpawnActor<AProjectileBase>(SubclassOfUltimateProjectile, SpawnLocation, FRotator::ZeroRotator);
+		if (Projectile)
 		{
-			TargetActor->SetActorLocation(TargetLocation);
-			// TargetActor->AttachToActor(TargetPlayer, FAttachmentTransformRules::KeepRelativeTransform);
+			Projectile->SetInstigator(this);
 
-			// Spawn Projectile && Set Homing Target
-			AProjectileBase* Projectile = GetWorld()->SpawnActor<AProjectileBase>(SubclassOfUltimateProjectile, SpawnLocation, FRotator::ZeroRotator);
-			if (Projectile)
-			{
-				Projectile->SetInstigator(this);
+			FVector FireDirection = GetActorForwardVector();
+			FRotator FireRotation = FireDirection.Rotation();
+			FireRotation.Pitch += 67.5f;
 
-				FVector FireDirection = GetActorForwardVector();
-				FRotator FireRotation = FireDirection.Rotation();
-				FireRotation.Pitch += 67.5f;
-
-				Projectile->FireInDirection(FireRotation.Vector());
-				Projectile->SetHomingTarget(TargetActor);
-			}
+			Projectile->FireInDirection(FireRotation.Vector());
+			Projectile->SetHomingTarget(TargetActor);
 		}
 	}
 }

@@ -30,6 +30,9 @@ protected:
 	UFUNCTION()
 	void UltimateFire();
 
+	UFUNCTION(NetMulticast, Reliable)
+	void UltimateFire_Multicast();
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Montage)
 	UAnimMontage* Montage_Ultimate;
