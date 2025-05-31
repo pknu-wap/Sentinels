@@ -130,29 +130,30 @@ void AWorldBoxAISpawner::TrySpawnAI()
 	if (!SpawnReserveQue.IsEmpty())
 	{
 		int idx = 0;
-		SpawnReserveQue.Dequeue(idx); SpawnReserveSet.Remove(idx);
-		SpawnEnemy(idx);
+		SpawnReserveQue.Peek(idx);
+		if (SpawnEnemy(idx))
+		{
+			SpawnReserveQue.Dequeue(idx); SpawnReserveSet.Remove(idx);
+		}
 	}
 }
 
-void AWorldBoxAISpawner::SpawnEnemy(int InfoIdx)
+bool AWorldBoxAISpawner::SpawnEnemy(int InfoIdx)
 {
 	USTAIPoolingWorldSubsystem* PoolingSystem = GetWorld()->GetSubsystem<USTAIPoolingWorldSubsystem>();
 	USTWorldSpawnSubsystem* SpawnSystem = GetWorld()->GetSubsystem<USTWorldSpawnSubsystem>();
 	if (!PoolingSystem || !SpawnSystem || !SpawnInfos.IsValidIndex(InfoIdx) || Players.Num() == 0)
 	{
-		return;
+		return false;
 	}
 
 	FSpawnInfo& Info = SpawnInfos[InfoIdx];
-	if (Info.SpawnPawnClasses.Num() == 0) return;
+	if (Info.SpawnPawnClasses.Num() == 0) return false; 
 
+	int spawncount = 0;
 	int rand; FNavLocation SpawnNavLocation;
 	for (int i = 0; i < Info.SpawnRate; i++)
 	{
-		if (Info.CurrentSpawned >= Info.MaxSpawnCount)
-			break;
-
 		if (!SpawnSystem->CanSpawnCharacter())
 		{
 			break;
@@ -182,8 +183,7 @@ void AWorldBoxAISpawner::SpawnEnemy(int InfoIdx)
 			Enemy->Delegate_OnEnemyDied.RemoveAll(this);
 			Enemy->Delegate_OnEnemyDied.AddDynamic(this, &AWorldBoxAISpawner::OnEnemyDied);
 
-			Info.CurrentSpawned++;
-			CurrentSpawned++;
+			spawncount++;
 			SpawnSystem->NewCharacterSpawned(Enemy);
 		}
 		else
@@ -192,6 +192,11 @@ void AWorldBoxAISpawner::SpawnEnemy(int InfoIdx)
 		}
 
 	}
+
+	if (spawncount == 0)
+		return false;
+
+	return true;
 }
 
 bool AWorldBoxAISpawner::IsVectorInBoundingBox(const FVector& InLocation) const

@@ -22,6 +22,9 @@ protected:
 
 public:
 	void InitStatus();
+	
+	UFUNCTION()
+	void UpdateStatus();
 
 public:
 	float TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
