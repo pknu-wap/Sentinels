@@ -100,6 +100,15 @@ struct SENTINELS_LS_API FItemStruct : public FTableRowBase
 
 	FItemStruct() {};
 
+	FItemStruct(const FItemStruct& other)
+	{
+		ItemID = other.ItemID;
+		ItemClass = other.ItemClass;
+		Icon = other.Icon;
+		ItemName = other.ItemName;
+		ItemDescription = other.ItemDescription;
+	}
+
 	FItemStruct& operator=(const FItemStruct& other)
 	{
 		ItemID = other.ItemID;

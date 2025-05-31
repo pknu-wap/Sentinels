@@ -32,10 +32,10 @@ void UInventorySubsystem::Initialize(FSubsystemCollectionBase& Collection)
 		UE_LOG(LogTemp, Warning, TEXT("UInventorySubsystem : Failed to Load ItemDB !!! "));
 	}
 
-	rowNames = ItemDB->GetRowNames();
+	rowNames = CombatItemDB->GetRowNames();
 	for (FName RowName : rowNames)
 	{
-		FItemStruct* ItemInfo = ItemDB->FindRow<FItemStruct>(RowName, TEXT("FindRow"));
+		FItemStruct* ItemInfo = CombatItemDB->FindRow<FItemStruct>(RowName, TEXT("FindRow"));
 		if (ItemInfo != nullptr)
 		{
 			CombatItemMap.Add(ItemInfo->ItemID, *ItemInfo);
@@ -50,12 +50,12 @@ const FItemStruct* UInventorySubsystem::GetItemInfo(int itemID) const
 
 const FItemStruct* UInventorySubsystem::GetRandomCombatItemInfo() const
 {
-	int itemID = UKismetMathLibrary::RandomIntegerInRange(0, CombatItemMap.Num() - 1);
+	int itemID = UKismetMathLibrary::RandomIntegerInRange(1, CombatItemMap.Num());
 
 	return CombatItemMap.Find(itemID);
 }
 
 int UInventorySubsystem::GetRandomCombatItemID() const
 {
-	return UKismetMathLibrary::RandomIntegerInRange(0, CombatItemMap.Num() - 1);
+	return UKismetMathLibrary::RandomIntegerInRange(1, CombatItemMap.Num());
 }
