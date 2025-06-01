@@ -56,7 +56,7 @@ void UANS_CheckAttackHit_Player::NotifyTick(USkeletalMeshComponent* MeshComp, UA
     UKismetSystemLibrary::SphereTraceMultiForObjects(MeshComp, Start, End, Radius, objectType,
         false, ignore, DebugType.GetValue(), hitResults, true);
 
-    for (FHitResult hit : hitResults)
+    for (FHitResult& hit : hitResults)
     {
         float damage = 0.f;
         AActor* DamagedActor = hit.GetActor();

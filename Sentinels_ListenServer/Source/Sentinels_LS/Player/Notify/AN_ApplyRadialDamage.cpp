@@ -17,7 +17,8 @@ void UAN_ApplyRadialDamage::Notify(USkeletalMeshComponent* MeshComp, UAnimSequen
 	AActor* Owner = MeshComp->GetOwner();
 	if (Owner && Owner->HasAuthority())
 	{
-		CalculateFinalDamage(MeshComp, Animation, EventReference);
+		StatusComp = Owner->GetComponentByClass<USTPlayerStatusComponent>();
+		if (!StatusComp) return;
 
 		TArray<TEnumAsByte<EObjectTypeQuery>> objectType;
 		objectType.Emplace(UEngineTypes::ConvertToObjectType(ECC_Pawn));
@@ -40,7 +41,7 @@ void UAN_ApplyRadialDamage::Notify(USkeletalMeshComponent* MeshComp, UAnimSequen
 		UKismetSystemLibrary::SphereTraceMultiForObjects(Owner, TraceStartLocation, TraceStartLocation,
 			Radius, objectType, false, ignore, DebugType.GetValue(), hitResults, true);
 
-		for (FHitResult hit : hitResults)
+		for (FHitResult& hit : hitResults)
 		{
 			float damage = 0.f;
 			AActor* DamagedActor = hit.GetActor();
