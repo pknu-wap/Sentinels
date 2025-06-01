@@ -46,6 +46,9 @@ protected:
 protected:
 	void RepairSuccessed();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void Shirink();
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float InteractionHoldTime = 7.5f;

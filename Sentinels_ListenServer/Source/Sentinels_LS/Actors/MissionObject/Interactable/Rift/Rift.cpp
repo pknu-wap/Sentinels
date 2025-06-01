@@ -117,4 +117,6 @@ void ARift::RepairSuccessed()
 			}
 		}
 	}
+
+	Shirink();
 }
