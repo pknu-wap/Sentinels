@@ -77,20 +77,6 @@ void ASTPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//Add Input Mapping Context
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		}
-
-		if (USkillComponent* SkillComp = PlayerController->GetComponentByClass<USkillComponent>())
-		{
-			SkillComp->InitSkillInfos(DataTable_Skill);
-		}
-	}
-
 	BindAttackDelegate();
 	if (USTPlayerAnimInstance* PAnimInst = Cast<USTPlayerAnimInstance>(GetMesh()->GetAnimInstance()))
 	{
@@ -242,6 +228,15 @@ void ASTPlayerCharacter::PossessedBy(AController* NewController)
 
 	if (IsLocallyControlled())
 	{
+		//Add Input Mapping Context
+		if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+		{
+			if (USkillComponent* SkillComp = PlayerController->GetComponentByClass<USkillComponent>())
+			{
+				SkillComp->InitSkillInfos(DataTable_Skill);
+			}
+		}
+
 		BindDefaultThirdPersonInput();
 		CameraManager->InitCameraMode();
 	}
@@ -679,11 +674,6 @@ void ASTPlayerCharacter::Skill_Passive_Pressed_Multicast_Implementation()
 void ASTPlayerCharacter::AdjustFinalDamage(float& DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor)
 {
 	if (!HasAuthority()) return;
-
-	if (UInventoryComponent* InvComp = GetComponentByClass<UInventoryComponent>())
-	{
-		DamageAmount = InvComp->AdjustFinalDamage(DamageAmount, DamageEvent, DamagedActor);
-	}
 }
 
 

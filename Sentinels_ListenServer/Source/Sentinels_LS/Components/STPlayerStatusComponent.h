@@ -65,6 +65,9 @@ public:
 
 protected:
 	UPROPERTY()
+	class ASTPlayerCharacter* CachedPlayer;
+
+	UPROPERTY()
 	class UInventoryComponent* CachedInventory;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

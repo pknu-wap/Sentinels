@@ -37,11 +37,12 @@ void USTPlayerStatusComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (ASTPlayerCharacter* Player = Cast<ASTPlayerCharacter>(GetOwner()))
+	CachedPlayer = Cast<ASTPlayerCharacter>(GetOwner());
+	if (CachedPlayer)
 	{
 		CachedInventory = GetOwner()->GetComponentByClass<UInventoryComponent>();
-		BaseDamageType = Player->BaseDamageType;
-		CriticalDamageType = Player->CriticalDamageType;
+		BaseDamageType = CachedPlayer->BaseDamageType;
+		CriticalDamageType = CachedPlayer->CriticalDamageType;
 	}
 
 	SetDefaultStatus();
@@ -122,6 +123,11 @@ FSTDamageInfo USTPlayerStatusComponent::GetCalculatedDamageInfo(FSTPointDamageEv
 	if (CachedInventory)
 	{
 		DamageInfo.DamageAmount = CachedInventory->AdjustFinalDamage(DamageInfo.DamageAmount, DamageEvent, DamagedActor);
+	}
+
+	if (CachedPlayer)
+	{
+		CachedPlayer->AdjustFinalDamage(DamageInfo.DamageAmount, DamageEvent, DamagedActor);
 	}
 
 	return DamageInfo;
