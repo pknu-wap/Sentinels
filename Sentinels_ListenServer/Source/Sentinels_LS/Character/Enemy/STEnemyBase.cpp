@@ -195,9 +195,6 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 				AIController->GetBrainComponent()->StopLogic(FString("Died."));
 			}
 
-			// Delegate Broadcast
-			Delegate_OnEnemyDied.Broadcast(this);
-
 			// Drop Item
 			DropItem();
 
@@ -234,6 +231,9 @@ void ASTEnemyBase::Activate(const FVector ActivateLocation, const FRotator Activ
 void ASTEnemyBase::Deactivate()
 {
 	Super::Deactivate();
+
+	// Delegate Broadcast
+	Delegate_OnEnemyDied.Broadcast(this);
 }
 
 bool ASTEnemyBase::IsNormalAttackMontage(UAnimMontage* InMontage)

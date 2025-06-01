@@ -72,7 +72,7 @@ void UANS_CheckAttackHit_Player::NotifyTick(USkeletalMeshComponent* MeshComp, UA
 
                 FSTDamageInfo DamageInfo = StatusComp->GetCalculatedDamageInfo(DamageEvent, DamagedActor);
 
-                damage = DamageInfo.DamageAmount;
+                damage = DamageInfo.DamageAmount * DamagePercent;
                 DamageEvent.bIsCritical = DamageInfo.bIsCritical;
                 if (DamageEvent.bIsCritical)
                     DamageEvent.DamageTypeClass = Player->CriticalDamageType;

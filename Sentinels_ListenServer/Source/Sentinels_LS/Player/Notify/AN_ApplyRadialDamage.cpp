@@ -55,7 +55,7 @@ void UAN_ApplyRadialDamage::Notify(USkeletalMeshComponent* MeshComp, UAnimSequen
 
 				FSTDamageInfo DamageInfo = StatusComp->GetCalculatedDamageInfo(DamageEvent, DamagedActor);
 
-				damage = DamageInfo.DamageAmount;
+				damage = DamageInfo.DamageAmount * DamagePercent;
 				DamageEvent.bIsCritical = DamageInfo.bIsCritical;
 				DamageEvent.DamageTypeClass = GetDamageType();
 
