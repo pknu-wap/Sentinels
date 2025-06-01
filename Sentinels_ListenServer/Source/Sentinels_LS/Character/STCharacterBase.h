@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "GameplayTagContainer.h"
+#include "DamageType/STDamageTypes.h"
 #include "STCharacterBase.generated.h"
 
 /*
@@ -25,6 +26,10 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+public:
+	UFUNCTION(BlueprintCallable)
+	void ApplyCustomDamage(float Damage, struct FSTPointDamageEvent DamageEvent, TSubclassOf<UDamageType> DamageType, AController* EventInstigator, AActor* DamageCauser);
 
 public:	
 	// Called every frame

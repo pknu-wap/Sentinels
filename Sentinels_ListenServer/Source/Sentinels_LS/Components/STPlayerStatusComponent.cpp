@@ -4,10 +4,14 @@
 #include "Components/STPlayerStatusComponent.h"
 #include "Components/InventoryComponent.h"
 #include "Components/UI/STPlayerUIComponent.h"
+#include "Player/STPlayerCharacter.h"
 #include "SubSystem/InventorySubsystem.h"
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Player/Inventory/ItemObject.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "GameFramework/DamageType.h"
+#include "Engine/DamageEvents.h"
 
 
 // Sets default values for this component's properties
@@ -33,8 +37,12 @@ void USTPlayerStatusComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (GetOwner())
+	if (ASTPlayerCharacter* Player = Cast<ASTPlayerCharacter>(GetOwner()))
+	{
 		CachedInventory = GetOwner()->GetComponentByClass<UInventoryComponent>();
+		BaseDamageType = Player->BaseDamageType;
+		CriticalDamageType = Player->CriticalDamageType;
+	}
 
 	SetDefaultStatus();
 	ApplyStatus();
@@ -95,6 +103,28 @@ float USTPlayerStatusComponent::TakeDamage(float DamageAmount, FDamageEvent cons
 	OnRep_HPUpdated();
 
 	return HP;
+}
+
+FSTDamageInfo USTPlayerStatusComponent::GetCalculatedDamageInfo(FSTPointDamageEvent& DamageEvent, AActor* DamagedActor)
+{
+	FSTDamageInfo DamageInfo; 
+
+	DamageInfo.bIsCritical = DamageEvent.bIsCritical = UKismetMathLibrary::RandomFloatInRange(0, 1) <= CriticalRate ? true : false;
+	if (DamageInfo.bIsCritical)
+	{
+		DamageInfo.DamageAmount = GetCriticalBaseDamage();
+	}
+	else
+	{
+		DamageInfo.DamageAmount = GetBaseDamage();
+	}
+
+	if (CachedInventory)
+	{
+		DamageInfo.DamageAmount = CachedInventory->AdjustFinalDamage(DamageInfo.DamageAmount, DamageEvent, DamagedActor);
+	}
+
+	return DamageInfo;
 }
 
 float USTPlayerStatusComponent::GetBaseDamage() const

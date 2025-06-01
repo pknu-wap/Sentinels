@@ -29,6 +29,13 @@ void ASTCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(ASTCharacterBase, TagContainer);
 }
 
+void ASTCharacterBase::ApplyCustomDamage(float Damage, FSTPointDamageEvent DamageEvent, TSubclassOf<UDamageType> DamageType, AController* EventInstigator, AActor* DamageCauser)
+{
+	if (DamageType)
+		DamageEvent.DamageTypeClass = DamageType;
+	TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+}
+
 // Called every frame
 void ASTCharacterBase::Tick(float DeltaTime)
 {

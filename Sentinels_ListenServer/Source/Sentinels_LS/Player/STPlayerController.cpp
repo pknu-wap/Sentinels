@@ -146,9 +146,8 @@ void ASTPlayerController::RequestLoadSKMeshParts_Implementation()
 	USTGameTravelDataSubsystem* gameTravelData = GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
 	FPlayerInfo playerInfo = gameTravelData->LoadPlayerInfo(PlayerState->GetUniqueId());
 
-	ASTPlayerCharacter* player = Cast<ASTPlayerCharacter>(GetCharacter());
-
-	player->UpdateSKMeshParts(playerInfo.PlayerSKMeshesRowName);
+	if(ASTPlayerCharacter* player = Cast<ASTPlayerCharacter>(GetCharacter()))
+		player->UpdateSKMeshParts(playerInfo.PlayerSKMeshesRowName);
 }
 
 void ASTPlayerController::MoveClick_Started()
