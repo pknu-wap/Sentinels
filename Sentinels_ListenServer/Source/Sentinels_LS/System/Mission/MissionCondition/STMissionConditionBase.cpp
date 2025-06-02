@@ -12,6 +12,11 @@ FText USTMissionConditionBase::GetConditionDescription_Implementation()
 	return FText();
 }
 
+TArray<AActor*> USTMissionConditionBase::GetMissionObjects_Implementation()
+{
+	return TArray<AActor*>();
+}
+
 void USTMissionConditionBase::GetAllSpawnPointsWithTag(FGameplayTag InTag, TArray<ASpawnPointBase*>& OutActors) const
 {
 	TArray<ASTMissionSection*> sections;

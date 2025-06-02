@@ -2,6 +2,7 @@
 
 
 #include "Actors/MissionObject/MissionObject.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AMissionObject::AMissionObject()
@@ -13,6 +14,12 @@ AMissionObject::AMissionObject()
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(FName("StaticMesh"));
 	Mesh->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+}
+
+void AMissionObject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AMissionObject, bIsSuccessed);
 }
 
 

@@ -30,6 +30,9 @@ public:
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	FText GetConditionDescription();
+	
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	TArray<AActor*> GetMissionObjects();
 
 public:
 	void InitializeCondition(USTMissionBase* InMission, FGameplayTag InTag) 
