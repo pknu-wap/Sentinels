@@ -102,8 +102,12 @@ void ASTPlayerCharacter_Katana::Skill_Passive_Pressed_Server_Implementation()
 	{
 		AddTag(FSTGameplayTags::Get().Character_State_Skill);
 		Skill_Passive_Pressed_Multicast();
-		PlayMontage_Skill_Passive();
 	}
+}
+
+void ASTPlayerCharacter_Katana::Skill_Passive_Pressed_Multicast_Implementation()
+{
+	PlayMontage_Skill_Passive();
 }
 
 void ASTPlayerCharacter_Katana::ApplyPassiveDamage()
@@ -186,12 +190,9 @@ void ASTPlayerCharacter_Katana::SetWrapTarget_Q()
 
 void ASTPlayerCharacter_Katana::SpawnSlash_Q()
 {
-	if (HasAuthority())
+	AActor* Slash = GetWorld()->SpawnActor<AActor>(SubclassOfSlash_Q, SpawnLocation_Slash_Q, FRotator::ZeroRotator);
+	if (Slash)
 	{
-		AActor* Slash = GetWorld()->SpawnActor<AActor>(SubclassOfSlash_Q, SpawnLocation_Slash_Q, FRotator::ZeroRotator);
-		if (Slash)
-		{
-			Slash->SetInstigator(this);
-		}
+		Slash->SetInstigator(this);
 	}
 }

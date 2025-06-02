@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "STEnums.h"
+#include "DamageType/STDamageTypes.h"
 #include "STPlayerStatusComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHPDelegate, float, Current, float, Max);
@@ -32,6 +33,18 @@ struct SENTINELS_LS_API FSTBuffStruct : public FTableRowBase
 	FTimerHandle Handle_Buff;
 };
 
+USTRUCT(BlueprintType)
+struct SENTINELS_LS_API FSTDamageInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsCritical = false;
+
+	UPROPERTY(BlueprintReadOnly)
+	float DamageAmount = 0.f;
+};
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SENTINELS_LS_API USTPlayerStatusComponent : public UActorComponent
 {
@@ -52,9 +65,21 @@ public:
 
 protected:
 	UPROPERTY()
+	class ASTPlayerCharacter* CachedPlayer;
+
+	UPROPERTY()
 	class UInventoryComponent* CachedInventory;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<UDamageType> BaseDamageType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<UDamageType> CriticalDamageType;
+
 public:
+	UFUNCTION(BlueprintCallable)
+	FSTDamageInfo GetCalculatedDamageInfo(FSTPointDamageEvent& DamageEvent, AActor* DamagedActor);
+
 	UFUNCTION(BlueprintCallable)
 	float GetBaseDamage() const;
 

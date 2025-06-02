@@ -82,5 +82,8 @@ private:
     UPROPERTY()
     TSet<int> SpawnReserveSet;
 
+    UPROPERTY()
+    FTimerHandle SpawnHandle;
+
     float CurrentSpawned = 0;
 };

@@ -31,12 +31,7 @@ void USTEnemyStatusComponent::BeginPlay()
 
 	FTimerHandle StatusHandle;
 	GetWorld()->GetTimerManager().SetTimer(StatusHandle, 
-		[&]() 
-		{ 
-			float weight = GetStatusCurveValue();
-			MaxHP = BaseMaxHP * weight;
-			CurrentATK = BaseATK * weight;
-		},
+		this, &USTEnemyStatusComponent::UpdateStatus,
 		30.f, true);
 
 	InitStatus();
@@ -56,11 +51,21 @@ void USTEnemyStatusComponent::InitStatus()
 	}
 }
 
+void USTEnemyStatusComponent::UpdateStatus()
+{
+	float weight = GetStatusCurveValue();
+	MaxHP = BaseMaxHP * weight;
+	CurrentATK = BaseATK * weight;
+}
+
 float USTEnemyStatusComponent::GetStatusCurveValue() const
 {
 	if (!StatusCurve_Current) return 1.f;
 
-	ASTGameState* GameState = Cast<ASTGameState>(UGameplayStatics::GetGameState(this));
+	UWorld* world = GetWorld();
+	if (!world) return 1.f;
+
+	ASTGameState* GameState = Cast<ASTGameState>(world->GetGameState());
 	if (GameState)
 	{
 		if (StatusCurve_Current == StatusCurve_Mission)

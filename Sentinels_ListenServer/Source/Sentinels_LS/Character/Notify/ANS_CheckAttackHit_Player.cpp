@@ -16,7 +16,12 @@ void UANS_CheckAttackHit_Player::NotifyBegin(USkeletalMeshComponent* MeshComp, U
     Super::NotifyBegin(MeshComp, Animation, TotalDuration);
 
     bTimeDilationApplied = false;
+
     Player = Cast<ASTPlayerCharacter>(MeshComp->GetOwner());
+    if (!Player) return;
+    StatusComp = Player->GetComponentByClass<USTPlayerStatusComponent>();
+    if (!StatusComp) return;
+
     CalculateFinalDamage();
 
     Value_TimeDilation = 0.01f;
@@ -51,7 +56,7 @@ void UANS_CheckAttackHit_Player::NotifyTick(USkeletalMeshComponent* MeshComp, UA
     UKismetSystemLibrary::SphereTraceMultiForObjects(MeshComp, Start, End, Radius, objectType,
         false, ignore, DebugType.GetValue(), hitResults, true);
 
-    for (FHitResult hit : hitResults)
+    for (FHitResult& hit : hitResults)
     {
         float damage = 0.f;
         AActor* DamagedActor = hit.GetActor();
@@ -63,15 +68,17 @@ void UANS_CheckAttackHit_Player::NotifyTick(USkeletalMeshComponent* MeshComp, UA
             AActor* actor = MeshComp->GetOwner();
             if (actor && !DamagedActor->IsA(ASTPlayerCharacter::StaticClass()))
             {
-                // Check Critical
-                bool bIsCritical = UKismetMathLibrary::RandomFloatInRange(0, 1) <= StatusComp->CriticalRate ? true : false;
-                damage = bIsCritical ? CiriticalFinalDamage : FinalDamage;
+                FSTPointDamageEvent DamageEvent;
 
-                // Generate Damage Event With Critical
-                DamageEvent = FSTPointDamageEvent(bIsCritical, damage, hit, hit.ImpactNormal, GetDamageType());
+                FSTDamageInfo DamageInfo = StatusComp->GetCalculatedDamageInfo(DamageEvent, DamagedActor);
 
-                // Player Logic Execute (Pre)
-                Player->AdjustFinalDamage(damage, DamageEvent, DamagedActor);
+                damage = DamageInfo.DamageAmount * DamagePercent;
+                DamageEvent.bIsCritical = DamageInfo.bIsCritical;
+                if (DamageEvent.bIsCritical)
+                    DamageEvent.DamageTypeClass = Player->CriticalDamageType;
+                else
+                    DamageEvent.DamageTypeClass = Player->BaseDamageType;
+                DamageEvent.DamageTypeClass = GetDamageType();
 
                 // Apply Damage
                 DamagedActor->TakeDamage(damage, DamageEvent, actor->GetInstigatorController(), actor);
@@ -112,23 +119,20 @@ void UANS_CheckAttackHit_Player::NotifyEnd(USkeletalMeshComponent* MeshComp, UAn
 
 void UANS_CheckAttackHit_Player::CalculateFinalDamage()
 {
-    if (Player)
-    {
-        AController* PC = Player->GetController();
-        if (!PC) return;
+    //if (Player)
+    //{
+    //    StatusComp = Player->GetComponentByClass<USTPlayerStatusComponent>();
+    //    if (!StatusComp) return;
 
-        StatusComp = Player->GetComponentByClass<USTPlayerStatusComponent>();
-        if (!StatusComp) return;
+    //    // ATK  * CriticalDamagePercent * (1 + DamageIncreaseRate) * DamagePercent
+    //    FinalDamage = StatusComp->GetBaseDamage() * DamagePercent;
+    //    CiriticalFinalDamage = StatusComp->GetCriticalBaseDamage() * DamagePercent;
 
-        // ATK  * CriticalDamagePercent * (1 + DamageIncreaseRate) * DamagePercent
-        FinalDamage = StatusComp->GetBaseDamage() * DamagePercent;
-        CiriticalFinalDamage = StatusComp->GetCriticalBaseDamage() * DamagePercent;
-
-        if (FinalDamage >= 15.f)
-        {
-            UE_LOG(LogTemp, Display, TEXT("Failed"));
-        }
-    }
+    //    if (FinalDamage >= 15.f)
+    //    {
+    //        UE_LOG(LogTemp, Display, TEXT("Failed"));
+    //    }
+    //}
 }
 
 

@@ -109,11 +109,10 @@ void AWorldBoxAISpawner::StartSpawnEnemy()
 						SpawnReserveQue.Enqueue(i);
 					}
 				}
-			, SpawnInfos[i].SpawnPeriod, true);
+			, SpawnInfos[i].SpawnPeriod, true, 0.f);
 		}
 	}
 
-	FTimerHandle SpawnHandle;
 	GetWorld()->GetTimerManager().SetTimer(SpawnHandle, this, &AWorldBoxAISpawner::TrySpawnAI, 1.f, true);
 }
 
@@ -123,6 +122,8 @@ void AWorldBoxAISpawner::StopSpawnEnemy()
 	{
 		GetWorld()->GetTimerManager().ClearTimer(SpawnInfos[i].TimerHandle);
 	}
+
+	GetWorld()->GetTimerManager().ClearTimer(SpawnHandle);
 }
 
 void AWorldBoxAISpawner::TrySpawnAI()
