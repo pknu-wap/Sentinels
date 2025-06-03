@@ -19,9 +19,6 @@ class SENTINELS_LS_API USTMissionConditionBase : public UNetworkObject
 
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
-	
-protected:
-	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
 
 public:
 	UFUNCTION(BlueprintNativeEvent)
