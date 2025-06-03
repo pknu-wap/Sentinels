@@ -14,12 +14,14 @@ void UANS_CheckAttackHit_Enemy::NotifyBegin(USkeletalMeshComponent* MeshComp, UA
 {
     Super::NotifyBegin(MeshComp, Animation, TotalDuration);
 
-    if (AActor* owner = MeshComp->GetOwner())
+    if (ACharacter* owner = Cast<ACharacter>(MeshComp->GetOwner()))
     {
         if (USTEnemyStatusComponent* StatusComp = owner->GetComponentByClass<USTEnemyStatusComponent>())
         {
             Damage = StatusComp->GetCurrentATK() * DamageMultiplier;
         }
+
+        owner->GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
     }
 }
 
@@ -65,4 +67,9 @@ void UANS_CheckAttackHit_Enemy::NotifyTick(USkeletalMeshComponent* MeshComp, UAn
 void UANS_CheckAttackHit_Enemy::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
     DamagedActors.Empty();
+
+    if (ACharacter* owner = Cast<ACharacter>(MeshComp->GetOwner()))
+    {
+        owner->GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPose;
+    }
 }
