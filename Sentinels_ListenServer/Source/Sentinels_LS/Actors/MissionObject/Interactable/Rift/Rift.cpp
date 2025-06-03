@@ -98,6 +98,7 @@ void ARift::SpawnInitialEnemy()
 
 void ARift::RepairSuccessed()
 {
+	bIsSuccessed = true;
 	Delegate_MissionConditionUpdate.Broadcast(ObjectID, true);
 	bIsInteractable = false;
 

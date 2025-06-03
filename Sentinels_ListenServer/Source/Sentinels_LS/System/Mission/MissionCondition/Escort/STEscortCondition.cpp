@@ -7,10 +7,13 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Actors/MissionObject/Interactable/EscortObject/EscortObject.h"
+#include "Net/UnrealNetwork.h"
 
 void USTEscortCondition::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(USTEscortCondition, Successed);
 }
 
 bool USTEscortCondition::IsSatisfied_Implementation()
@@ -50,8 +53,15 @@ void USTEscortCondition::ConditionUpdated(int ObjectID, bool Success)
 	// Time Limit Success
 	if (Mission)
 	{
+		Successed = Success;
 		Mission->DeactivateMission(Success);
 	}
 
+	OnRep_Successed();
+	//Delegate_ConditionUpdated.Broadcast();
+}
+
+void USTEscortCondition::OnRep_Successed()
+{
 	Delegate_ConditionUpdated.Broadcast();
 }

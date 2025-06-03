@@ -13,6 +13,11 @@ FText USTMissionConditionBase::GetConditionDescription_Implementation()
 	return FText();
 }
 
+TArray<AActor*> USTMissionConditionBase::GetMissionObjects_Implementation()
+{
+	return TArray<AActor*>();
+}
+
 void USTMissionConditionBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -21,6 +26,8 @@ void USTMissionConditionBase::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 	{
 		BPClass->GetLifetimeBlueprintReplicationList(OutLifetimeProps);
 	}
+
+	DOREPLIFETIME(USTMissionConditionBase, Mission);
 }
 
 void USTMissionConditionBase::GetAllSpawnPointsWithTag(FGameplayTag InTag, TArray<ASpawnPointBase*>& OutActors) const

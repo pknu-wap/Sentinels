@@ -5,13 +5,14 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Interfaces/InteractiveInterface.h"
+#include "Interfaces/MissionInterface.h"
 #include "InteractableActor.generated.h"
 
 class UUserWidget;
 class UInteractComponent;
 
 UCLASS()
-class SENTINELS_LS_API AInteractableActor : public AActor, public IInteractiveInterface
+class SENTINELS_LS_API AInteractableActor : public AActor, public IInteractiveInterface, public IMissionInterface
 {
 	GENERATED_BODY()
 	
@@ -34,6 +35,8 @@ protected:
 	virtual void HideInteractiveUI_Implementation(UInteractComponent* InteractingComponent) override;
 
 	virtual bool IsInteractable_Implementation() override { return bIsInteractable; };
+
+	//virtual bool IsSuccessed_Implementation() override;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
