@@ -8,13 +8,6 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
 
-void USTMissionConditionBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(USTMissionConditionBase, Mission);
-}
-
 FText USTMissionConditionBase::GetConditionDescription_Implementation()
 {
 	return FText();
@@ -23,6 +16,18 @@ FText USTMissionConditionBase::GetConditionDescription_Implementation()
 TArray<AActor*> USTMissionConditionBase::GetMissionObjects_Implementation()
 {
 	return TArray<AActor*>();
+}
+
+void USTMissionConditionBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	UBlueprintGeneratedClass* BPClass = Cast<UBlueprintGeneratedClass>(GetClass());
+	if (BPClass != NULL)
+	{
+		BPClass->GetLifetimeBlueprintReplicationList(OutLifetimeProps);
+	}
+
+	DOREPLIFETIME(USTMissionConditionBase, Mission);
 }
 
 void USTMissionConditionBase::GetAllSpawnPointsWithTag(FGameplayTag InTag, TArray<ASpawnPointBase*>& OutActors) const

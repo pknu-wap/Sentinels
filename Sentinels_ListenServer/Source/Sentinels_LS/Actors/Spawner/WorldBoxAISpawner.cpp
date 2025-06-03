@@ -68,7 +68,7 @@ void AWorldBoxAISpawner::BoxBeginOverlapped(UPrimitiveComponent* OverlappedCompo
 	{
 		if (NumOfOverlappedPlayers == 0)
 		{
-			StartSpawnEnemy();
+			// StartSpawnEnemy();
 		}
 
 		NumOfOverlappedPlayers++;
@@ -86,7 +86,7 @@ void AWorldBoxAISpawner::BoxEndOverlapped(UPrimitiveComponent* OverlappedCompone
 
 		if (NumOfOverlappedPlayers == 0)
 		{
-			StopSpawnEnemy();
+			// StopSpawnEnemy();
 		}
 	}
 }
