@@ -6,10 +6,21 @@
 #include "Actors/SpawnPoint/SpawnPointBase.h"
 #include "Actors/Section/STMissionSection.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Net/UnrealNetwork.h"
 
 FText USTMissionConditionBase::GetConditionDescription_Implementation()
 {
 	return FText();
+}
+
+void USTMissionConditionBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	UBlueprintGeneratedClass* BPClass = Cast<UBlueprintGeneratedClass>(GetClass());
+	if (BPClass != NULL)
+	{
+		BPClass->GetLifetimeBlueprintReplicationList(OutLifetimeProps);
+	}
 }
 
 void USTMissionConditionBase::GetAllSpawnPointsWithTag(FGameplayTag InTag, TArray<ASpawnPointBase*>& OutActors) const
