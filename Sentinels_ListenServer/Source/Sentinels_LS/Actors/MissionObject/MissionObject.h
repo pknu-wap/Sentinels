@@ -24,13 +24,19 @@ protected:
 public:
 	void SetObjectID(int InObjectID) { ObjectID = InObjectID; }
 
+	virtual bool IsSuccessed_Implementation() override { return bIsSuccessed; }
+
+protected:
+	UFUNCTION()
+	void OnRep_bIsSuccessed();
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<UStaticMeshComponent> Mesh;
 	
 	int ObjectID = 0;
 
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_bIsSuccessed)
 	bool bIsSuccessed = false;
 
 public:

@@ -6,6 +6,14 @@
 #include "Actors/SpawnPoint/SpawnPointBase.h"
 #include "Actors/Section/STMissionSection.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Net/UnrealNetwork.h"
+
+void USTMissionConditionBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(USTMissionConditionBase, Mission);
+}
 
 FText USTMissionConditionBase::GetConditionDescription_Implementation()
 {

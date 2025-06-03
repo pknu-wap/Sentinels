@@ -14,12 +14,20 @@ AMissionObject::AMissionObject()
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(FName("StaticMesh"));
 	Mesh->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+
+	bReplicates = true;
 }
 
 void AMissionObject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AMissionObject, bIsSuccessed);
+}
+
+void AMissionObject::OnRep_bIsSuccessed()
+{
+	if (bIsSuccessed)
+		Delegate_MissionConditionUpdate.Broadcast(ObjectID, true);
 }
 
 

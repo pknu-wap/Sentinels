@@ -7,10 +7,13 @@
 #include "Character/STCharacterBase.h"
 #include "STGameplayTags.h"
 #include "Components/SpawnEnemyComponent.h"
+#include "Net/UnrealNetwork.h"
 
 AInteractableHostage::AInteractableHostage()
 {
 	SpawnComponent = CreateDefaultSubobject<USpawnEnemyComponent>(FName("SpawnComponent"));
+
+	bReplicates = true;
 }
 
 void AInteractableHostage::BeginPlay()
@@ -19,6 +22,12 @@ void AInteractableHostage::BeginPlay()
 
 	if(SpawnComponent)
 		SpawnComponent->StartSpawnEnemy();
+}
+
+void AInteractableHostage::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AInteractableHostage, bIsSuccessed);
 }
 
 void AInteractableHostage::Interact_Implementation(UInteractComponent* InteractingComponent)
@@ -85,6 +94,7 @@ void AInteractableHostage::StopSpawnEnemy()
 void AInteractableHostage::RescueSuccessed()
 {
 	bIsInteractable = false;
+	bIsSuccessed = true;
 
 	Delegate_MissionConditionUpdate.Broadcast(HostageID, true);
 

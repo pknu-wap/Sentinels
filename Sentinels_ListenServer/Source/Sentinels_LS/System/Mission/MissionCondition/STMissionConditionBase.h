@@ -17,6 +17,9 @@ class SENTINELS_LS_API USTMissionConditionBase : public UNetworkObject
 {
 	GENERATED_BODY()
 	
+protected:
+	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
+
 public:
 	UFUNCTION(BlueprintNativeEvent)
 	void MissionRegistered();
@@ -41,7 +44,7 @@ public:
 	void GetAllSpawnPointsWithTag(FGameplayTag InTag, TArray<ASpawnPointBase*>& OutActors) const;
 
 protected:
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(Replicated, BlueprintReadOnly)
 	USTMissionBase* Mission;
 
 	FGameplayTag MissionTag;

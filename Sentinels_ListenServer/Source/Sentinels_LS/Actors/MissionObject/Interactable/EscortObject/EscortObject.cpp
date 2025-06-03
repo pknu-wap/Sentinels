@@ -48,6 +48,7 @@ void AEscortObject::Tick(float DeltaSeconds)
 			if (DistanceAlongSpline >= SplineActor->GetSplineLength())
 			{
 				SpawnEnemyComp->StopSpawnEnemy();
+				bIsSuccessed = true;
 				StopMove();
 			}
 		}
