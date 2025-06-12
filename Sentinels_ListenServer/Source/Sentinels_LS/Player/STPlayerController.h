@@ -42,7 +42,10 @@ protected:
 	virtual void SetupInputComponent() override;
 
 public:
+	UFUNCTION(BlueprintCallable)
 	void BindDefaultTopDownInput();
+
+	UFUNCTION(BlueprintCallable)
 	void BindDefaultThirdPersonInput();
 
 /*

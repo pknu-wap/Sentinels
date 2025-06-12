@@ -239,6 +239,8 @@ void ASTPlayerCharacter::PossessedBy(AController* NewController)
 
 		BindDefaultThirdPersonInput();
 		CameraManager->InitCameraMode();
+
+		TagContainer.Reset();
 	}
 }
 

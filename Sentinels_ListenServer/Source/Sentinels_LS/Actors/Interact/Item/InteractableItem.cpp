@@ -56,6 +56,8 @@ void AInteractableItem::Interact_Implementation(UInteractComponent* InteractingC
 
 void AInteractableItem::ShowInteractiveUI_Implementation(UInteractComponent* InteractingComponent)
 {
+	Super::ShowInteractiveUI_Implementation(InteractingComponent);
+
 	USTUISubSystem* UISubSystem = GetGameInstance()->GetSubsystem<USTUISubSystem>();
 	USTWidget_Interactive* widget = Cast<USTWidget_Interactive>(UISubSystem->GetWidget(FSTGameplayTags::Get().Widget_InGame_Interactive));
 
@@ -87,6 +89,8 @@ void AInteractableItem::ShowInteractiveUI_Implementation(UInteractComponent* Int
 
 void AInteractableItem::HideInteractiveUI_Implementation(UInteractComponent* InteractingComponent)
 {
+	Super::HideInteractiveUI_Implementation(InteractingComponent);
+
 	USTUISubSystem* UISubSystem = GetGameInstance()->GetSubsystem<USTUISubSystem>();
 
 	USTWidget_Interactive* widget = Cast<USTWidget_Interactive>(UISubSystem->GetWidget(FSTGameplayTags::Get().Widget_InGame_Interactive));

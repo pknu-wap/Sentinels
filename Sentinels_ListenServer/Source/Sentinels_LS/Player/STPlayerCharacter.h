@@ -58,8 +58,13 @@ public:
 		Input	
 	*/
 public:
+	UFUNCTION(BlueprintCallable)
 	void ClearAllMappingContext();
+
+	UFUNCTION(BlueprintCallable)
 	void BindDefaultTopDownInput();
+
+	UFUNCTION(BlueprintCallable)
 	void BindDefaultThirdPersonInput();
 
 protected:
