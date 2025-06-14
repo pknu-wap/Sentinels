@@ -76,6 +76,20 @@ protected:
 
 
 	/*
+		Run
+	*/
+protected:
+	void Run_Pressed();
+	void Run_Released();
+
+	UFUNCTION(Server, Reliable)
+	void Run_Pressed_Server();
+
+	UFUNCTION(Server, Reliable)
+	void Run_Released_Server();
+
+
+	/*
 		Step
 	*/
 protected:
@@ -188,6 +202,9 @@ protected:
 	*/
 public:
 	UFUNCTION(BlueprintCallable)
+	virtual void ApplyDamageToActor(float DamagePercent, TSubclassOf<UDamageType> DamageType, AActor* DamagedActor);
+
+	UFUNCTION(BlueprintCallable)
 	virtual void AdjustFinalDamage(float& DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor);
 
 public:
@@ -267,6 +284,9 @@ protected:
 	UInputMappingContext* DefaultMappingContext;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* RunAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* JumpAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -298,6 +318,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
+
+
 
 	/*
 		Montages
