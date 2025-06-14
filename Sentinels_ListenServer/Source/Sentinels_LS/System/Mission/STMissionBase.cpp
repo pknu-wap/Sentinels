@@ -45,6 +45,9 @@ void USTMissionBase::RegisterMission()
 
 	ProgressState = EMissionProgressState::Registered;
 	OnRep_ProgressState();
+
+	// Execute On Blueprint
+	OnMissionRegistered();
 }
 
 void USTMissionBase::ActivateMission()
@@ -64,6 +67,9 @@ void USTMissionBase::ActivateMission()
 
 	ProgressState = EMissionProgressState::Activated;
 	OnRep_ProgressState();
+
+	// Execute On Blueprint
+	OnMissionActivated();
 }
 
 void USTMissionBase::DeactivateMission(bool IsCleared)
@@ -82,6 +88,9 @@ void USTMissionBase::DeactivateMission(bool IsCleared)
 
 	ProgressState = IsCleared ? EMissionProgressState::Cleared : EMissionProgressState::Failed;
 	OnRep_ProgressState();
+
+	// Execute On Blueprint
+	OnMissionDeactivated(IsCleared);
 }
 
 void USTMissionBase::MissionEnded_Multicast_Implementation(bool IsCleared)

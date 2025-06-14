@@ -30,14 +30,23 @@ protected:
 
 public:
 	// Spawn Mission Object
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnMissionRegistered();
+
 	UFUNCTION(BlueprintCallable)
 	void RegisterMission();
 
 	// Show Widget & Set Mission
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnMissionActivated();
+
 	UFUNCTION(BlueprintCallable)
 	void ActivateMission();
 
 	// Hide Widget & Clear Mission
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnMissionDeactivated(bool IsCleared);
+
 	UFUNCTION(BlueprintCallable)
 	void DeactivateMission(bool IsCleared);
 
