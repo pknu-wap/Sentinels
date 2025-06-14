@@ -13,7 +13,7 @@ class UInteractComponent;
 UCLASS()
 class SENTINELS_LS_API AEscortObject : public AInteractableMissionObject
 {
-	GENERATED_BODY()public:
+	GENERATED_BODY()
        
 public:
     AEscortObject();
@@ -32,10 +32,26 @@ protected:
     UPROPERTY(EditAnywhere)
     int EscortObjectIdx = 0;
 
+
+    /*
+        Box Component
+    */
+protected:
+    UFUNCTION()
+    void BoxBeginOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+    UFUNCTION()
+    void BoxEndOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+
+protected:
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    TObjectPtr<class UBoxComponent> BoxComp;
+
+
     /*
         Move Along Spine
     */
-
 public:
     UFUNCTION(BlueprintCallable)
     void StartMoveAlongSpline();
