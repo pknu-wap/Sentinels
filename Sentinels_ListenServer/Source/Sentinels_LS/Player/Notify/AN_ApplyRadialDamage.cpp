@@ -9,15 +9,16 @@
 #include "Components/STPlayerStatusComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Engine/DamageEvents.h"
+#include "Player/STPlayerCharacter.h"
 
 void UAN_ApplyRadialDamage::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
 	Super::Notify(MeshComp, Animation);
 
-	AActor* Owner = MeshComp->GetOwner();
-	if (Owner && Owner->HasAuthority())
+	ASTPlayerCharacter* Player = Cast<ASTPlayerCharacter>(MeshComp->GetOwner());
+	if (Player && Player->HasAuthority())
 	{
-		StatusComp = Owner->GetComponentByClass<USTPlayerStatusComponent>();
+		StatusComp = Player->GetComponentByClass<USTPlayerStatusComponent>();
 		if (!StatusComp) return;
 
 		TArray<TEnumAsByte<EObjectTypeQuery>> objectType;
@@ -25,20 +26,20 @@ void UAN_ApplyRadialDamage::Notify(USkeletalMeshComponent* MeshComp, UAnimSequen
 		objectType.Emplace(UEngineTypes::ConvertToObjectType(ECC_Destructible));
 
 		TArray<AActor*> ignore;
-		int playerNum = UGameplayStatics::GetNumPlayerControllers(Owner);
+		int playerNum = UGameplayStatics::GetNumPlayerControllers(Player);
 		for (int i = 0; i < playerNum; i++)
 		{
-			APlayerController* controller = UGameplayStatics::GetPlayerController(Owner, i);
+			APlayerController* controller = UGameplayStatics::GetPlayerController(Player, i);
 			if (controller)
 			{
 				ignore.Add(controller->GetPawn());
 			}
 		}
 
-		FVector TraceStartLocation = Owner->GetActorLocation() + Owner->GetActorForwardVector() * ForwardOffset;
+		FVector TraceStartLocation = Player->GetActorLocation() + Player->GetActorForwardVector() * ForwardOffset;
 
 		TArray<FHitResult> hitResults;
-		UKismetSystemLibrary::SphereTraceMultiForObjects(Owner, TraceStartLocation, TraceStartLocation,
+		UKismetSystemLibrary::SphereTraceMultiForObjects(Player, TraceStartLocation, TraceStartLocation,
 			Radius, objectType, false, ignore, DebugType.GetValue(), hitResults, true);
 
 		for (FHitResult& hit : hitResults)
@@ -51,16 +52,18 @@ void UAN_ApplyRadialDamage::Notify(USkeletalMeshComponent* MeshComp, UAnimSequen
 			{
 				DamagedActors.Add(DamagedActor);
 
-				FSTPointDamageEvent DamageEvent;
+				Player->ApplyDamageToActor(DamagePercent, GetDamageType(), DamagedActor);
 
-				FSTDamageInfo DamageInfo = StatusComp->GetCalculatedDamageInfo(DamageEvent, DamagedActor);
+				//FSTPointDamageEvent DamageEvent;
 
-				damage = DamageInfo.DamageAmount * DamagePercent;
-				DamageEvent.bIsCritical = DamageInfo.bIsCritical;
-				DamageEvent.DamageTypeClass = GetDamageType();
+				//FSTDamageInfo DamageInfo = StatusComp->GetCalculatedDamageInfo(DamageEvent, DamagedActor);
 
-				// Apply Damage
-				DamagedActor->TakeDamage(damage, DamageEvent, Owner->GetInstigatorController(), Owner);
+				//damage = DamageInfo.DamageAmount * DamagePercent;
+				//DamageEvent.bIsCritical = DamageInfo.bIsCritical;
+				//DamageEvent.DamageTypeClass = GetDamageType();
+
+				//// Apply Damage
+				//DamagedActor->TakeDamage(damage, DamageEvent, Owner->GetInstigatorController(), Owner);
 
 				/*UGameplayStatics::ApplyPointDamage(DamagedActor, FinalDamage, hit.ImpactNormal, hit,
 					DamageCauser->GetInstigatorController(), DamageCauser, GetDamageType());*/

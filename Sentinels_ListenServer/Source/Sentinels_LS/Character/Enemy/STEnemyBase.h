@@ -150,7 +150,7 @@ public:
 	void SetAdditionalDropInfos(const TArray<FDropInfo>& inDropInfos);
 
 	UFUNCTION(BlueprintCallable)
-	void DropItem();
+	virtual void DropItem();
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Drop")

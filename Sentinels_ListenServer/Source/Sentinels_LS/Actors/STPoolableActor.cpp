@@ -14,11 +14,28 @@ ASTPoolableActor::ASTPoolableActor()
 void ASTPoolableActor::Activate(const FVector ActivateLocation, const FRotator ActivateRotation)
 {
 	bIsActivated = true;
+
+	SetHidden(false);
+
 	SetActorLocation(ActivateLocation);
 	SetActorRotation(ActivateRotation);
+
+	TSet<UActorComponent*> components = GetComponents();
+	for (UActorComponent* component : components)
+	{
+		component->Activate();
+	}
 }
 
 void ASTPoolableActor::Deactivate()
 {
 	bIsActivated = false;
+
+	SetHidden(true);
+
+	TSet<UActorComponent*> components = GetComponents();
+	for (UActorComponent* component : components)
+	{
+		component->Deactivate();
+	}
 }

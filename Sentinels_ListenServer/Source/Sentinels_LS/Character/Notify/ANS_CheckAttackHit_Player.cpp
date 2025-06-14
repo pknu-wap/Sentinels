@@ -32,7 +32,7 @@ void UANS_CheckAttackHit_Player::NotifyTick(USkeletalMeshComponent* MeshComp, UA
 {
     Super::NotifyTick(MeshComp, Animation, FrameDeltaTime);
 
-    Player = Cast<ASTPlayerCharacter>(MeshComp->GetOwner());
+    if (!Player) return;
 
     if (Player)
     {
@@ -68,23 +68,21 @@ void UANS_CheckAttackHit_Player::NotifyTick(USkeletalMeshComponent* MeshComp, UA
             AActor* actor = MeshComp->GetOwner();
             if (actor && !DamagedActor->IsA(ASTPlayerCharacter::StaticClass()))
             {
-                FSTPointDamageEvent DamageEvent;
+                Player->ApplyDamageToActor(DamagePercent, GetDamageType(), DamagedActor);
 
-                FSTDamageInfo DamageInfo = StatusComp->GetCalculatedDamageInfo(DamageEvent, DamagedActor);
+                //FSTPointDamageEvent DamageEvent;
 
-                damage = DamageInfo.DamageAmount * DamagePercent;
-                DamageEvent.bIsCritical = DamageInfo.bIsCritical;
-                if (DamageEvent.bIsCritical)
-                    DamageEvent.DamageTypeClass = Player->CriticalDamageType;
-                else
-                    DamageEvent.DamageTypeClass = Player->BaseDamageType;
-                DamageEvent.DamageTypeClass = GetDamageType();
+                //FSTDamageInfo DamageInfo = StatusComp->GetCalculatedDamageInfo(DamageEvent, DamagedActor);
 
-                // Apply Damage
-                DamagedActor->TakeDamage(damage, DamageEvent, actor->GetInstigatorController(), actor);
+                //damage = DamageInfo.DamageAmount * DamagePercent;
+                //DamageEvent.bIsCritical = DamageInfo.bIsCritical;
+                //DamageEvent.DamageTypeClass = GetDamageType();
+
+                //// Apply Damage
+                //DamagedActor->TakeDamage(damage, DamageEvent, actor->GetInstigatorController(), actor);
                
-                // Player Logic Execute (After)
-                Player->OnAttackSuccess_Server(damage, DamageEvent, DamagedActor);
+                //// Player Logic Execute (After)
+                //Player->OnAttackSuccess_Server(damage, DamageEvent, DamagedActor);
 
 
 

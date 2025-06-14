@@ -100,6 +100,8 @@ void UInventoryComponent::AddItem_Server_Implementation(int InItemID)
 		AddReplicatedSubObject(NewItem);
 		Inventory.Add(FInvSlotStruct(InItemID, 1, NewItem));
 
+		NewItem->OnItemInitaillyAcquired();
+
 		if (StatusComp)
 			StatusComp->CalculateStatus();
 	}

@@ -153,6 +153,7 @@ void USTPlayerStatusComponent::SetStatus_Server_Implementation(ESTStatusType inT
 		{
 		case ESTStatusType::HP:
 			HP = inValue;
+			OnRep_HPUpdated();
 			break;
 		case ESTStatusType::ATK:
 			ATK = inValue;
@@ -189,6 +190,7 @@ void USTPlayerStatusComponent::SetStatus_Server_Implementation(ESTStatusType inT
 	{
 	case ESTStatusType::HP:
 		HP = FMath::Clamp(inValue, 0.f, MaxHP);
+		OnRep_HPUpdated();
 		break;
 	case ESTStatusType::ATK:
 		ATK = inValue;
