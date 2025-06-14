@@ -4,10 +4,14 @@
 #include "Components/STPlayerStatusComponent.h"
 #include "Components/InventoryComponent.h"
 #include "Components/UI/STPlayerUIComponent.h"
+#include "Player/STPlayerCharacter.h"
 #include "SubSystem/InventorySubsystem.h"
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Player/Inventory/ItemObject.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "GameFramework/DamageType.h"
+#include "Engine/DamageEvents.h"
 
 
 // Sets default values for this component's properties
@@ -33,16 +37,25 @@ void USTPlayerStatusComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	CachedPlayer = Cast<ASTPlayerCharacter>(GetOwner());
+	if (CachedPlayer)
+	{
+		CachedInventory = GetOwner()->GetComponentByClass<UInventoryComponent>();
+		BaseDamageType = CachedPlayer->BaseDamageType;
+		CriticalDamageType = CachedPlayer->CriticalDamageType;
+	}
+
 	SetDefaultStatus();
+	ApplyStatus();
+
+	HP = MaxHP;
+	OnRep_HPUpdated();
 
 	if (GetOwner() && GetOwner()->HasAuthority())
 	{
 		FTimerHandle HPRegenHandle;
 		GetWorld()->GetTimerManager().SetTimer(HPRegenHandle, 
-			[&]()
-			{
-				HP = FMath::Clamp(HP + HPRegen, 0, MaxHP);
-			},
+			this, &USTPlayerStatusComponent::RegenHP,
 			1.f, true);
 	}
 }
@@ -85,6 +98,53 @@ void USTPlayerStatusComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, CDR, COND_OwnerOnly);
 }
 
+float USTPlayerStatusComponent::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	HP = FMath::Clamp(HP - DamageAmount, 0, MaxHP);
+	OnRep_HPUpdated();
+
+	return HP;
+}
+
+FSTDamageInfo USTPlayerStatusComponent::GetCalculatedDamageInfo(FSTPointDamageEvent& DamageEvent, AActor* DamagedActor)
+{
+	FSTDamageInfo DamageInfo; 
+
+	DamageInfo.bIsCritical = DamageEvent.bIsCritical = UKismetMathLibrary::RandomFloatInRange(0, 1) <= CriticalRate ? true : false;
+	if (DamageInfo.bIsCritical)
+	{
+		DamageInfo.DamageAmount = GetCriticalBaseDamage();
+	}
+	else
+	{
+		DamageInfo.DamageAmount = GetBaseDamage();
+	}
+
+	if (CachedInventory)
+	{
+		DamageInfo.DamageAmount = CachedInventory->AdjustFinalDamage(DamageInfo.DamageAmount, DamageEvent, DamagedActor);
+	}
+
+	if (CachedPlayer)
+	{
+		CachedPlayer->AdjustFinalDamage(DamageInfo.DamageAmount, DamageEvent, DamagedActor);
+	}
+
+	return DamageInfo;
+}
+
+float USTPlayerStatusComponent::GetBaseDamage() const
+{
+	UE_LOG(LogTemp, Display, TEXT("Damage : %f = %f * (1 + %f)"), ATK * (1 + DamageIncreaseRate), ATK, (1 + DamageIncreaseRate));
+	return ATK * (1 + DamageIncreaseRate);
+}
+
+float USTPlayerStatusComponent::GetCriticalBaseDamage() const
+{
+	UE_LOG(LogTemp, Display, TEXT("Critical Damage : %f = %f * %f * (1 + %f)"), ATK * (1 + DamageIncreaseRate), ATK, CriticalDamagePercent, (1 + DamageIncreaseRate));
+	return ATK * CriticalDamagePercent * (1 + DamageIncreaseRate);
+}
+
 void USTPlayerStatusComponent::SetStatus_Server_Implementation(ESTStatusType inType, float inValue, bool forceApply)
 {
 	if (forceApply)
@@ -93,6 +153,7 @@ void USTPlayerStatusComponent::SetStatus_Server_Implementation(ESTStatusType inT
 		{
 		case ESTStatusType::HP:
 			HP = inValue;
+			OnRep_HPUpdated();
 			break;
 		case ESTStatusType::ATK:
 			ATK = inValue;
@@ -129,6 +190,7 @@ void USTPlayerStatusComponent::SetStatus_Server_Implementation(ESTStatusType inT
 	{
 	case ESTStatusType::HP:
 		HP = FMath::Clamp(inValue, 0.f, MaxHP);
+		OnRep_HPUpdated();
 		break;
 	case ESTStatusType::ATK:
 		ATK = inValue;
@@ -208,7 +270,8 @@ void USTPlayerStatusComponent::ClearBuff_Server_Implementation(ESTBuffType inTyp
 
 void USTPlayerStatusComponent::SetDefaultStatus()
 {
-	HP = BaseMaxHP;
+	MaxHP = BaseMaxHP;
+	HPRegen = BaseMaxHPRegen;
 	MovementSpeed = BaseMovementSpeed;
 	AttackSpeed = BaseAttackSpeed;
 	CriticalDamagePercent = BaseCriticalDamagePercent;
@@ -295,5 +358,11 @@ void USTPlayerStatusComponent::OnRep_HPUpdated()
 	// Update UI
 	OnHPDelegate.Broadcast(HP, MaxHP);
 	// Check Died
+}
+
+void USTPlayerStatusComponent::RegenHP()
+{
+	HP = FMath::Clamp(HP + HPRegen, 0, MaxHP);
+	OnRep_HPUpdated();
 }
 

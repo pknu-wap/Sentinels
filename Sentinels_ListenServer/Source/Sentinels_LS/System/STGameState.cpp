@@ -153,6 +153,8 @@ void ASTGameState::RegisterMission(FGameplayTag InMissionTag, TSubclassOf<USTMis
 
         NewMission->RegisterMission();
         NewMission->Delegate_MissionEnded.AddDynamic(this, &ASTGameState::OnMissionEnded);
+
+        OnRegisterMission.Broadcast();
     }
 }
 

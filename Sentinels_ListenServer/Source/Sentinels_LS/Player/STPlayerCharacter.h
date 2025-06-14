@@ -16,6 +16,7 @@ class USTPlayerStatusComponent;
 class UCameraModeManagerComponent;
 class UCameraShakeBase;
 struct FInputActionValue;
+struct FPlayerSKMeshes;
 
 UCLASS()
 class SENTINELS_LS_API ASTPlayerCharacter : public ASTCharacterBase
@@ -46,13 +47,24 @@ protected:
 	UFUNCTION()
 	void OnMontageEnded_Callback(UAnimMontage* Montage, bool bInterrupted);
 
+public:
+	/*
+		Customize SKMesh Parts
+	*/
+	UFUNCTION(BlueprintImplementableEvent)
+	void UpdateSKMeshParts(FPlayerSKMeshesRowName PlayerSKMeshesRowName);
 
 	/*
 		Input	
 	*/
 public:
+	UFUNCTION(BlueprintCallable)
 	void ClearAllMappingContext();
+
+	UFUNCTION(BlueprintCallable)
 	void BindDefaultTopDownInput();
+
+	UFUNCTION(BlueprintCallable)
 	void BindDefaultThirdPersonInput();
 
 protected:
@@ -61,6 +73,20 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
+
+	/*
+		Run
+	*/
+protected:
+	void Run_Pressed();
+	void Run_Released();
+
+	UFUNCTION(Server, Reliable)
+	void Run_Pressed_Server();
+
+	UFUNCTION(Server, Reliable)
+	void Run_Released_Server();
 
 
 	/*
@@ -176,10 +202,17 @@ protected:
 	*/
 public:
 	UFUNCTION(BlueprintCallable)
+	virtual void ApplyDamageToActor(float DamagePercent, TSubclassOf<UDamageType> DamageType, AActor* DamagedActor);
+
+	UFUNCTION(BlueprintCallable)
 	virtual void AdjustFinalDamage(float& DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor);
 
-protected:
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<UDamageType> BaseDamageType;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<UDamageType> CriticalDamageType;
 	
 	/*
 		On Attack Success 
@@ -251,6 +284,9 @@ protected:
 	UInputMappingContext* DefaultMappingContext;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* RunAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* JumpAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -282,6 +318,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
+
+
 
 	/*
 		Montages

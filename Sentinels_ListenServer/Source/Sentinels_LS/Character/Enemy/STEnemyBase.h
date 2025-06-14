@@ -22,6 +22,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void Destroyed() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
@@ -66,6 +67,9 @@ protected:
 	UFUNCTION()
 	virtual void PrimaryFire();
 
+	UFUNCTION(NetMulticast, Reliable)
+	void PrimaryFire_Multicast();
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<AProjectileBase> ProjectileClass_PrimaryFire;
@@ -81,9 +85,32 @@ protected:
 	void PlayKnockbackMontage_Multicast();
 
 	void PlayKnockbackMontage();
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	class UWidgetComponent* WC_DamageInd;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<class UWidgetComponent> WC_DamageIndClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<class USTWidget_DamageInd> W_DamageIndClass;
+
+/*
+	Damage Indicate
+*/
+protected:
+	UFUNCTION(NetMulticast, Reliable)
+	void ShowDamageIndicateWidget_Multicast(float Damage, FLinearColor Color);
+
+	void ShowDamageIndicateWidget(float Damage, FLinearColor Color);
+
 /*
 	Die
 */
+public:
+	bool IsAlive() const;
+
 	UFUNCTION(NetMulticast, Reliable)
 	void DissolveStart_Multicast();
 
@@ -123,7 +150,7 @@ public:
 	void SetAdditionalDropInfos(const TArray<FDropInfo>& inDropInfos);
 
 	UFUNCTION(BlueprintCallable)
-	void DropItem();
+	virtual void DropItem();
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Drop")

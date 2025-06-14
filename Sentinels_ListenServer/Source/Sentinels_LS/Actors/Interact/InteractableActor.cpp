@@ -34,6 +34,7 @@ void AInteractableActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 
 void AInteractableActor::Interact_Implementation(UInteractComponent* InteractingComponent)
 {
+	HideInteractiveUI_Implementation(InteractingComponent);
 }
 
 void AInteractableActor::Interact_Finish_Implementation(UInteractComponent* InteractingComponent)
@@ -42,6 +43,7 @@ void AInteractableActor::Interact_Finish_Implementation(UInteractComponent* Inte
 
 void AInteractableActor::ShowInteractiveUI_Implementation(UInteractComponent* InteractingComponent)
 {
+	UE_LOG(LogTemp, Display, TEXT("ShowInteractiveUI_Implementation"));
 	if (!bIsInteractable)
 		return;
 
@@ -50,7 +52,7 @@ void AInteractableActor::ShowInteractiveUI_Implementation(UInteractComponent* In
 		InteractWidget_ForDebug->RemoveFromParent();
 	}
 
-	/*if (InteractWidgetClass_ForDebug)
+	if (InteractWidgetClass_ForDebug)
 	{
 		APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
 		if (PC)
@@ -61,11 +63,12 @@ void AInteractableActor::ShowInteractiveUI_Implementation(UInteractComponent* In
 				InteractWidget_ForDebug->AddToViewport();
 			}
 		}
-	}*/
+	}
 }
 
 void AInteractableActor::HideInteractiveUI_Implementation(UInteractComponent* InteractingComponent)
 {
+	UE_LOG(LogTemp, Display, TEXT("HideInteractiveUI_Implementation"));
 	if (InteractWidget_ForDebug)
 	{
 		InteractWidget_ForDebug->RemoveFromParent();

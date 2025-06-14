@@ -6,6 +6,13 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "System/STGameState.h"
+#include "Player/STPlayerCharacter.h"
+#include "SubSystem/STAIPoolingWorldSubsystem.h"
+#include "SubSystem/STWorldSpawnSubsystem.h"
+#include "Character/Enemy/STEnemyBase_AIController.h"
+#include "Character/Enemy/STEnemyBase.h"
+#include "NavigationSystem.h"
+#include "NavigationPath.h"
 
 // Sets default values
 ASTMissionSection::ASTMissionSection()
@@ -19,7 +26,20 @@ ASTMissionSection::ASTMissionSection()
 void ASTMissionSection::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	USTAIPoolingWorldSubsystem* PoolingSystem = GetWorld()->GetSubsystem<USTAIPoolingWorldSubsystem>();
+	if (!PoolingSystem) return;
+
+	if (HasAuthority())
+	{
+		for (auto& SpawnInfo : SpawnInfos)
+		{
+			for (int i = 0; i < SpawnInfo.SpawnPawnClasses.Num(); i++)
+			{
+				PoolingSystem->InitCharacterPool(SpawnInfo.SpawnPawnClasses[i], SpawnInfo.MaxSpawnCount);
+			}
+		}
+	}
 }
 
 void ASTMissionSection::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -38,5 +58,201 @@ void ASTMissionSection::RegisterRandomMission()
 	{
 		int rand = UKismetMathLibrary::RandomIntegerInRange(0, MissionInfos.Num() - 1);
 		gameState->RegisterMission(MissionInfos[rand].MissionTag, MissionInfos[rand].MissionSubClass, this);
+	}
+}
+
+void ASTMissionSection::StartSpawnEnemy()
+{
+	if (!HasAuthority())
+		return;
+
+	int numOfPlayers =  UGameplayStatics::GetNumPlayerControllers(this);
+	if (numOfPlayers > 0)
+	{
+		for (int i = 0; i < numOfPlayers; i++)
+		{
+			ACharacter* player = UGameplayStatics::GetPlayerCharacter(this, i);
+			if (player)
+				Players.Push(player);
+		}
+	}
+
+	for (int i = 0; i < SpawnInfos.Num(); i++)
+	{
+		if (!GetWorld()->GetTimerManager().TimerExists(SpawnInfos[i].TimerHandle))
+		{
+			GetWorld()->GetTimerManager().SetTimer(SpawnInfos[i].TimerHandle,
+				[this, i]()
+				{
+					if (!SpawnReserveSet.Contains(i))
+					{
+						SpawnReserveSet.Add(i);
+						SpawnReserveQue.Enqueue(i);
+					}
+				}
+			, SpawnInfos[i].SpawnPeriod, true, 0.f);
+		}
+	}
+
+	GetWorld()->GetTimerManager().SetTimer(SpawnHandle, this, &ASTMissionSection::TrySpawnAI, 1.f, true);
+}
+
+void ASTMissionSection::StopSpawnEnemy()
+{
+	for (int i = 0; i < SpawnInfos.Num(); i++)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(SpawnInfos[i].TimerHandle);
+	}
+
+	GetWorld()->GetTimerManager().ClearTimer(SpawnHandle);
+}
+
+void ASTMissionSection::TrySpawnAI()
+{
+	if (!SpawnReserveQue.IsEmpty())
+	{
+		int idx = 0;
+		SpawnReserveQue.Dequeue(idx); SpawnReserveSet.Remove(idx);
+		SpawnEnemy(idx);
+	}
+}
+
+void ASTMissionSection::SpawnEnemy(int InfoIdx)
+{
+	USTAIPoolingWorldSubsystem* PoolingSystem = GetWorld()->GetSubsystem<USTAIPoolingWorldSubsystem>();
+	USTWorldSpawnSubsystem* SpawnSystem = GetWorld()->GetSubsystem<USTWorldSpawnSubsystem>();
+	if (!PoolingSystem || !SpawnSystem || !SpawnInfos.IsValidIndex(InfoIdx) || Players.Num() == 0)
+	{
+		return;
+	}
+
+	FSpawnInfo& Info = SpawnInfos[InfoIdx];
+	if (Info.SpawnPawnClasses.Num() == 0) return;
+
+	int rand; FNavLocation SpawnNavLocation;
+	for (int i = 0; i < Info.SpawnRate; i++)
+	{
+		if (Info.CurrentSpawned >= Info.MaxSpawnCount)
+			break;
+
+		if (!SpawnSystem->CanSpawnCharacter())
+		{
+			break;
+		}
+
+		int playerIdx = UKismetMathLibrary::RandomIntegerInRange(0, Players.Num() - 1);
+
+		// Check Get NavLocation Success && Check Class is valid 
+		rand = UKismetMathLibrary::RandomIntegerInRange(0, Info.SpawnPawnClasses.Num() - 1);
+		if (!GetSpawnNavLocationForPlayer(playerIdx, InfoIdx, SpawnNavLocation) || !Info.SpawnPawnClasses[rand])
+			continue;
+
+		// Spawn Enemy
+		SpawnNavLocation.Location.Z += 75.f;
+
+		// Check It is enemy
+		ASTEnemyBase* Enemy = PoolingSystem->GetCharacter<ASTEnemyBase>(Info.SpawnPawnClasses[rand], SpawnNavLocation.Location);
+		if (Enemy)
+		{
+			Enemy->SetAdditionalDropInfos(Info.AdditionalDropInfos);
+
+			ASTEnemyBase_AIController* controller = Cast<ASTEnemyBase_AIController>(Enemy->GetController());
+			if (controller)
+				controller->SetTarget(Players[playerIdx]);
+
+			// Bind Function on Enemy Died!
+			Enemy->Delegate_OnEnemyDied.RemoveAll(this);
+			Enemy->Delegate_OnEnemyDied.AddDynamic(this, &ASTMissionSection::OnEnemyDied);
+
+			Info.CurrentSpawned++;
+			CurrentSpawned++;
+			SpawnSystem->NewCharacterSpawned(Enemy);
+		}
+		else
+		{
+			DrawDebugCapsule(GetWorld(), SpawnNavLocation.Location, 50.f, 25.f, FRotator::ZeroRotator.Quaternion(), FColor::Red, true);
+		}
+
+	}
+}
+
+bool ASTMissionSection::IsInFrontalCone(const FVector& locationToCheck, const FVector& originLocation, const FVector& forwardVector, float angleDeg) const
+{
+	FVector TowardVec = locationToCheck - originLocation;
+	float DotProductResult = FVector::DotProduct(forwardVector, TowardVec);
+	DotProductResult = FMath::Clamp(DotProductResult, -1.0f, 1.0f);
+
+	float CosHalfAngle = FMath::Cos(FMath::DegreesToRadians(67.5f));
+	return DotProductResult >= CosHalfAngle;
+}
+
+bool ASTMissionSection::GetSpawnNavLocationForPlayer(int playerIdx, int infoIdx, FNavLocation& OutLocation) const
+{
+	if (Players.Num() == 0)
+		return false;
+
+	AActor* player = Players[playerIdx];
+	if (!IsValid(player))
+	{
+		player = UGameplayStatics::GetPlayerCharacter(this, playerIdx);
+		if (!player) return false;
+	}
+
+	const FSpawnInfo& Info = SpawnInfos[infoIdx];
+
+	UNavigationSystemV1* NavSystem = Cast<UNavigationSystemV1>(GetWorld()->GetNavigationSystem());
+	if (!NavSystem) return false;
+
+	if (!NavSystem->GetRandomReachablePointInRadius(player->GetActorLocation(), Info.SpawnableRadius_Outer, OutLocation))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AWorldBoxAISpawner : Failed to get spawnable Nav Location!"));
+		return false;
+	}
+
+	int maxLoopIdx = 50; int currentLoopIdx = 0;
+	while (currentLoopIdx <= maxLoopIdx)
+	{
+		NavSystem->GetRandomReachablePointInRadius(player->GetActorLocation(), Info.SpawnableRadius_Outer, OutLocation);
+
+		if (FVector::Dist2D(OutLocation.Location, player->GetActorLocation()) >= Info.SpawnableRadius_Inner
+			&& IsInFrontalCone(OutLocation.Location, player->GetActorLocation(), player->GetActorForwardVector(), 135.f))
+			break;
+
+		currentLoopIdx++;
+	}
+
+	if (currentLoopIdx >= 50)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("USpawnEnemyComponent : Can't get Point between Inner and Outer Circle!"));
+		return false;
+	}
+
+	return true;
+}
+
+void ASTMissionSection::OnEnemyDied(AActor* DiedEnemy)
+{
+	USTWorldSpawnSubsystem* SpawnSystem = GetWorld()->GetSubsystem<USTWorldSpawnSubsystem>();
+	if (SpawnSystem)
+	{
+		SpawnSystem->CharacterDeactivated(DiedEnemy);
+	}
+
+	UE_LOG(LogTemp, Display, TEXT("AWorldBoxAISpawner::OnEnemyDied"));
+	// Called when enemy died
+	ASTEnemyBase* Enemy = Cast<ASTEnemyBase>(DiedEnemy);
+	if (Enemy)
+	{
+		Enemy->Delegate_OnEnemyDied.RemoveAll(this);
+		for (int i = 0; i < SpawnInfos.Num(); i++)
+		{
+			for (auto& SubClass : SpawnInfos[i].SpawnPawnClasses)
+				if (DiedEnemy->GetClass() == SubClass.Get())
+				{
+					SpawnInfos[i].CurrentSpawned--;
+				}
+		}
+
+		CurrentSpawned--;
 	}
 }

@@ -21,4 +21,6 @@ public:
 	int32 GetFunctionCallspace(UFunction* Function, FFrame* Stack) override;
 	bool CallRemoteFunction(UFunction* Function, void* Parameters, FOutParmRec* OutParms, FFrame* Stack) override;
 
+protected:
+	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
 };

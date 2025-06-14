@@ -40,6 +40,7 @@ public:
 	FGameplayTag Widget_InGame_Quest;
 	FGameplayTag Widget_InGame_Inventory;
 	FGameplayTag Widget_InGame_TeamInfo;
+	FGameplayTag Widget_InGame_Interactive;
 
 
 	//////////  Mission  /////////
@@ -66,7 +67,6 @@ public:
 
 	/////////  Level  /////////
 	FGameplayTag Level_Lobby;
-	FGameplayTag Level_AbandonedFactory;
 	FGameplayTag Level_MilitaryAirport;
 	FGameplayTag Level_EX2;
 

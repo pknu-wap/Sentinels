@@ -73,7 +73,7 @@ void USTPlayerUIComponent::ServerRPCRegisterWidget_Implementation(FGameplayTag W
 {
 	ASTPlayerController* serverPC = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
 	if (serverPC)
-		serverPC->GetUIComponent()->RegisterWidget(WidgetTag, WidgetClass);
+		serverPC->GetUIComponent()->CreateAndRegisterWidget(WidgetTag, WidgetClass);
 
 	for (ASTPlayerController* playerController : TActorRange<ASTPlayerController>(GetWorld()))
 	{
@@ -86,7 +86,7 @@ void USTPlayerUIComponent::ServerRPCRegisterWidget_Implementation(FGameplayTag W
 
 void USTPlayerUIComponent::ClientRPCRegisterWidget_Implementation(FGameplayTag WidgetTag, TSubclassOf<UUserWidget> WidgetClass)
 {
-	RegisterWidget(WidgetTag, WidgetClass);
+	CreateAndRegisterWidget(WidgetTag, WidgetClass);
 }
 
 void USTPlayerUIComponent::ServerRPCUnRegisterPlayerID_Implementation(const FUniqueNetIdRepl& ID)
@@ -399,7 +399,19 @@ void USTPlayerUIComponent::UpdateTeamInfoUI()
 
 }
 
-void USTPlayerUIComponent::RegisterWidget(FGameplayTag WidgetTag, TSubclassOf<UUserWidget> WidgetClass)
+void USTPlayerUIComponent::RegisterWidget(FGameplayTag WidgetTag, UUserWidget* Widget)
+{
+	USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
+
+	ASTPlayerController* pc = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+	UUserWidget* widget = UISubSystem->GetWidget(WidgetTag);
+	if (!widget)
+	{
+		UISubSystem->RegisterWidget(WidgetTag, Widget);
+	}
+}
+
+void USTPlayerUIComponent::CreateAndRegisterWidget(FGameplayTag WidgetTag, TSubclassOf<UUserWidget> WidgetClass)
 {
 	USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
 
@@ -432,6 +444,20 @@ void USTPlayerUIComponent::AddToViewport(FGameplayTag WidgetTag)
 	widget->AddToViewport();
 }
 
+void USTPlayerUIComponent::SetVisibility(FGameplayTag WidgetTag, ESlateVisibility Visibility)
+{
+	USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
+
+	UUserWidget* widget = UISubSystem->GetWidget(WidgetTag);
+	if (!widget)
+	{
+		ST_SUBLOG(LogSTNetwork, Warning, TEXT("No Widget"));
+		return;
+	}
+	
+	widget->SetVisibility(Visibility);
+}
+
 void USTPlayerUIComponent::AddPlayerID(const FUniqueNetIdRepl& ID)
 {
 	ASTPlayerController* serverPC = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
@@ -462,21 +488,22 @@ void USTPlayerUIComponent::AddPlayerID(const FUniqueNetIdRepl& ID)
 
 void USTPlayerUIComponent::RegisterIDToDummyPlayer(const FUniqueNetIdRepl& ID)
 {
-	for (ASTDummyPlayer* dummyCharacter : TActorRange<ASTDummyPlayer>(GetWorld()))
+	for (ASTDummyPlayer* dummyPlayer : TActorRange<ASTDummyPlayer>(GetWorld()))
 	{
-		if (dummyCharacter->GetPlayerID() == ID)
+		if (dummyPlayer->GetPlayerID() == ID)
 			return;
 
-		if (dummyCharacter->GetPlayerID().IsValid())
+		if (dummyPlayer->GetPlayerID().IsValid())
 			continue;
 		
-		dummyCharacter->SetPlayerID(ID);
+		dummyPlayer->SetPlayerID(ID);
 
 		for (ASTPlayerController* playerController : TActorRange<ASTPlayerController>(GetWorld()))
 		{
 			if (playerController->PlayerState->GetUniqueId() == ID)
 			{
-				dummyCharacter->SetOwner(playerController);
+				dummyPlayer->SetOwner(playerController);
+				break;
 			}
 		}
 

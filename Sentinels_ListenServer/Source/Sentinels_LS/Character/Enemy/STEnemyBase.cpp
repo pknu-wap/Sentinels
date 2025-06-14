@@ -20,6 +20,8 @@
 #include "STGameplayTags.h"
 #include "Character/STCharacterAnimInstanceBase.h"
 #include "Actors/Projectile/ProjectileBase.h"
+#include "Components/WidgetComponent.h"
+#include "Widget/STWidget_DamageInd.h"
 #include "Actors/Interact/Item/InteractableItem.h"
 #include "SubSystem/STProjectilePoolingSubSystem.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -70,13 +72,28 @@ void ASTEnemyBase::BeginPlay()
 
 		if(bIsActivated)
 			Activate(GetActorLocation(), GetActorRotation());
-
-		if (ProjectileClass_PrimaryFire)
-		{
-			USTProjectilePoolingSubSystem* ProjectileSubSystem = GetWorld()->GetSubsystem<USTProjectilePoolingSubSystem>();
-			ProjectileSubSystem->InitProjectilePool(this, ProjectileClass_PrimaryFire, 100);
-		}
 	}
+
+	if (ProjectileClass_PrimaryFire)
+	{
+		USTProjectilePoolingSubSystem* ProjectileSubSystem = GetWorld()->GetSubsystem<USTProjectilePoolingSubSystem>();
+		ProjectileSubSystem->InitProjectilePool(this, ProjectileClass_PrimaryFire, 100);
+	}
+
+	if (W_DamageIndClass)
+	{
+		WC_DamageInd = NewObject<UWidgetComponent>(this, WC_DamageIndClass);
+		WC_DamageInd->SetWidgetClass(W_DamageIndClass);
+		WC_DamageInd->RegisterComponent();
+		WC_DamageInd->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+	}
+}
+
+void ASTEnemyBase::Destroyed()
+{
+	UE_LOG(LogTemp, Warning, TEXT("%s is destroyed!"), *GetName());
+
+	Super::Destroyed();
 }
 
 void ASTEnemyBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -98,15 +115,18 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 		/*
 			Critical
 		*/
+		FLinearColor damageTextColor = FLinearColor::White;
 		if (DamageEvent.GetTypeID() == FSTPointDamageEvent::ClassID)
 		{
 			const FSTPointDamageEvent& PointDamageEvent = static_cast<const FSTPointDamageEvent&>(DamageEvent);
 			FString Str_DamageType = PointDamageEvent.bIsCritical ? FString("Critical") : FString("Normal");
+			damageTextColor = PointDamageEvent.bIsCritical ? FLinearColor::Yellow : FLinearColor::White;
 			UE_LOG(LogTemp, Warning, TEXT("ASTEnemyBase : %s Damage %f"), *Str_DamageType, Damage);
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("ASTEnemyBase : Damage %f"), Damage);
+			damageTextColor = FLinearColor::White;
+			UE_LOG(LogTemp, Warning, TEXT("ASTEnemyBase : Extra Damage %f"), Damage);
 		}
 		
 
@@ -149,6 +169,11 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 		}
 
 		/*
+			Damage Indicate
+		*/
+		ShowDamageIndicateWidget_Multicast(Damage, damageTextColor);
+
+		/*
 			Calculate Current HP & Check Died
 		*/
 		if (StatusComponent && StatusComponent->TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser) <= 0)
@@ -169,9 +194,6 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 			{
 				AIController->GetBrainComponent()->StopLogic(FString("Died."));
 			}
-
-			// Delegate Broadcast
-			Delegate_OnEnemyDied.Broadcast(this);
 
 			// Drop Item
 			DropItem();
@@ -209,6 +231,9 @@ void ASTEnemyBase::Activate(const FVector ActivateLocation, const FRotator Activ
 void ASTEnemyBase::Deactivate()
 {
 	Super::Deactivate();
+
+	// Delegate Broadcast
+	Delegate_OnEnemyDied.Broadcast(this);
 }
 
 bool ASTEnemyBase::IsNormalAttackMontage(UAnimMontage* InMontage)
@@ -226,7 +251,7 @@ int ASTEnemyBase::GetRandomNormalAttackMontageIndex()
 	const int32 NumMontages = Montage_NormalAttackSet.Num();
 
 	if (NumMontages <= 1)
-		return 0; // ÇÏ³ª»ÓÀÌ¸é ¾îÂ¿ ¼ö ¾øÀ½
+		return 0; // ï¿½Ï³ï¿½ï¿½ï¿½ï¿½Ì¸ï¿½ ï¿½ï¿½Â¿ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
 	int32 NewIndex;
 	do
@@ -268,15 +293,40 @@ void ASTEnemyBase::PlayNormalAttackMontage(int MontageIdx)
 	}
 }
 
+void ASTEnemyBase::ShowDamageIndicateWidget_Multicast_Implementation(float Damage, FLinearColor Color)
+{
+	ShowDamageIndicateWidget(Damage, Color);
+}
+
+void ASTEnemyBase::ShowDamageIndicateWidget(float Damage, FLinearColor Color)
+{
+	if (WC_DamageInd)
+	{
+		USTWidget_DamageInd* WDamageInd = Cast<USTWidget_DamageInd>(WC_DamageInd->GetWidget());
+		FSlateColor damageTextColor = FSlateColor(Color);
+		if (IsValid(WDamageInd))
+		{
+			WDamageInd->SetTextColor(damageTextColor);
+			WDamageInd->SetDamage(Damage);
+			WDamageInd->PlayCustomAnimation();
+		}
+	}
+}
+
 void ASTEnemyBase::PrimaryFire()
+{
+	PrimaryFire_Multicast();
+}
+
+void ASTEnemyBase::PrimaryFire_Multicast_Implementation()
 {
 	USTProjectilePoolingSubSystem* ProjectileSubSystem = GetWorld()->GetSubsystem<USTProjectilePoolingSubSystem>();
 
 	FVector SpawnLocation = GetMesh()->GetSocketLocation(SocketName_PrimaryFire);
 	AProjectileBase* projectile = ProjectileSubSystem->GetActor<AProjectileBase>(ProjectileClass_PrimaryFire, SpawnLocation);
-	// AProjectileBase* projectile = GetWorld()->SpawnActor<AProjectileBase>(ProjectileClass_PrimaryFire, SpawnLocation, GetActorForwardVector().Rotation());
 	if (projectile)
 	{
+		projectile->SetInstigator(this);
 		UParticleSystemComponent* Particle = projectile->GetComponentByClass<UParticleSystemComponent>();
 		if (Particle)
 		{
@@ -298,6 +348,14 @@ void ASTEnemyBase::PlayKnockbackMontage()
 	{
 		AnimInst->Montage_Play(Montage_Knockback);
 	}
+}
+
+bool ASTEnemyBase::IsAlive() const
+{
+	if (StatusComponent) 
+		return StatusComponent->GetCurrentHP() > 0;
+
+	return false;
 }
 
 void ASTEnemyBase::DissolveStart_Multicast_Implementation()

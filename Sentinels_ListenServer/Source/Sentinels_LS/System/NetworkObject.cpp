@@ -2,6 +2,7 @@
 
 
 #include "System/NetworkObject.h"
+#include "Net/UnrealNetwork.h"
 
 int32 UNetworkObject::GetFunctionCallspace(UFunction* Function, FFrame* Stack)
 {
@@ -22,4 +23,15 @@ bool UNetworkObject::CallRemoteFunction(UFunction* Function, void* Parameters, F
     }
 
     return false;
+}
+
+void UNetworkObject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+    UBlueprintGeneratedClass* BPClass = Cast<UBlueprintGeneratedClass>(GetClass());
+    if (BPClass != NULL)
+    {
+        BPClass->GetLifetimeBlueprintReplicationList(OutLifetimeProps);
+    }
 }

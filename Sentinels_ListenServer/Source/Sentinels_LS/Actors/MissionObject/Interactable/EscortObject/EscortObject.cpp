@@ -60,6 +60,7 @@ void AEscortObject::Tick(float DeltaSeconds)
 			{
 				SpawnEnemyComp->StopSpawnEnemy();
 
+				bIsSuccessed = true;
 				StopMove();
 
 				// Update Mission Info

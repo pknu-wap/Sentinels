@@ -6,39 +6,45 @@
 #include "GameFramework/GameState.h"
 #include "Perception/AISense_Damage.h"
 #include "DamageType/STDamageTypes.h"
+#include "Components/STPlayerStatusComponent.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Engine/DamageEvents.h"
+#include "Player/STPlayerCharacter.h"
 
 void UAN_ApplyRadialDamage::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
 	Super::Notify(MeshComp, Animation);
 
-	AActor* Owner = MeshComp->GetOwner();
-	if (Owner && Owner->HasAuthority())
+	ASTPlayerCharacter* Player = Cast<ASTPlayerCharacter>(MeshComp->GetOwner());
+	if (Player && Player->HasAuthority())
 	{
-		CalculateFinalDamage();
+		StatusComp = Player->GetComponentByClass<USTPlayerStatusComponent>();
+		if (!StatusComp) return;
 
 		TArray<TEnumAsByte<EObjectTypeQuery>> objectType;
 		objectType.Emplace(UEngineTypes::ConvertToObjectType(ECC_Pawn));
 		objectType.Emplace(UEngineTypes::ConvertToObjectType(ECC_Destructible));
 
 		TArray<AActor*> ignore;
-		int playerNum = UGameplayStatics::GetNumPlayerControllers(Owner);
+		int playerNum = UGameplayStatics::GetNumPlayerControllers(Player);
 		for (int i = 0; i < playerNum; i++)
 		{
-			APlayerController* controller = UGameplayStatics::GetPlayerController(Owner, i);
+			APlayerController* controller = UGameplayStatics::GetPlayerController(Player, i);
 			if (controller)
 			{
 				ignore.Add(controller->GetPawn());
 			}
 		}
 
-		FVector TraceStartLocation = Owner->GetActorLocation() + Owner->GetActorForwardVector() * ForwardOffset;
+		FVector TraceStartLocation = Player->GetActorLocation() + Player->GetActorForwardVector() * ForwardOffset;
 
 		TArray<FHitResult> hitResults;
-		UKismetSystemLibrary::SphereTraceMultiForObjects(Owner, TraceStartLocation, TraceStartLocation,
+		UKismetSystemLibrary::SphereTraceMultiForObjects(Player, TraceStartLocation, TraceStartLocation,
 			Radius, objectType, false, ignore, DebugType.GetValue(), hitResults, true);
 
-		for (FHitResult hit : hitResults)
+		for (FHitResult& hit : hitResults)
 		{
+			float damage = 0.f;
 			AActor* DamagedActor = hit.GetActor();
 			AActor* DamageCauser = MeshComp->GetOwner();
 
@@ -46,11 +52,24 @@ void UAN_ApplyRadialDamage::Notify(USkeletalMeshComponent* MeshComp, UAnimSequen
 			{
 				DamagedActors.Add(DamagedActor);
 
-				UGameplayStatics::ApplyPointDamage(DamagedActor, FinalDamage, hit.ImpactNormal, hit,
-					DamageCauser->GetInstigatorController(), DamageCauser, GetDamageType());
+				Player->ApplyDamageToActor(DamagePercent, GetDamageType(), DamagedActor);
+
+				//FSTPointDamageEvent DamageEvent;
+
+				//FSTDamageInfo DamageInfo = StatusComp->GetCalculatedDamageInfo(DamageEvent, DamagedActor);
+
+				//damage = DamageInfo.DamageAmount * DamagePercent;
+				//DamageEvent.bIsCritical = DamageInfo.bIsCritical;
+				//DamageEvent.DamageTypeClass = GetDamageType();
+
+				//// Apply Damage
+				//DamagedActor->TakeDamage(damage, DamageEvent, Owner->GetInstigatorController(), Owner);
+
+				/*UGameplayStatics::ApplyPointDamage(DamagedActor, FinalDamage, hit.ImpactNormal, hit,
+					DamageCauser->GetInstigatorController(), DamageCauser, GetDamageType());*/
 
 				UAISense_Damage::ReportDamageEvent(DamagedActor, DamagedActor, DamageCauser,
-					FinalDamage, DamagedActor->GetActorLocation(), hit.ImpactPoint);
+					damage, DamagedActor->GetActorLocation(), hit.ImpactPoint);
 			}
 		}
 
@@ -58,9 +77,19 @@ void UAN_ApplyRadialDamage::Notify(USkeletalMeshComponent* MeshComp, UAnimSequen
 	}
 }
 
-void UAN_ApplyRadialDamage::CalculateFinalDamage()
+void UAN_ApplyRadialDamage::CalculateFinalDamage(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
-	FinalDamage = 10 * DamagePercent;
+	/*if (AActor* Owner = MeshComp->GetOwner())
+	{
+		StatusComp = Owner->GetComponentByClass<USTPlayerStatusComponent>();
+		if (!StatusComp) return;
+
+		FinalDamage = StatusComp->GetBaseDamage() * DamagePercent;
+		CiriticalFinalDamage = StatusComp->GetCriticalBaseDamage() * DamagePercent;
+		return;
+	}
+	
+	FinalDamage = 10 * DamagePercent;*/
 }
 
 TSubclassOf<UDamageType> UAN_ApplyRadialDamage::GetDamageType() const

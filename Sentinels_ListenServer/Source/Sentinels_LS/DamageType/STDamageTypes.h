@@ -7,7 +7,7 @@
 #include "Engine/DamageEvents.h"
 #include "STDamageTypes.generated.h"
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FSTPointDamageEvent : public FPointDamageEvent
 {
     GENERATED_BODY()
@@ -25,6 +25,7 @@ struct FSTPointDamageEvent : public FPointDamageEvent
 	virtual bool IsOfType(int32 InID) const override { return (FSTPointDamageEvent::ClassID == InID) || FDamageEvent::IsOfType(InID); };
 
 public:
+	UPROPERTY(BlueprintReadWrite)
     bool bIsCritical = false;
 };
 
@@ -36,6 +37,9 @@ class SENTINELS_LS_API USTBaseDamageType : public UDamageType
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float StunnedTime = 1.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bIsCritical = false;
 };
 
 UCLASS()

@@ -51,7 +51,7 @@ void USkillComponent::InitSkillInfos(UDataTable* InDataTable)
 			}
 		}
 
-		int SkillID = 1;
+		int SkillID = 0;
 		for (int i = 0; i < ClassSkills.Num(); i++)
 		{
 			ClassSkills[i].ID = SkillID++;
@@ -95,7 +95,7 @@ void USkillComponent::StartCoolDown(int SkillIdx)
 	if (!StatusComp) return;
 
 	if (Skill_CoolDowns.IsValidIndex(SkillIdx) && ClassSkills.IsValidIndex(SkillIdx))
-		Skill_CoolDowns[SkillIdx] = ClassSkills[SkillIdx].SkillCoolTime * StatusComp->CDR;
+		Skill_CoolDowns[SkillIdx] = ClassSkills[SkillIdx].SkillCoolTime * (1 - StatusComp->CDR);
 }
 
 void USkillComponent::Tick_SkillCoolDown(float DeltaTime)

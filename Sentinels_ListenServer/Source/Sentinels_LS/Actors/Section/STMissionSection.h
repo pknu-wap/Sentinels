@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "GameplayTagContainer.h"
 #include "STStructs.h"
+#include "Components/SpawnEnemyComponent.h"
 #include "STMissionSection.generated.h"
 
 class ASpawnPointBase;
@@ -49,6 +50,47 @@ public:
 
 	UPROPERTY(VisibleAnywhere)
 	bool bIsSelected = false;
+
+/*
+	Spawn Enemy
+*/
+public:
+	UFUNCTION(BlueprintCallable)
+	void StartSpawnEnemy();
+
+	UFUNCTION(BlueprintCallable)
+	void StopSpawnEnemy();
+
+protected:
+	void TrySpawnAI();
+	void SpawnEnemy(int InfoIdx);
+	bool IsInFrontalCone(const FVector& locationToCheck, const FVector& originLocation, const FVector& forwardVector, float angleDeg) const;
+	bool GetSpawnNavLocationForPlayer(int playerIdx, int infoIdx, FNavLocation& OutLocation) const;
+
+protected:
+	UFUNCTION()
+	void OnEnemyDied(AActor* DiedEnemy);
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
+	bool bShouldLoop = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
+	TArray<FSpawnInfo> SpawnInfos;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TArray<AActor*> Players;
+
+private:
+	TQueue<int> SpawnReserveQue;
+
+	UPROPERTY()
+	TSet<int> SpawnReserveSet;
+
+	UPROPERTY()
+	FTimerHandle SpawnHandle;
+
+	float CurrentSpawned = 0;
 
 
 public:

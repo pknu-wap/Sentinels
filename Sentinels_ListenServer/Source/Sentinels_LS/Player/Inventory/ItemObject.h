@@ -63,9 +63,39 @@ public:
 	Event
 */
 public:
-	UFUNCTION(BlueprintImplementableEvent)
+	/*
+		Called only once When this item acquired.
+	*/
+	UFUNCTION(BlueprintNativeEvent)
+	void OnItemInitaillyAcquired();
+	
+	/*
+	*	Called When Player Apply Damage to other actor
+	*/
+	UFUNCTION(BlueprintNativeEvent)
 	float AdjustFinalDamage(float DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor);
 
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintNativeEvent)
 	void OnAttackSuccess(float DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor);
+	
+	/*
+	*	Called When Player is Damaged by other actor
+	*	Return Calculated Damage
+	*/
+	UFUNCTION(BlueprintNativeEvent)
+	float OnDamaged(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser);
+
+
+/*
+	Blueprint Helper Function
+*/
+protected:
+	UWorld* GetWorld() const override
+	{
+		if (IsTemplate() || !GetOuter())
+		{
+			return nullptr;
+		}
+		return GetOuter()->GetWorld();
+	}
 };

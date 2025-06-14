@@ -12,7 +12,7 @@ void UAN_LaunchSlash::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase
 	Super::Notify(MeshComp, Animation, EventReference);
 
 	ASTCharacterBase* OwningCharacter = Cast<ASTCharacterBase>(MeshComp->GetOwner());
-	if (OwningCharacter && OwningCharacter->HasAuthority())
+	if (OwningCharacter)
 	{
 		USTProjectilePoolingSubSystem* PoolingSystem = OwningCharacter->GetWorld()->GetSubsystem<USTProjectilePoolingSubSystem>();
 		if (!PoolingSystem) return;
@@ -31,6 +31,7 @@ void UAN_LaunchSlash::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase
 
 		if (Slash)
 		{
+			Slash->SetInstigator(Cast<APawn>(MeshComp->GetOwner()));
 			if (LaunchRotationOffset == FRotator::ZeroRotator)
 			{
 				Slash->FireInDirection(OwningCharacter->GetActorForwardVector());

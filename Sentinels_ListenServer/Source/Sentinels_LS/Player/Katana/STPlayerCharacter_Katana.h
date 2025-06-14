@@ -35,6 +35,10 @@ protected:
 protected:
 	virtual void Skill_Passive_Pressed() override;
 	virtual void Skill_Passive_Pressed_Server_Implementation() override;
+	virtual void Skill_Passive_Pressed_Multicast_Implementation() override;
+
+	UFUNCTION()
+	void ApplyPassiveDamage();
 
 	UFUNCTION()
 	void SetWrapTarget_Passive();
@@ -72,7 +76,7 @@ protected:
 	float WarpDistance_Q = 500.f;
 
 	UPROPERTY(EditAnywhere, Category = "Skill")
-	TSubclassOf<AProjectileBase> SubclassOfSlash_Q;
+	TSubclassOf<AActor> SubclassOfSlash_Q;
 
 	UPROPERTY(EditAnywhere, Category = "Skill")
 	TSubclassOf<AProjectileBase> SubclassOfSlash_R;

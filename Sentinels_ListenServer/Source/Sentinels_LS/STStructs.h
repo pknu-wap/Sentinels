@@ -42,6 +42,8 @@ struct SENTINELS_LS_API FSkillStruct : public FTableRowBase
 		ID = other.ID;
 		Icon = other.Icon;
 		SkillCoolTime = other.SkillCoolTime;
+		SkillName = other.SkillName;
+		SkillDescription = other.SkillDescription;
 	}
 
 	FSkillStruct& operator=(const FSkillStruct& other)
@@ -49,6 +51,9 @@ struct SENTINELS_LS_API FSkillStruct : public FTableRowBase
 		ID = other.ID;
 		Icon = other.Icon;
 		SkillCoolTime = other.SkillCoolTime;
+		SkillName = other.SkillName;
+		SkillDescription = other.SkillDescription;
+
 		return *this;
 	}
 
@@ -95,11 +100,54 @@ struct SENTINELS_LS_API FItemStruct : public FTableRowBase
 
 	FItemStruct() {};
 
+	FItemStruct(const FItemStruct& other)
+	{
+		ItemID = other.ItemID;
+		ItemClass = other.ItemClass;
+		Icon = other.Icon;
+		ItemName = other.ItemName;
+		ItemDescription = other.ItemDescription;
+	}
+
+	FItemStruct& operator=(const FItemStruct& other)
+	{
+		ItemID = other.ItemID;
+		ItemClass = other.ItemClass;
+		Icon = other.Icon;
+		ItemName = other.ItemName;
+		ItemDescription = other.ItemDescription;
+
+		return *this;
+	}
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int ItemID = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<class UItemObject> ItemClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTexture2D* Icon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString ItemName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString ItemDescription;
+};
+
+USTRUCT(BlueprintType)
+struct SENTINELS_LS_API FCustomizeStruct : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	FCustomizeStruct() {};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int ID = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<USkeletalMesh> SkeletalMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UTexture2D* Icon;

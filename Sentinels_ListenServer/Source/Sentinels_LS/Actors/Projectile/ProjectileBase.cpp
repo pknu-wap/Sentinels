@@ -39,6 +39,13 @@ void AProjectileBase::BeginPlay()
 
 }
 
+void AProjectileBase::Tick(float DeltaSeconds)
+{
+    Super::Tick(DeltaSeconds);
+
+
+}
+
 void AProjectileBase::Activate(const FVector ActivateLocation, const FRotator ActivateRotation)
 {
     Super::Activate(ActivateLocation, ActivateRotation);

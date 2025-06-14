@@ -35,6 +35,21 @@ void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(UInventoryComponent, Inventory);
 }
 
+float UInventoryComponent::AdjustFinalDamage(float DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor)
+{
+	// Item (Combo Amplifier)
+	const FInvSlotStruct& ItemInfo_CA = GetItem(8);
+	if (ItemInfo_CA.ItemID != 0 && ItemInfo_CA.Quantity > 0)
+	{
+		if (ItemInfo_CA.ItemObject)
+		{
+			DamageAmount = ItemInfo_CA.ItemObject->AdjustFinalDamage(DamageAmount, DamageEvent, DamagedActor);
+		}
+	}
+
+	return DamageAmount;
+}
+
 const FInvSlotStruct& UInventoryComponent::GetItem(int InItemID) const
 {
 	for (auto& slot : Inventory)
@@ -64,6 +79,8 @@ void UInventoryComponent::AddItem_Server_Implementation(int InItemID)
 			if (StatusComp)
 				StatusComp->CalculateStatus();
 
+			OnRep_Inventory();
+
 			return;
 		}
 	}
@@ -82,8 +99,8 @@ void UInventoryComponent::AddItem_Server_Implementation(int InItemID)
 	{
 		AddReplicatedSubObject(NewItem);
 		Inventory.Add(FInvSlotStruct(InItemID, 1, NewItem));
-		/*if(NewItem)
-			NewItem->CalculateStatus(GetOwner());*/
+
+		NewItem->OnItemInitaillyAcquired();
 
 		if (StatusComp)
 			StatusComp->CalculateStatus();
@@ -92,6 +109,8 @@ void UInventoryComponent::AddItem_Server_Implementation(int InItemID)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("UInventoryComponent : Failed to Create"));
 	}
+
+	OnRep_Inventory();
 }
 
 void UInventoryComponent::OnRep_Inventory()
@@ -105,7 +124,7 @@ void UInventoryComponent::OnRep_Inventory()
 	/*
 		Update Item UI
 	*/
-	OnUpdatreInventory.Broadcast();
+	OnUpdateInventory.Broadcast();
 }
 
 void UInventoryComponent::LogInventory()

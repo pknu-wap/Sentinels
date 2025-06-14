@@ -10,6 +10,7 @@
 #include "GameFramework/PlayerState.h"
 #include "System/STGameInstance.h"
 #include "Player/STPlayerController.h"
+#include "Player/STPlayerCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "System/STGameState.h"
 #include "SubSystem/STGameTravelDataSubsystem.h"
@@ -92,8 +93,7 @@ void ASentinels_LSGameMode::HandleStartingNewPlayer_Implementation(APlayerContro
 	ASTPlayerController* playerController = Cast<ASTPlayerController>(NewPlayer);
 
 	USTGameTravelDataSubsystem* gameTravelData = GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
-
-	FPlayerInfo playerInfo = gameTravelData->GetPlayerInfo(NewPlayer->PlayerState->GetUniqueId());
+	FPlayerInfo playerInfo = gameTravelData->LoadPlayerInfo(NewPlayer->PlayerState->GetUniqueId());
 
 	playerController->UpdatePlayerClass(playerInfo.PlayerClass);
 }

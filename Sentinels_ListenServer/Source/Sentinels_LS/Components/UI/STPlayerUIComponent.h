@@ -122,13 +122,19 @@ public:
 	void UpdateTeamInfoUI();
 
 	UFUNCTION(BlueprintCallable)
-	void RegisterWidget(FGameplayTag WidgetTag, TSubclassOf<UUserWidget> WidgetClass);
+	void RegisterWidget(FGameplayTag WidgetTag, UUserWidget* Widget);
+
+	UFUNCTION(BlueprintCallable)
+	void CreateAndRegisterWidget(FGameplayTag WidgetTag, TSubclassOf<UUserWidget> WidgetClass);
 
 	UFUNCTION(BlueprintCallable)
 	void UnRegisterWidget(FGameplayTag WidgetTag);
 
 	UFUNCTION(BlueprintCallable)
 	void AddToViewport(FGameplayTag WidgetTag);
+
+	UFUNCTION(BlueprintCallable)
+	void SetVisibility(FGameplayTag WidgetTag, ESlateVisibility Visibility);
 
 	/*
 		Only Server

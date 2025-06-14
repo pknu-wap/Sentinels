@@ -28,6 +28,11 @@ void USTPlayerAnimInstance::AnimNotify_SetWarpTarget_Passive()
 	Delegate_SetWarpTarget_Passive.Broadcast();
 }
 
+void USTPlayerAnimInstance::AnimNotify_ApplyDamage()
+{
+	Delegate_ApplyDamage.Broadcast();
+}
+
 void USTPlayerAnimInstance::AnimNotify_ThrowLiftingActor()
 {
 	Delegate_ThrowLiftingActor.Broadcast();

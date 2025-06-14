@@ -25,8 +25,12 @@ public:
 	UFUNCTION()
 	void ConditionUpdated(int ObjectID, bool Success);
 
+	UFUNCTION()
+	void OnRep_Successed();
+
 
 public:
+	UPROPERTY(ReplicatedUsing = OnRep_Successed)
 	bool Successed = false;
 
 };
