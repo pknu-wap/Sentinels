@@ -3,7 +3,7 @@
 
 #include "Character/Enemy/GRIM/STGRIMAnimInstance.h"
 
-void USTGRIMAnimInstance::AnimNotify_GrimUltimateFire()
+void USTGRIMAnimInstance::AnimNotify_UltimateFire_Red()
 {
-	Delegate_GrimUlitmateFire.Broadcast();
+	Delegate_UltimateFire_Red.Broadcast();
 }

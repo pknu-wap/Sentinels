@@ -29,7 +29,6 @@ AProjectileBase::AProjectileBase()
     ProjectileMovementComponent->bRotationFollowsVelocity = true;
     ProjectileMovementComponent->bShouldBounce = true;
     ProjectileMovementComponent->Bounciness = 0.3f;
-    ProjectileMovementComponent->ProjectileGravityScale = 0.0f;
 }
 
 // Called when the game starts or when spawned

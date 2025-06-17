@@ -110,6 +110,18 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 	if (StatusComponent && StatusComponent->IsDied())
 		return 0.f;
 
+	if (HasTag(FSTGameplayTags::Get().Character_State_Invincible))
+	{
+		return 0.f;
+	}
+
+	if (HasTag(FSTGameplayTags::Get().Character_State_Reflect))
+	{
+		UGameplayStatics::ApplyDamage(DamageCauser, Damage, GetController(), this, UDamageType::StaticClass());
+		// DamageCauser->TakeDamage(Damage, FDamageEvent(), GetController(), this);
+		return 0.f;
+	}
+
 	if (HasAuthority())
 	{
 		/*
@@ -186,7 +198,6 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 				}, 5.f, false);
 
 			PlayDiedMontage_Multicast();
-			// GetCharacterMovement()->Deactivate();
 			
 			// Stop Behavior Tree
 			AAIController* AIController = Cast<AAIController>(GetController());

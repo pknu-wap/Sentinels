@@ -119,6 +119,16 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 		FString("Character State Step")
 	);
 
+	GameplayTags.Character_State_Invincible = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Character.State.Invincible"),
+		FString("Character State Invincible")
+	);
+
+	GameplayTags.Character_State_Reflect = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Character.State.Reflect"),
+		FString("Character State Reflect")
+	);
+
 	GameplayTags.Character_Player_State_RepairRift = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Character.Player.State.RepairRift"),
 		FString("Player is Reparing Rift")
