@@ -215,15 +215,20 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 		/*
 			Play Knockback Montage
 		*/
-		if (Montage_Knockback)
+		if (StatusComponent && StatusComponent->GetCurrentGuardGuage() <= 0)
 		{
-			PlayKnockbackMontage_Multicast();
-		}
-		else
-		{
-			StopCurrentAnimMontage_Multicast();
-			FVector LaunchDir = (GetActorLocation() - DamageCauser->GetActorLocation()).GetSafeNormal2D();
-			LaunchCharacter(LaunchDir * LaunchVelocity, false, false);
+			if (Montage_Knockback)
+			{
+				PlayKnockbackMontage_Multicast();
+			}
+			else
+			{
+				StopCurrentAnimMontage_Multicast();
+				FVector LaunchDir = (GetActorLocation() - DamageCauser->GetActorLocation()).GetSafeNormal2D();
+				LaunchCharacter(LaunchDir * LaunchVelocity, false, false);
+			}
+
+			StatusComponent->ResetGuardGuage();
 		}
 	}
 

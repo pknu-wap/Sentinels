@@ -4,6 +4,8 @@
 #include "Components/STEnemyStatusComponent.h"
 #include "System/STGameState.h"
 #include "Kismet/GameplayStatics.h"
+#include "Engine/DamageEvents.h"
+#include "DamageType/STDamageTypes.h"
 
 // Sets default values for this component's properties
 USTEnemyStatusComponent::USTEnemyStatusComponent()
@@ -45,7 +47,10 @@ void USTEnemyStatusComponent::InitStatus()
 
 		MaxHP = BaseMaxHP * weight;
 		CurrentHP = MaxHP;
+
 		CurrentATK = BaseATK * weight;
+
+		CurrentGuardGuage = MaxGuardGuage;
 
 		bIsDied = false;
 	}
@@ -91,6 +96,12 @@ float USTEnemyStatusComponent::TakeDamage(float Damage, FDamageEvent const& Dama
 
 	if (CurrentHP <= 0)
 		bIsDied = true;
+
+	USTBaseDamageType* STDamageType = Cast<USTBaseDamageType>(DamageEvent.DamageTypeClass.GetDefaultObject());
+	if (STDamageType)
+	{
+		CurrentGuardGuage = FMath::Clamp(CurrentGuardGuage - STDamageType->GuardGuageDamage, 0, MaxGuardGuage);
+	}
 
 	return CurrentHP;
 }

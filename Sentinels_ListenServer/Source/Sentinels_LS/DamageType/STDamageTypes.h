@@ -39,7 +39,7 @@ public:
 	float StunnedTime = 1.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool bIsCritical = false;
+	float GuardGuageDamage = 25.f;
 };
 
 UCLASS()

@@ -30,12 +30,14 @@ public:
 	float TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
 
 public:
+	FORCEINLINE void ResetGuardGuage() { CurrentGuardGuage = MaxGuardGuage; }
 	FORCEINLINE bool IsDied() { return bIsDied; }
 
 public:
 	FORCEINLINE float GetMaxHP() const { return MaxHP; }
 	FORCEINLINE float GetCurrentHP() const { return CurrentHP; }
 	FORCEINLINE float GetCurrentATK() const { return CurrentATK; }
+	FORCEINLINE float GetCurrentGuardGuage() const { return CurrentGuardGuage; }
 	float GetStatusCurveValue() const;
 
 protected:
@@ -62,6 +64,12 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	float CurrentATK;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxGuardGuage = 100.f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	float CurrentGuardGuage;
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bIsDied = false;
