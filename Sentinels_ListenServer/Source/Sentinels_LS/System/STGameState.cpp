@@ -3,10 +3,12 @@
 
 #include "System/STGameState.h"
 #include "System/Mission/STMissionBase.h"
+#include "System/STGameMode_MissionBase.h"
 #include "Net/UnrealNetwork.h"
 #include "Sentinels_LS.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Actors/Section/STMissionSection.h"
+#include "Kismet/GameplayStatics.h"
 
 ASTGameState::ASTGameState() :
     CurrentLevelTag(FSTGameplayTags::Get().Level_Lobby)
@@ -35,6 +37,19 @@ int ASTGameState::GetClearedMissionNum() const
     }
 
     return count;
+}
+
+ASTMissionSection* ASTGameState::GetActivatedMissionSection() const
+{
+    for (const auto& missionInfo : ActivatedMissions)
+    {
+        if (missionInfo.Mission && missionInfo.Mission->GetProgressState() == EMissionProgressState::Activated)
+        {
+            return missionInfo.MissionSection;
+        }
+    }
+
+    return nullptr;
 }
 
 void ASTGameState::ActivateRandomMission()
@@ -154,6 +169,12 @@ void ASTGameState::RegisterMission(FGameplayTag InMissionTag, TSubclassOf<USTMis
         NewMission->RegisterMission();
         NewMission->Delegate_MissionEnded.AddDynamic(this, &ASTGameState::OnMissionEnded);
 
+        ASTGameMode_MissionBase* STGameMode = Cast<ASTGameMode_MissionBase>(UGameplayStatics::GetGameMode(this));
+        if (STGameMode)
+        {
+            NewMission->Delegate_MissionEnded.AddDynamic(STGameMode, &ASTGameMode_MissionBase::OnMissionEnded);
+        }
+
         OnRegisterMission.Broadcast();
     }
 }
@@ -174,7 +195,7 @@ void ASTGameState::OnMissionEnded(USTMissionBase* InMission, bool IsCleared)
     }
 
     // Start Next Random Mission
-    ActivateRandomMission();
+    // ActivateRandomMission();
 }
 
 void ASTGameState::OnMissionEnded_Multicast_Implementation(USTMissionBase* InMission, bool IsCleared)

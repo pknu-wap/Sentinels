@@ -188,6 +188,14 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 	);
 
 	/*
+		Sections
+	*/
+	GameplayTags.Section_SelectMissionOrBoss = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Section.SelectMissionOrBoss"),
+		FString("Section SelectMissionOrBoss")
+	);
+
+	/*
 		Spawn Points
 	*/
 	GameplayTags.SpawnPoint_DefenseCore = UGameplayTagsManager::Get().AddNativeGameplayTag(

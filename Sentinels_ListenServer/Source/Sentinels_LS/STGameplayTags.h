@@ -57,6 +57,10 @@ public:
 	FGameplayTag SubMission_Explosion;
 
 
+	//////////  Section  /////////
+	FGameplayTag Section_SelectMissionOrBoss;
+
+
 	/////////  SpawnPoint  /////////
 	FGameplayTag SpawnPoint_DefenseCore;
 	FGameplayTag SpawnPoint_DominationPoint;

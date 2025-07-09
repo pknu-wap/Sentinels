@@ -73,6 +73,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	int GetClearedMissionNum() const;
 
+	ASTMissionSection* GetActivatedMissionSection() const;
+
 public:
 	UFUNCTION(BlueprintCallable)
 	void ActivateRandomMission();
