@@ -74,3 +74,12 @@ enum class EMissionProgressState : uint8
 	Cleared,
 	Failed
 };
+
+UENUM(BlueprintType)
+enum class EHelixAttackType : uint8
+{
+	Special_01	UMETA(DisplayName = "Special_01"),
+	Special_02	UMETA(DisplayName = "Special_02"),
+	Special_03	UMETA(DisplayName = "Special_03"),
+	Cast		UMETA(DisplayName = "Cast"),
+};
