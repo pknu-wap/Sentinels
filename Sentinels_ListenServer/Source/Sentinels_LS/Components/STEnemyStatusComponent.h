@@ -23,7 +23,7 @@ protected:
 public:
 	void InitStatus();
 	
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void UpdateStatus();
 
 public:

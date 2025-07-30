@@ -16,6 +16,10 @@ class SENTINELS_LS_API ASTCrunch : public ASTBossBase
 public:
 	void StartSpawnMissiles();
 
+	void SetDashWarpTarget(const FName WarpTargetName, const FTransform InTransform);
+	void StartDash();
+	void EndDash();
+
 private:
 	void SpawnMissile();
 

@@ -32,6 +32,12 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void UltimateFire_Multicast(AActor* TargetPlayer);
 
+	UFUNCTION()
+	void UltimateFire_Red();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void UltimateFire_Red_Multicast(FVector TargetLocation);
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<AProjectileBase> SubclassOfPrimaryProjectile;

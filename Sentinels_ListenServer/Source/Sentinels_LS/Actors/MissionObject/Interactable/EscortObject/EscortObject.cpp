@@ -13,6 +13,7 @@
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Character/Enemy/STEnemyBase_AIController.h"
 #include "Player/STPlayerCharacter.h"
+#include "Character/Enemy/STEnemyBase.h"
 
 AEscortObject::AEscortObject()
 {
@@ -105,8 +106,16 @@ void AEscortObject::Interact_Implementation(UInteractComponent* InteractingCompo
 
 void AEscortObject::BoxBeginOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	ASTPlayerCharacter* player = Cast<ASTPlayerCharacter>(OtherActor);
-	if (player)
+	if (ASTEnemyBase* enemy = Cast<ASTEnemyBase>(OtherActor))
+	{
+		OverlappedEnemys.Add(enemy);
+	}
+	else if(ASTPlayerCharacter* player = Cast<ASTPlayerCharacter>(OtherActor))
+	{
+		OverlappedPlayers.Add(player);
+	}
+
+	if (OverlappedEnemys.Num() <= 5 && OverlappedPlayers.Num() > 0)
 	{
 		StartMoveAlongSpline();
 	}
@@ -114,8 +123,16 @@ void AEscortObject::BoxBeginOverlapped(UPrimitiveComponent* OverlappedComponent,
 
 void AEscortObject::BoxEndOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	ASTPlayerCharacter* player = Cast<ASTPlayerCharacter>(OtherActor);
-	if (player)
+	if (ASTEnemyBase* enemy = Cast<ASTEnemyBase>(OtherActor))
+	{
+		OverlappedEnemys.Remove(enemy);
+	}
+	else if (ASTPlayerCharacter* player = Cast<ASTPlayerCharacter>(OtherActor))
+	{
+		OverlappedPlayers.Remove(player);
+	}
+
+	if (OverlappedEnemys.Num() > 5 || OverlappedPlayers.Num() == 0)
 	{
 		StopMove();
 	}

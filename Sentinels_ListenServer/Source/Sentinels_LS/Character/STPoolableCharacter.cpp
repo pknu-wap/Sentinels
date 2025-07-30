@@ -16,7 +16,11 @@ void ASTPoolableCharacter::Activate(const FVector ActivateLocation, const FRotat
 {
 	bIsActivated = true;
 
-	SetActorLocation(ActivateLocation); SetActorRotation(ActivateRotation);
+	if (!ActivateLocation.Equals(FVector::ZeroVector))
+		SetActorLocation(ActivateLocation);
+	
+	if (!ActivateRotation.Equals(FRotator::ZeroRotator))
+		SetActorRotation(ActivateRotation);
 
 	// Enable Tick
 	GetMesh()->Activate();

@@ -2,7 +2,7 @@
 
 
 #include "Character/Enemy/GRIM/STGRIM.h"
-#include "Character/STCharacterAnimInstanceBase.h"
+#include "Character/Enemy/GRIM/STGRIMAnimInstance.h"
 #include "Character/Enemy/STEnemyBase_AIController.h"
 #include "Actors/Projectile/ProjectileBase.h"
 
@@ -10,10 +10,11 @@ void ASTGRIM::BeginPlay()
 {
 	Super::BeginPlay();
 
-	USTCharacterAnimInstanceBase* AnimInst = Cast<USTCharacterAnimInstanceBase>(GetMesh()->GetAnimInstance());
+	USTGRIMAnimInstance* AnimInst = Cast<USTGRIMAnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInst)
 	{
 		AnimInst->Delegate_UltimateFire.AddUObject(this, &ASTGRIM::UltimateFire);
+		AnimInst->Delegate_UltimateFire_Red.AddUObject(this, &ASTGRIM::UltimateFire_Red);
 	}
 }
 
@@ -42,10 +43,14 @@ void ASTGRIM::UltimateFire()
 	if (HasAuthority())
 	{
 		ASTEnemyBase_AIController* controller = Cast<ASTEnemyBase_AIController>(GetController());
-		AActor* TargetPlayer = controller->GetCurrentTarget();
-		if (!TargetPlayer) return;
 
-		UltimateFire_Multicast(TargetPlayer);
+		if (controller)
+		{
+			AActor* TargetPlayer = controller->GetCurrentTarget();
+			if (!TargetPlayer) return;
+
+			UltimateFire_Multicast(TargetPlayer);
+		}
 	}
 }
 
@@ -76,5 +81,37 @@ void ASTGRIM::UltimateFire_Multicast_Implementation(AActor* TargetPlayer)
 			Projectile->FireInDirection(FireRotation.Vector());
 			Projectile->SetHomingTarget(TargetActor);
 		}
+	}
+}
+
+void ASTGRIM::UltimateFire_Red()
+{
+	if (HasAuthority())
+	{
+		ASTEnemyBase_AIController* controller = Cast<ASTEnemyBase_AIController>(GetController());
+
+		if (controller)
+		{
+			AActor* TargetPlayer = controller->GetCurrentTarget();
+			if (!TargetPlayer) return;
+
+			UltimateFire_Red_Multicast(TargetPlayer->GetActorLocation());
+		}
+	}
+}
+
+void ASTGRIM::UltimateFire_Red_Multicast_Implementation(FVector TargetLocation)
+{
+	FVector SpawnLocation = GetMesh()->GetSocketLocation(FName("Muzzle_04"));
+
+	AProjectileBase* Projectile = GetWorld()->SpawnActor<AProjectileBase>(SubclassOfUltimateProjectile, SpawnLocation, FRotator::ZeroRotator);
+	if (Projectile)
+	{
+		Projectile->SetInstigator(this);
+
+		FVector FireDirection = GetActorForwardVector();
+		FRotator FireRotation = FireDirection.Rotation();
+
+		Projectile->FireInDirection(FireRotation.Vector());
 	}
 }

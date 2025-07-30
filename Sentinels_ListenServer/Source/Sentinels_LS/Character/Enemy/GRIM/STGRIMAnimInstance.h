@@ -14,8 +14,8 @@ class SENTINELS_LS_API USTGRIMAnimInstance : public USTCharacterAnimInstanceBase
 	GENERATED_BODY()
 	
 	UFUNCTION()
-	void AnimNotify_GrimUltimateFire();
+	void AnimNotify_UltimateFire_Red();
 
 public:
-	FGrimUltimateFire Delegate_GrimUlitmateFire;
+	FGrimUltimateFire Delegate_UltimateFire_Red;
 };

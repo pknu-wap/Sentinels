@@ -71,6 +71,12 @@ private:
     float TimePercent = 0.f;
     float DistanceAlongSpline = 0.f;
 
+    UPROPERTY()
+    TSet<AActor*> OverlappedEnemys;
+
+    UPROPERTY()
+    TSet<AActor*> OverlappedPlayers;
+
 
     /*
         Spawn Enemy
