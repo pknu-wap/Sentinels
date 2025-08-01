@@ -153,6 +153,10 @@ void ASTGameMode_MissionBase::DetermineMissionOrBoss()
 	else
 	{
 		// Boss
+
+		// Teleport All Players to Boss Map
+		GetWorld()->ServerTravel(FName("LV_Develop_AI").ToString());
+
 	}
 }
 

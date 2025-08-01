@@ -62,6 +62,9 @@ protected:
     TObjectPtr<class UBoxComponent> Box;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
+    bool bCanActivated = true;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
     bool bShouldLoop = true;
 
     /*

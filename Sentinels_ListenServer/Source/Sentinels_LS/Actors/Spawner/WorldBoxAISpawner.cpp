@@ -93,7 +93,7 @@ void AWorldBoxAISpawner::BoxEndOverlapped(UPrimitiveComponent* OverlappedCompone
 
 void AWorldBoxAISpawner::StartSpawnEnemy()
 {
-	if (!HasAuthority())
+	if (!HasAuthority() || !bCanActivated)
 		return;
 
 	for (int i = 0; i < SpawnInfos.Num(); i++)
@@ -152,9 +152,7 @@ void AWorldBoxAISpawner::SpawnEnemy(int InfoIdx)
 	for (int i = 0; i < Info.SpawnRate; i++)
 	{
 		if (Info.CurrentSpawned >= Info.MaxSpawnCount)
-		{
 			break;
-		}
 
 		if (!SpawnSystem->CanSpawnCharacter())
 		{
@@ -193,12 +191,7 @@ void AWorldBoxAISpawner::SpawnEnemy(int InfoIdx)
 		{
 			DrawDebugCapsule(GetWorld(), SpawnNavLocation.Location, 50.f, 25.f, FRotator::ZeroRotator.Quaternion(), FColor::Red, true);
 		}
-	}
 
-	if (Info.CurrentSpawned >= Info.MaxSpawnCount)
-	{
-		// Clear Timer
-		GetWorldTimerManager().ClearTimer(Info.TimerHandle);
 	}
 }
 
@@ -314,8 +307,6 @@ void AWorldBoxAISpawner::OnEnemyDied(AActor* DiedEnemy)
 		SpawnSystem->CharacterDeactivated(DiedEnemy);
 	}
 
-	
-
 	UE_LOG(LogTemp, Display, TEXT("AWorldBoxAISpawner::OnEnemyDied"));
 	// Called when enemy died
 	ASTEnemyBase* Enemy = Cast<ASTEnemyBase>(DiedEnemy);
@@ -328,21 +319,6 @@ void AWorldBoxAISpawner::OnEnemyDied(AActor* DiedEnemy)
 				if (DiedEnemy->GetClass() == SubClass.Get())
 				{
 					SpawnInfos[i].CurrentSpawned--;
-
-					// Set Timer Again
-					if (!GetWorldTimerManager().IsTimerActive(SpawnInfos[i].TimerHandle))
-					{
-						GetWorld()->GetTimerManager().SetTimer(SpawnInfos[i].TimerHandle,
-							[this, i]()
-							{
-								if (!SpawnReserveSet.Contains(i))
-								{
-									SpawnReserveSet.Add(i);
-									SpawnReserveQue.Enqueue(i);
-								}
-							}
-						, SpawnInfos[i].SpawnPeriod, true);
-					}
 				}
 		}
 
