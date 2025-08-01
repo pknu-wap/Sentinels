@@ -6,7 +6,7 @@
 #include "Components/InventoryComponent.h"
 #include "Components/InteractComponent.h"
 #include "SubSystem/InventorySubsystem.h"
-#include "Widget/STWidget_Interactive.h"
+#include "UI/Widget/STWidget_Interactive.h"
 #include "STGameplayTags.h"
 #include "SubSystem/STUISubSystem.h"
 

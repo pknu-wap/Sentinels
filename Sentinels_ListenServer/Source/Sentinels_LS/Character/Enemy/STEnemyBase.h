@@ -11,6 +11,8 @@ class USTEnemyStatusComponent;
 class AProjectileBase;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyDied, AActor*, DiedEnemy);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyStateAdd, FGameplayTag, AddedState);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyStateRemove, FGameplayTag, RemovedState);
 
 UCLASS()
 class SENTINELS_LS_API ASTEnemyBase : public ASTPoolableCharacter
@@ -88,22 +90,22 @@ protected:
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	class UWidgetComponent* WC_DamageInd;
+	class UWidgetComponent* WC_EnemyMain_Screen;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<class UWidgetComponent> WC_DamageIndClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<class USTWidget_DamageInd> W_DamageIndClass;
+	class USTWC_LocalPlayerFacing* WC_EnemyMain_World;
 
 /*
-	Damage Indicate
+	UI
 */
 protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void ShowDamageIndicateWidget_Multicast(float Damage, FLinearColor Color);
 
 	void ShowDamageIndicateWidget(float Damage, FLinearColor Color);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void UpdateEnemyStateWidget_Multicast(FGameplayTag StateTag, bool bShow);
 
 /*
 	Die
@@ -176,6 +178,12 @@ public:
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnEnemyDied Delegate_OnEnemyDied;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnEnemyStateAdd Delegate_OnEnemyStateAdd;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnEnemyStateRemove Delegate_OnEnemyStateRemove;
 
 private:
 	int LastNormalAttackMontageIndex;

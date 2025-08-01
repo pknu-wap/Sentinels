@@ -18,6 +18,8 @@ class UCameraShakeBase;
 struct FInputActionValue;
 struct FPlayerSKMeshes;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPassiveSkillReadyStateChanged, bool, IsReady);
+
 UCLASS()
 class SENTINELS_LS_API ASTPlayerCharacter : public ASTCharacterBase
 {
@@ -182,6 +184,10 @@ protected:
 
 	UFUNCTION(NetMulticast, Reliable)
 	virtual void Skill_Passive_Pressed_Multicast();
+
+protected:
+	UPROPERTY(BlueprintAssignable)
+	FOnPassiveSkillReadyStateChanged OnPassiveSkillReadyStateChanged;
 
 	/*
 		Damage (Server)

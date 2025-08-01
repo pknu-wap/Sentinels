@@ -28,9 +28,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FString GetLevelName(const FGameplayTag LevelTag) { return LevelMap.Find(LevelTag)->GetAssetName(); }
 
-	//UFUNCTION(BlueprintCallable)
-	//USkeletalMesh* GetSKMeshByID(int Parts, FName RowName);
-
 protected:
 	virtual void Interact_Implementation(UInteractComponent* InteractingComponent) override;
 	virtual void Interact_Finish_Implementation(UInteractComponent* InteractingComponent) override;

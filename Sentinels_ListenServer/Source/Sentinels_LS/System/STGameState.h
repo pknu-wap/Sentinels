@@ -64,6 +64,8 @@ public:
 	ASTGameState();
 
 protected:
+	virtual void BeginPlay() override;
+
 	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
 	
 	/*
@@ -162,9 +164,12 @@ public:
 	void TryServerTravel();
 
 public:
+	UPROPERTY(BlueprintAssignable)
+	FOnServerTravelReady OnServerTravelReady;
+
+protected:
 	UPROPERTY(Replicated)
 	FGameplayTag CurrentLevelTag;
 
-	UPROPERTY(BlueprintAssignable)
-	FOnServerTravelReady OnServerTravelReady;
+
 };
