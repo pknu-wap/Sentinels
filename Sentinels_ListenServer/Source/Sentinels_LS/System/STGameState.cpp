@@ -9,12 +9,21 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Actors/Section/STMissionSection.h"
 #include "Kismet/GameplayStatics.h"
+#include "SubSystem/STGameTravelDataSubsystem.h"
 
 ASTGameState::ASTGameState() :
     CurrentLevelTag(FSTGameplayTags::Get().Level_Lobby)
 {
     bReplicates = true;
     bReplicateUsingRegisteredSubObjectList = true;
+}
+
+void ASTGameState::BeginPlay()
+{
+    Super::BeginPlay();
+
+    USTGameTravelDataSubsystem* gameTravelDataSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
+    CurrentLevelTag = gameTravelDataSubsystem->GetCurrentLevelTag();
 }
 
 void ASTGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

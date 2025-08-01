@@ -21,7 +21,9 @@
 #include "Character/STCharacterAnimInstanceBase.h"
 #include "Actors/Projectile/ProjectileBase.h"
 #include "Components/WidgetComponent.h"
-#include "Widget/STWidget_DamageInd.h"
+#include "UI/Widget/STWidget_EnemyMain_Screen.h"
+#include "UI/Widget/STWidget_EnemyMain_World.h"
+#include "UI/WidgetComponent/STWC_LocalPlayerFacing.h"
 #include "Actors/Interact/Item/InteractableItem.h"
 #include "SubSystem/STProjectilePoolingSubSystem.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -80,12 +82,43 @@ void ASTEnemyBase::BeginPlay()
 		ProjectileSubSystem->InitProjectilePool(this, ProjectileClass_PrimaryFire, 100);
 	}
 
-	if (W_DamageIndClass)
+	WC_EnemyMain_Screen = NewObject<UWidgetComponent>(this, UWidgetComponent::StaticClass());
+	if (WC_EnemyMain_Screen)
 	{
-		WC_DamageInd = NewObject<UWidgetComponent>(this, WC_DamageIndClass);
-		WC_DamageInd->SetWidgetClass(W_DamageIndClass);
-		WC_DamageInd->RegisterComponent();
-		WC_DamageInd->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+		WC_EnemyMain_Screen->RegisterComponent();
+		WC_EnemyMain_Screen->SetWidgetSpace(EWidgetSpace::Screen);
+		WC_EnemyMain_Screen->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+
+		TSubclassOf<USTWidget_EnemyMain_Screen> enemyMainScreenClass = LoadClass<USTWidget_EnemyMain_Screen>(nullptr, TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/Sentinels/UI/InGame/WBP/Enemy/WBP_EnemyMain_Screen.WBP_EnemyMain_Screen_C'"));
+
+		if (enemyMainScreenClass)
+		{
+			WC_EnemyMain_Screen->SetWidgetClass(enemyMainScreenClass);
+			USTWidget_EnemyMain_Screen* widgetInstance = Cast<USTWidget_EnemyMain_Screen>(WC_EnemyMain_Screen->GetWidget());
+			if (widgetInstance)
+			{
+				widgetInstance->Owner = this;
+			}
+		}
+	}
+
+	WC_EnemyMain_World = NewObject<USTWC_LocalPlayerFacing>(this, USTWC_LocalPlayerFacing::StaticClass());
+	if (WC_EnemyMain_World)
+	{
+		WC_EnemyMain_World->RegisterComponent();
+		WC_EnemyMain_World->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+
+		TSubclassOf<USTWidget_EnemyMain_World> enemyMainWorldClass = LoadClass<USTWidget_EnemyMain_World>(nullptr, TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/Sentinels/UI/InGame/WBP/Enemy/WBP_EnemyMain_World.WBP_EnemyMain_World_C'"));
+
+		if (enemyMainWorldClass)
+		{
+			WC_EnemyMain_World->SetWidgetClass(enemyMainWorldClass);
+			USTWidget_EnemyMain_World* widgetInstance = Cast<USTWidget_EnemyMain_World>(WC_EnemyMain_World->GetWidget());
+			if (widgetInstance)
+			{
+				widgetInstance->Owner = this;
+			}
+		}	
 	}
 }
 
@@ -166,9 +199,15 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 					controller->ApplyStun(STDamageType->StunnedTime);
 
 					// Apply Stun to Character (Animation)
+					if (!HasTag(FSTGameplayTags::Get().Character_State_Stunned))
+						UpdateEnemyStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Stunned, true);
+
 					AddTag(FSTGameplayTags::Get().Character_State_Stunned);
 					GetWorldTimerManager().SetTimer(Handle_Stunned,
-						[&]() { RemoveTag(FSTGameplayTags::Get().Character_State_Stunned); },
+						[&]() {
+							RemoveTag(FSTGameplayTags::Get().Character_State_Stunned);
+							UpdateEnemyStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Stunned, false);
+						},
 						STDamageType->StunnedTime, false);
 				}
 			}
@@ -176,6 +215,7 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 			if (KatanaDamageType)
 			{
 				AddTag(FSTGameplayTags::Get().Character_State_Bleed);
+				Delegate_OnEnemyStateAdd.Broadcast(FSTGameplayTags::Get().Character_State_Bleed);
 				UE_LOG(LogTemp, Display, TEXT("Katana Damage Type ! ! !"));
 			}
 		}
@@ -262,7 +302,7 @@ int ASTEnemyBase::GetRandomNormalAttackMontageIndex()
 	const int32 NumMontages = Montage_NormalAttackSet.Num();
 
 	if (NumMontages <= 1)
-		return 0; // �ϳ����̸� ��¿ �� ����
+		return 0;
 
 	int32 NewIndex;
 	do
@@ -311,17 +351,29 @@ void ASTEnemyBase::ShowDamageIndicateWidget_Multicast_Implementation(float Damag
 
 void ASTEnemyBase::ShowDamageIndicateWidget(float Damage, FLinearColor Color)
 {
-	if (WC_DamageInd)
+	if (WC_EnemyMain_Screen)
 	{
-		USTWidget_DamageInd* WDamageInd = Cast<USTWidget_DamageInd>(WC_DamageInd->GetWidget());
+		USTWidget_EnemyMain_Screen* wEnemyMain = Cast<USTWidget_EnemyMain_Screen>(WC_EnemyMain_Screen->GetWidget());
 		FSlateColor damageTextColor = FSlateColor(Color);
-		if (IsValid(WDamageInd))
+		if (IsValid(wEnemyMain))
 		{
-			WDamageInd->SetTextColor(damageTextColor);
-			WDamageInd->SetDamage(Damage);
-			WDamageInd->PlayCustomAnimation();
+			USTWidget_DamageInd* wDamageInd = Cast<USTWidget_DamageInd>(wEnemyMain->Overlay_DamageInd->GetChildAt(0));
+			if (IsValid(wDamageInd))
+			{
+				wDamageInd->SetDamageTextColor(damageTextColor);
+				wDamageInd->SetDamage(Damage);
+				wDamageInd->PlayCustomAnimation();
+			}
 		}
 	}
+}
+
+void ASTEnemyBase::UpdateEnemyStateWidget_Multicast_Implementation(FGameplayTag StateTag, bool bShow)
+{
+	if (bShow)
+		Delegate_OnEnemyStateAdd.Broadcast(StateTag);
+	else
+		Delegate_OnEnemyStateRemove.Broadcast(StateTag);
 }
 
 void ASTEnemyBase::PrimaryFire()

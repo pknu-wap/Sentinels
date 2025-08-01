@@ -42,19 +42,6 @@ void ASTDimensionDrift::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME(ASTDimensionDrift, SKMesh);
 }
 
-//USkeletalMesh* ASTDimensionDrift::GetSKMeshByID(int Parts, FName RowName)
-//{
-//	if (DTRowHandle_Ary[Parts].IsNull())
-//		return nullptr;
-//
-//	FCustomizeStruct* row_Info = DTRowHandle_Ary[Parts].DataTable->FindRow<FCustomizeStruct>(RowName, "");
-//	
-//	if (!row_Info)
-//		return nullptr;
-//
-//	return row_Info->SkeletalMesh;
-//}
-
 void ASTDimensionDrift::Interact_Implementation(UInteractComponent* InteractingComponent)
 {
 	ASTPlayerController* pc = Cast<ASTPlayerController>(InteractingComponent->GetOwner());

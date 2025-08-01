@@ -152,3 +152,69 @@ struct SENTINELS_LS_API FCustomizeStruct : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UTexture2D* Icon;
 };
+
+USTRUCT(BlueprintType)
+struct SENTINELS_LS_API FMapInfoStruct : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	FMapInfoStruct() {};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int ID = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGameplayTag LevelTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTexture2D* MapImage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString MapName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString MapDescription;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MapSize = 0.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Zoom = 0.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float InitX = 0.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float InitY = 0.0f;
+};
+
+USTRUCT(BlueprintType)
+struct SENTINELS_LS_API FCharacterStateStruct : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	FCharacterStateStruct() {};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int ID = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGameplayTag StateTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTexture2D* Icon;
+};
+
+USTRUCT(BlueprintType)
+struct SENTINELS_LS_API FPortalInfo : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	FPortalInfo() {};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bIsActivated;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector ArrivalPoint;
+};

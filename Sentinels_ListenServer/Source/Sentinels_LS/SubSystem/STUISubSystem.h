@@ -34,5 +34,6 @@ public:
 	UUserWidget* GetWidget(FGameplayTag WidgetTag);
 
 private:
+	UPROPERTY()
 	TMap<FGameplayTag, UUserWidget*> WidgetMap;
 };

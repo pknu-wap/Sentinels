@@ -158,7 +158,11 @@ void USTPlayerUIComponent::ServerRPCCheckbIsReady_Implementation(FGameplayTag Wi
 		}
 	}
 
-	GetWorld()->GetGameState<ASTGameState>()->TryServerTravel();
+	USTGameTravelDataSubsystem* gameTravelDataSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
+	ASTGameState* gameState = Cast<ASTGameState>(GetWorld()->GetGameState<ASTGameState>());
+
+	gameTravelDataSubsystem->SetCurrentLevelTag(gameState->GetCurrentLevelTag());
+	gameState->TryServerTravel();
 }
 
 void USTPlayerUIComponent::ClientRPCAddToViewport_Implementation(FGameplayTag WidgetTag)
@@ -290,35 +294,34 @@ void USTPlayerUIComponent::UpdateCurrentGameLevelLayer()
 
 	USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
 
-	ASTPlayerController* pc = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
-	if (!pc)
-	{
-		return;
-	}
-
 	FGameplayTag loadoutTag = FSTGameplayTags::Get().Widget_Lobby_Loadout;
-	FGameplayTag selectLevelTag = FSTGameplayTags::Get().Widget_Lobby_LevelSelect;
-
 	UUserWidget* loadoutWidgetInstance = UISubSystem->GetWidget(loadoutTag);
-	UUserWidget* selectLevelWidgetInstance = UISubSystem->GetWidget(selectLevelTag);
-	if (!loadoutWidgetInstance || !selectLevelWidgetInstance)
+	if (!loadoutWidgetInstance)
 	{
-		ST_SUBLOG(LogSTNetwork, Warning, TEXT("NO loadoutWidgetInstance or NO selectLevelWidgetInstance"));
+		ST_SUBLOG(LogSTNetwork, Warning, TEXT("NO loadoutWidgetInstance"));
 		return;
 	}
 
-	FString cleanTagName = currentLevelTag.ToString().Replace(TEXT("."), TEXT("_"));
-	FString widgetNameStr = FString::Printf(TEXT("IMG_%s"), *cleanTagName);
+	UDataTable* mapDT = LoadObject<UDataTable>(nullptr, TEXT("/Script/Engine.DataTable'/Game/Sentinels/UI/InGame/Map/DT_Map.DT_Map'"));
 
-	const FSlateBrush& sourceBrush = Cast<UImage>(selectLevelWidgetInstance->GetWidgetFromName(*widgetNameStr))->GetBrush();
-	FSlateBrush copiedBrush = sourceBrush;
+	if (!mapDT)
+		return;
+
+	const FMapInfoStruct* mapInfoRow = mapDT->FindRow<FMapInfoStruct>(*currentLevelTag.ToString(), TEXT(""));
+	if (!mapInfoRow)
+		return;
 
 	UImage* img_CurrentLevel = Cast<UImage>(loadoutWidgetInstance->GetWidgetFromName(TEXT("IMG_Map")));
-	img_CurrentLevel->SetBrush(copiedBrush);
+	FSlateBrush newBrush = img_CurrentLevel->GetBrush();
+	newBrush.SetResourceObject(mapInfoRow->MapImage);
+	img_CurrentLevel->SetBrush(newBrush);
 	img_CurrentLevel->SetVisibility(ESlateVisibility::Visible);
 
-	UTextBlock* tb_LevelName = Cast<UTextBlock>(loadoutWidgetInstance->GetWidgetFromName(TEXT("TB_MapDescription")));
-	tb_LevelName->SetText(FText::FromString(cleanTagName));
+	UTextBlock* tb_MapName = Cast<UTextBlock>(loadoutWidgetInstance->GetWidgetFromName(TEXT("TB_MapName")));
+	UTextBlock* tb_MapDescription = Cast<UTextBlock>(loadoutWidgetInstance->GetWidgetFromName(TEXT("TB_MapDescription")));
+
+	tb_MapName->SetText(FText::FromString(mapInfoRow->MapName));
+	tb_MapDescription->SetText(FText::FromString(mapInfoRow->MapDescription));
 }
 
 void USTPlayerUIComponent::UpdateCharacterSelectUI()
