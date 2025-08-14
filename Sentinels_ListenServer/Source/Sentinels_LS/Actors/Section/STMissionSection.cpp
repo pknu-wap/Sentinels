@@ -13,6 +13,7 @@
 #include "Character/Enemy/STEnemyBase.h"
 #include "NavigationSystem.h"
 #include "NavigationPath.h"
+#include "BrainComponent.h"
 
 // Sets default values
 ASTMissionSection::ASTMissionSection()
@@ -63,7 +64,7 @@ void ASTMissionSection::RegisterRandomMission()
 
 void ASTMissionSection::StartSpawnEnemy()
 {
-	if (!HasAuthority())
+	if (!HasAuthority() || !bShouldSpawnEnemy)
 		return;
 
 	int numOfPlayers =  UGameplayStatics::GetNumPlayerControllers(this);
@@ -105,6 +106,38 @@ void ASTMissionSection::StopSpawnEnemy()
 	}
 
 	GetWorld()->GetTimerManager().ClearTimer(SpawnHandle);
+}
+
+void ASTMissionSection::DespawnAllEnemys()
+{
+	if (!HasAuthority()) return;
+
+	for (int i = 0; i < SpawnInfos.Num(); i++)
+	{
+		for (auto character : SpawnInfos[i].SpawnedCharacters)
+		{
+			if (ASTEnemyBase* enemy = Cast<ASTEnemyBase>(character))
+			{
+				AAIController* AIController = Cast<AAIController>(enemy->GetController());
+				if (AIController && AIController->GetBrainComponent())
+				{
+					AIController->GetBrainComponent()->StopLogic(FString("Died."));
+				}
+
+				enemy->DissolveStart();
+
+				FTimerHandle handle;
+				GetWorldTimerManager().SetTimer(handle, [enemy]() {
+					if (enemy)
+						enemy->Deactivate();
+					}, 5.f, false);
+			}
+			else if(character)
+			{
+				character->Deactivate();
+			}
+		}
+	}
 }
 
 void ASTMissionSection::TrySpawnAI()
@@ -154,6 +187,8 @@ void ASTMissionSection::SpawnEnemy(int InfoIdx)
 		ASTEnemyBase* Enemy = PoolingSystem->GetCharacter<ASTEnemyBase>(Info.SpawnPawnClasses[rand], SpawnNavLocation.Location);
 		if (Enemy)
 		{
+			Info.SpawnedCharacters.Add(Enemy);
+
 			Enemy->SetAdditionalDropInfos(Info.AdditionalDropInfos);
 
 			ASTEnemyBase_AIController* controller = Cast<ASTEnemyBase_AIController>(Enemy->GetController());
@@ -246,6 +281,7 @@ void ASTMissionSection::OnEnemyDied(AActor* DiedEnemy)
 		Enemy->Delegate_OnEnemyDied.RemoveAll(this);
 		for (int i = 0; i < SpawnInfos.Num(); i++)
 		{
+			SpawnInfos[i].SpawnedCharacters.Remove(Enemy);
 			for (auto& SubClass : SpawnInfos[i].SpawnPawnClasses)
 				if (DiedEnemy->GetClass() == SubClass.Get())
 				{

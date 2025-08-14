@@ -14,6 +14,8 @@ ASTPoolableCharacter::ASTPoolableCharacter(const FObjectInitializer& object_init
 
 void ASTPoolableCharacter::Activate(const FVector ActivateLocation, const FRotator ActivateRotation)
 {
+	if (bIsActivated) return;
+
 	bIsActivated = true;
 
 	if (!ActivateLocation.Equals(FVector::ZeroVector))
@@ -45,6 +47,8 @@ void ASTPoolableCharacter::Activate(const FVector ActivateLocation, const FRotat
 
 void ASTPoolableCharacter::Deactivate()
 {
+	if (!bIsActivated) return;
+
 	bIsActivated = false;
 
 	// Disable Tick

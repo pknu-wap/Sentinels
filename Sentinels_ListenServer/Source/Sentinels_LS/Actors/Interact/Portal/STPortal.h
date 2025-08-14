@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Actors/Interact/InteractableActor.h"
+#include "STEnums.h"
 #include "STPortal.generated.h"
 
 //UENUM(BlueprintType)
@@ -34,30 +35,23 @@ protected:
 	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
 
 protected:
-	virtual void Interact_Implementation(UInteractComponent* InteractingComponent) override;
-	virtual void Interact_Finish_Implementation(UInteractComponent* InteractingComponent) override;
-	virtual void ShowInteractiveUI_Implementation(UInteractComponent* InteractingComponent) override;
-	virtual void HideInteractiveUI_Implementation(UInteractComponent* InteractingComponent) override;
+	UFUNCTION()
+	void OnStartVoting();
+
+	UFUNCTION()
+	void OnVoteUpdated(EPortalType portalType, int voteCount);
+
+	UFUNCTION(NetMulticast, reliable)
+	void OnVoteUpdated_Multicast(EPortalType portalType, int voteCount);
+
 
 protected:
-	void Activate();
-	void Deactivate();
-
-	void Teleport(AActor* Target, FVector& Location);
-protected:
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastRPCUpdate();
-
-	UFUNCTION(Server, Reliable)
-	void ServerRPCVote();
-
-protected:
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	int CurrentVoteCount;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	FDataTableRowHandle LevelHandle_DataRow;
+	TSubclassOf<class USTWC_LocalPlayerFacing> FacingWidgetClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	class USTWC_LocalPlayerFacing* WC_World;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	EPortalType PortalType;
 };

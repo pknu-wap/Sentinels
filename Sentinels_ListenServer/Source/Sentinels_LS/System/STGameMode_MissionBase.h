@@ -4,9 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "Sentinels_LSGameMode.h"
+#include "STEnums.h"
 #include "STGameMode_MissionBase.generated.h"
 
 class ASTMissionSection;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStartVoting);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnVoteUpdated, EPortalType, portalType, int, voteCount);
 
 UCLASS()
 class SENTINELS_LS_API ASTGameMode_MissionBase : public ASentinels_LSGameMode
@@ -17,6 +20,16 @@ protected:
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
 	virtual void BeginPlay() override;
+
+/*
+	Delegates	
+*/
+public:
+	UPROPERTY(BlueprintAssignable)
+	FOnStartVoting Delegate_StartVoting;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnVoteUpdated Delegate_VoteUpdated;
 
 /*
 	Initial Misison
@@ -39,6 +52,9 @@ protected:
 public:
 	UFUNCTION()
 	void OnMissionEnded(class USTMissionBase* InMission, bool IsCleared);
+
+	UFUNCTION()
+	void StartVoting();
 
 	UFUNCTION(BlueprintCallable)
 	void VoteToMission(const APlayerController* PC);

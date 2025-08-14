@@ -51,6 +51,12 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	bool bIsSelected = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bShouldSpawnEnemy = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bShouldClearEnemy = false;
+
 /*
 	Spawn Enemy
 */
@@ -60,6 +66,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void StopSpawnEnemy();
+
+	UFUNCTION(BlueprintCallable)
+	void DespawnAllEnemys();
 
 protected:
 	void TrySpawnAI();
