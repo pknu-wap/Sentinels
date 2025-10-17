@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "GameplayTagContainer.h"
 #include "DamageType/STDamageTypes.h"
+#include "STStructs.h"
 #include "STCharacterBase.generated.h"
 
 /*
@@ -47,15 +48,93 @@ protected:
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void AddTag(const FGameplayTag& TagToAdd) { TagContainer.AddTag(TagToAdd); }
+	void AddUniqueTag(const FGameplayTag& TagToAdd) 
+	{
+		TagContainer.AddUnique(FStatusEntry(TagToAdd, 1));
+	}
+
 	UFUNCTION(BlueprintCallable)
-	void RemoveTag(const FGameplayTag& TagToRemove) { TagContainer.RemoveTag(TagToRemove); }
+	void AddTag(const FGameplayTag& TagToAdd, int NumToAdd = 1) 
+	{ 
+		for (FStatusEntry& entry : TagContainer)
+		{
+			if (entry.StatusTag == TagToAdd)
+			{
+				entry.Count += NumToAdd;
+				return;
+			}
+		}
+
+		TagContainer.Add(FStatusEntry(TagToAdd, NumToAdd));
+	}
+
 	UFUNCTION(BlueprintCallable)
-	void RemoveTags(const FGameplayTagContainer& TagsToRemove) { TagContainer.RemoveTags(TagsToRemove); }
+	void ClearTag(const FGameplayTag& TagToRemove) 
+	{ 
+		for (FStatusEntry& entry : TagContainer)
+		{
+			if (entry.StatusTag == TagToRemove)
+			{
+				TagContainer.RemoveSingle(entry);
+				return;
+			}
+		}
+	}
+
 	UFUNCTION(BlueprintCallable)
-	bool HasTag(const FGameplayTag& TagToCheck) const { return TagContainer.HasTag(TagToCheck); }
+	void RemoveTag(const FGameplayTag& TagToRemove, int NumToRemove)
+	{
+		for (FStatusEntry& entry : TagContainer)
+		{
+			if (entry.StatusTag == TagToRemove)
+			{
+				entry.Count -= NumToRemove;
+
+				if (entry.Count <= 0)
+				{
+					TagContainer.RemoveSingle(entry);
+				}
+
+				return;
+			}
+		}
+	}
+
+	UFUNCTION(BlueprintCallable)
+	void RemoveTags(const FGameplayTagContainer& TagsToRemove) 
+	{
+		TagContainer.Empty(); 
+	}
+
+	UFUNCTION(BlueprintCallable, meta = (BlueprintThreadSafe))
+	bool HasTag(const FGameplayTag& TagToCheck) const 
+	{ 
+		for (const FStatusEntry& entry : TagContainer)
+		{
+			if (entry.StatusTag == TagToCheck)
+			{
+				return true;
+			}
+		}
+
+		return false; 
+	}
+
+	UFUNCTION(BlueprintCallable, meta = (BlueprintThreadSafe))
+	int GetNumOfTag(const FGameplayTag& TagToCheck) const
+	{
+		for (const FStatusEntry& entry : TagContainer)
+		{
+			if (entry.StatusTag == TagToCheck)
+			{
+				return entry.Count;
+			}
+		}
+
+		return -1;
+	}
 
 protected:
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly)
-	FGameplayTagContainer TagContainer;
+	TArray<FStatusEntry> TagContainer;
 };

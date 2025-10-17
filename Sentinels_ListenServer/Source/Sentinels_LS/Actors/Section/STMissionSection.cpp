@@ -124,7 +124,7 @@ void ASTMissionSection::DespawnAllEnemys()
 					AIController->GetBrainComponent()->StopLogic(FString("Died."));
 				}
 
-				enemy->DissolveStart();
+				enemy->DissolveStart_Multicast();
 
 				FTimerHandle handle;
 				GetWorldTimerManager().SetTimer(handle, [enemy]() {

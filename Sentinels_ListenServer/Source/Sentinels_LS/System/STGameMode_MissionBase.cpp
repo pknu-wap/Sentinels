@@ -113,7 +113,9 @@ void ASTGameMode_MissionBase::OnMissionEnded(USTMissionBase* InMission, bool IsC
 			{
 				StartVoting();
 			}
-			}, 5.f, false);
+		}, 5.f, false);
+
+
 	}
 }
 

@@ -30,7 +30,7 @@ protected:
 protected:
 	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
-private:
+protected:
 	FTimerHandle Handle_Stunned;
 	FTimerHandle Handle_Deactivate;
 

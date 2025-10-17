@@ -8,6 +8,31 @@
 #include "STStructs.generated.h"
 
 USTRUCT(BlueprintType)
+struct FStatusEntry
+{
+	GENERATED_BODY()
+
+	FStatusEntry()
+	{
+	}
+
+	FStatusEntry(const FGameplayTag& inTag, int inCount) : StatusTag(inTag), Count(inCount)
+	{
+	}
+
+	bool operator == (const FStatusEntry& inEntry) const
+	{
+		return StatusTag == inEntry.StatusTag;
+	}
+
+	UPROPERTY(BlueprintReadWrite)
+	FGameplayTag StatusTag;
+
+	UPROPERTY(BlueprintReadWrite)
+	int32 Count;
+};
+
+USTRUCT(BlueprintType)
 struct SENTINELS_LS_API FDropInfo
 {
 	GENERATED_BODY()

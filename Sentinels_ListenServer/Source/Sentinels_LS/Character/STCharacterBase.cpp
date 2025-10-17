@@ -56,11 +56,11 @@ void ASTCharacterBase::Jump()
 
 	Super::Jump();
 
-	AddTag(FSTGameplayTags::Get().Character_State_Jump);
+	AddUniqueTag(FSTGameplayTags::Get().Character_State_Jump);
 }
 
 void ASTCharacterBase::OnCharacterLanded(const FHitResult& Hit)
 {
-	RemoveTag(FSTGameplayTags::Get().Character_State_Jump);
+	ClearTag(FSTGameplayTags::Get().Character_State_Jump);
 }
 

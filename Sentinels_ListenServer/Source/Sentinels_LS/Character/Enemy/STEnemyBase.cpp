@@ -205,7 +205,7 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 					AddTag(FSTGameplayTags::Get().Character_State_Stunned);
 					GetWorldTimerManager().SetTimer(Handle_Stunned,
 						[&]() {
-							RemoveTag(FSTGameplayTags::Get().Character_State_Stunned);
+							ClearTag(FSTGameplayTags::Get().Character_State_Stunned);
 							UpdateEnemyStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Stunned, false);
 						},
 						STDamageType->StunnedTime, false);
@@ -214,8 +214,15 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 
 			if (KatanaDamageType)
 			{
-				AddTag(FSTGameplayTags::Get().Character_State_Bleed);
-				Delegate_OnEnemyStateAdd.Broadcast(FSTGameplayTags::Get().Character_State_Bleed);
+				if (GetNumOfTag(FSTGameplayTags::Get().Character_State_Bleed) >= 5)
+				{
+
+				}
+				else
+				{
+					AddTag(FSTGameplayTags::Get().Character_State_Bleed);
+					Delegate_OnEnemyStateAdd.Broadcast(FSTGameplayTags::Get().Character_State_Bleed);
+				}
 				UE_LOG(LogTemp, Display, TEXT("Katana Damage Type ! ! !"));
 			}
 		}

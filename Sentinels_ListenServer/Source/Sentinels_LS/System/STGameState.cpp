@@ -198,7 +198,11 @@ void ASTGameState::OnMissionEnded(USTMissionBase* InMission, bool IsCleared)
         if (Missions[i].Mission == InMission)
         {
             if (Missions[i].MissionSection)
+            {
                 Missions[i].MissionSection->MissionDeactivated();
+                Missions[i].MissionSection->DespawnAllEnemys();
+            }
+            
             break;
         }
     }
