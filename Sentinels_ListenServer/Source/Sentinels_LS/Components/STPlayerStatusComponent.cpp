@@ -45,7 +45,7 @@ void USTPlayerStatusComponent::BeginPlay()
 		CriticalDamageType = CachedPlayer->CriticalDamageType;
 	}
 
-	SetDefaultStatus();
+	InitializeDefaultStatus();
 	ApplyStatus();
 
 	HP = MaxHP;
@@ -77,6 +77,9 @@ void USTPlayerStatusComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 	/*
 		Replicate to Only for Owner
 	*/
+	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, Level, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, Exp, COND_OwnerOnly);
+
 	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, HPRegen, COND_OwnerOnly);
 
 	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, ATK, COND_OwnerOnly);
@@ -104,6 +107,27 @@ float USTPlayerStatusComponent::TakeDamage(float DamageAmount, FDamageEvent cons
 	OnRep_HPUpdated();
 
 	return HP;
+}
+
+void USTPlayerStatusComponent::AddExp(float InExp)
+{
+	if (GetOwner() && GetOwner()->HasAuthority())
+	{
+		Exp += InExp;
+
+		if (Exp >= MaxExp)
+		{
+			Level++;
+			Exp -= MaxExp;
+
+			if (ExpCurve)
+			{
+				MaxExp = ExpCurve->GetFloatValue(Level);
+			}
+
+			CalculateStatus();
+		}
+	}
 }
 
 FSTDamageInfo USTPlayerStatusComponent::GetCalculatedDamageInfo(FSTPointDamageEvent& DamageEvent, AActor* DamagedActor)
@@ -268,16 +292,39 @@ void USTPlayerStatusComponent::ClearBuff_Server_Implementation(ESTBuffType inTyp
 	ApplyStatus();
 }
 
-void USTPlayerStatusComponent::SetDefaultStatus()
+void USTPlayerStatusComponent::InitializeDefaultStatus()
 {
-	MaxHP = BaseMaxHP;
-	HPRegen = BaseMaxHPRegen;
-	MovementSpeed = BaseMovementSpeed;
-	AttackSpeed = BaseAttackSpeed;
+	Level = 1;
 	CriticalDamagePercent = BaseCriticalDamagePercent;
 	CriticalRate = BaseCriticalRate;
 	DamageIncreaseRate = 0.f;
 	CDR = 0.f;
+
+	UpdateDefaultStatus();
+}
+
+void USTPlayerStatusComponent::UpdateDefaultStatus()
+{
+	if (ExpCurve)
+		MaxExp = ExpCurve->GetFloatValue(Level);
+
+	if (MaxHPCurve)
+		MaxHP = BaseMaxHP * MaxHPCurve->GetFloatValue(Level);
+
+	if (HPRegenCurve)
+		HPRegen = BaseHPRegen * HPRegenCurve->GetFloatValue(Level);
+
+	if (MoveSpeedCurve)
+		MovementSpeed = BaseMovementSpeed * MoveSpeedCurve->GetFloatValue(Level);
+
+	if (AttackSpeedCurve)
+		AttackSpeed = BaseAttackSpeed * AttackSpeedCurve->GetFloatValue(Level);
+
+	if (ATKCurve)
+		ATK = BaseATK * ATKCurve->GetFloatValue(Level);
+
+	if (DEFCurve)
+		DEF = BaseDEF * DEFCurve->GetFloatValue(Level);
 }
 
 void USTPlayerStatusComponent::CalculateStatus()
@@ -289,7 +336,7 @@ void USTPlayerStatusComponent::CalculateStatus()
 		if (!InvComp || !InvSubSystem) return;
 
 		// Reset Status 
-		SetDefaultStatus();
+		UpdateDefaultStatus();
 
 		// ReCalculate Status
 		const TArray<FInvSlotStruct>& Inventory = InvComp->GetInventory();
@@ -358,6 +405,19 @@ void USTPlayerStatusComponent::OnRep_HPUpdated()
 	// Update UI
 	OnHPDelegate.Broadcast(HP, MaxHP);
 	// Check Died
+}
+
+void USTPlayerStatusComponent::OnRep_LevelUpdated()
+{
+	if (ExpCurve)
+	{
+		MaxExp = ExpCurve->GetFloatValue(Level);
+	}
+}
+
+void USTPlayerStatusComponent::OnRep_ExpUpdated()
+{
+
 }
 
 void USTPlayerStatusComponent::RegenHP()

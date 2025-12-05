@@ -33,14 +33,19 @@ struct FStatusEntry
 };
 
 USTRUCT(BlueprintType)
-struct SENTINELS_LS_API FDropInfo
+struct SENTINELS_LS_API FDropInfo : public FTableRowBase
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere)
+	FDropInfo() {};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int DropQuantity = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float DropProbability = 0.1f;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<class AInteractableItem> DropItemClass;
 };
 

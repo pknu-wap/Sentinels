@@ -27,6 +27,11 @@ public:
 	FGameplayTag Character_Player_State_RescueHostage;
 	FGameplayTag Character_Player_State_Lifting;
 
+	////////// Enhance /////////
+	FGameplayTag Character_Enhance_Default_AttackSpeed;
+	FGameplayTag Character_Enhance_Default_BossAttackDamage;
+	FGameplayTag Character_Enhance_Default_CoolDown;
+
 	//////////  Widget   /////////
 	FGameplayTag Widget_OutGame_MainMenu;
 	FGameplayTag Widget_OutGame_System;

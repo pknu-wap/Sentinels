@@ -6,14 +6,17 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "System/STGameState.h"
-#include "Player/STPlayerCharacter.h"
+#include "System/STGameMode_Roguelite.h"
 #include "SubSystem/STAIPoolingWorldSubsystem.h"
 #include "SubSystem/STWorldSpawnSubsystem.h"
+#include "Character/Enemy/STEliteBase.h"
+#include "Player/STPlayerCharacter.h"
 #include "Character/Enemy/STEnemyBase_AIController.h"
 #include "Character/Enemy/STEnemyBase.h"
 #include "NavigationSystem.h"
 #include "NavigationPath.h"
 #include "BrainComponent.h"
+#include "Blueprint/AIBlueprintHelperLibrary.h"
 
 // Sets default values
 ASTMissionSection::ASTMissionSection()
@@ -290,5 +293,26 @@ void ASTMissionSection::OnEnemyDied(AActor* DiedEnemy)
 		}
 
 		CurrentSpawned--;
+	}
+}
+
+void ASTMissionSection::SpawnEliteBoss()
+{
+ 	StopSpawnEnemy();
+
+	if (EliteBossSpawnIndicator)
+	{
+		FVector spawnLocation = EliteBossSpawnIndicator->GetActorLocation();
+		FRotator spawnRotation = EliteBossSpawnIndicator->GetActorRotation();
+
+		ASTEliteBase* eliteBoss = Cast<ASTEliteBase>(
+			UAIBlueprintHelperLibrary::SpawnAIFromClass(this, EliteBossClass, nullptr,
+			spawnLocation, spawnRotation, true));
+
+		ASTGameMode_Roguelite* gameMode = Cast<ASTGameMode_Roguelite>(UGameplayStatics::GetGameMode(this));
+		if (eliteBoss && gameMode)
+		{
+			gameMode->EliteBossSpawned(eliteBoss);
+		}
 	}
 }

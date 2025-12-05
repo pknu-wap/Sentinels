@@ -11,6 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Components/STEnemyStatusComponent.h"
+#include "Components/STPlayerStatusComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Character/Enemy/STEnemyBase_AIController.h"
 #include "SkeletalMeshComponentBudgeted.h"
@@ -58,6 +59,17 @@ ASTEnemyBase::ASTEnemyBase(const FObjectInitializer& object_initializer)
 	PrimaryActorTick.bStartWithTickEnabled = false;
 }
 
+void ASTEnemyBase::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	if (HasAuthority())
+	{
+		if (bIsActivated)
+			Activate(GetActorLocation(), GetActorRotation());
+	}
+}
+
 void ASTEnemyBase::BeginPlay()
 {
 	Super::BeginPlay();
@@ -71,9 +83,6 @@ void ASTEnemyBase::BeginPlay()
 			AnimInst->Delegate_PrimaryFire.AddUObject(this, &ASTEnemyBase::PrimaryFire);
 			AnimInst->Delegate_DissolveStart.AddUObject(this, &ASTEnemyBase::DissolveStart);
 		}
-
-		if(bIsActivated)
-			Activate(GetActorLocation(), GetActorRotation());
 	}
 
 	if (ProjectileClass_PrimaryFire)
@@ -235,7 +244,8 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 		/*
 			Calculate Current HP & Check Died
 		*/
-		if (StatusComponent && StatusComponent->TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser) <= 0)
+		if (StatusComponent 
+			&& StatusComponent->TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser) <= 0)
 		{
 			// Play Died Montage
 			GetWorld()->GetTimerManager().SetTimer(Handle_Deactivate,
@@ -256,6 +266,9 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 			// Drop Item
 			DropItem();
 
+			// Drop Exp
+			DropExp(DamageCauser);
+
 			return ActualDamage;
 		}
 
@@ -268,9 +281,12 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 		}
 		else
 		{
-			StopCurrentAnimMontage_Multicast();
-			FVector LaunchDir = (GetActorLocation() - DamageCauser->GetActorLocation()).GetSafeNormal2D();
-			LaunchCharacter(LaunchDir * LaunchVelocity, false, false);
+			if (bShouldStopMontageWhenKnockback)
+			{
+				StopCurrentAnimMontage_Multicast();
+				FVector LaunchDir = (GetActorLocation() - DamageCauser->GetActorLocation()).GetSafeNormal2D();
+				LaunchCharacter(LaunchDir * LaunchVelocity, false, false);
+			}
 		}
 	}
 
@@ -280,6 +296,11 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 void ASTEnemyBase::Activate(const FVector ActivateLocation, const FRotator ActivateRotation)
 {
 	Super::Activate(ActivateLocation, ActivateRotation);
+
+	if (ASTEnemyBase_AIController* controller = Cast<ASTEnemyBase_AIController>(GetController()))
+	{
+		controller->StartAILogic();
+	}
 	
 	StopAnimMontage();
 	StatusComponent->InitStatus();
@@ -302,6 +323,15 @@ bool ASTEnemyBase::IsNormalAttackMontage(UAnimMontage* InMontage)
 			return true;
 	}
 	return false;
+}
+
+void ASTEnemyBase::PlayMontage_Multicast_Implementation(UAnimMontage* MontageToPlay)
+{
+	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+	if (AnimInst)
+	{
+		AnimInst->Montage_Play(MontageToPlay);
+	}
 }
 
 int ASTEnemyBase::GetRandomNormalAttackMontageIndex()
@@ -501,6 +531,27 @@ void ASTEnemyBase::DropItem()
 			}
 		}
 		
+	}
+}
+
+void ASTEnemyBase::DropExp(AActor* DamageCauser)
+{
+	if (DamageCauser)
+	{
+		float TimeSeconds = UGameplayStatics::GetTimeSeconds(this);
+
+		if (USTPlayerStatusComponent* playerStatComp
+			= DamageCauser->GetComponentByClass<USTPlayerStatusComponent>())
+		{
+			if (ExpDropCurve)
+			{
+				playerStatComp->AddExp(BaseDropExp * ExpDropCurve->GetFloatValue(TimeSeconds));
+			}
+			else
+			{
+				playerStatComp->AddExp(BaseDropExp);
+			}
+		}
 	}
 }
 

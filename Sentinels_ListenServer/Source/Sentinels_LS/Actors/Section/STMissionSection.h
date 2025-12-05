@@ -10,6 +10,7 @@
 #include "STMissionSection.generated.h"
 
 class ASpawnPointBase;
+class ASTEliteBase;
 
 UCLASS()
 class SENTINELS_LS_API ASTMissionSection : public AActor
@@ -100,6 +101,20 @@ private:
 	FTimerHandle SpawnHandle;
 
 	float CurrentSpawned = 0;
+
+
+/*
+	Elite Boss
+*/
+public:
+	void SpawnEliteBoss();
+
+protected:
+	UPROPERTY(Category = "EliteBoss", EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<ASTEliteBase> EliteBossClass;
+
+	UPROPERTY(Category = "EliteBoss", EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<AActor> EliteBossSpawnIndicator;
 
 
 public:
