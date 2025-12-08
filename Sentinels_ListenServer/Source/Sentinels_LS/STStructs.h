@@ -8,14 +8,59 @@
 #include "STStructs.generated.h"
 
 USTRUCT(BlueprintType)
-struct SENTINELS_LS_API FDropInfo
+struct FStatusEntry
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere)
+	FStatusEntry()
+	{
+	}
+
+	FStatusEntry(const FGameplayTag& inTag, int inCount) : StatusTag(inTag), Count(inCount)
+	{
+	}
+
+	bool operator == (const FStatusEntry& inEntry) const
+	{
+		return StatusTag == inEntry.StatusTag;
+	}
+
+	UPROPERTY(BlueprintReadWrite)
+	FGameplayTag StatusTag;
+
+	UPROPERTY(BlueprintReadWrite)
+	int32 Count;
+};
+
+USTRUCT(BlueprintType)
+struct SENTINELS_LS_API FEnhancementInfo : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGameplayTag EnhancementTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int Quantity = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FText Description;
+};
+
+USTRUCT(BlueprintType)
+struct SENTINELS_LS_API FDropInfo : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	FDropInfo() {};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int DropQuantity = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float DropProbability = 0.1f;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<class AInteractableItem> DropItemClass;
 };
 

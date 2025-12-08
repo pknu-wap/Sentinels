@@ -83,3 +83,11 @@ enum class EHelixAttackType : uint8
 	Special_03	UMETA(DisplayName = "Special_03"),
 	Cast		UMETA(DisplayName = "Cast"),
 };
+
+UENUM(BlueprintType)
+enum class EPortalType : uint8
+{
+	None	UMETA(DisplayName = "None"),
+	Boss	UMETA(DisplayName = "Boss"),
+	Mission	UMETA(DisplayName = "Mission"),
+};

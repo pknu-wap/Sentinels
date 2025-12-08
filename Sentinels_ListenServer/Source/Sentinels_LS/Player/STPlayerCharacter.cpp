@@ -319,14 +319,14 @@ void ASTPlayerCharacter::OnMontageEnded_Callback(UAnimMontage* Montage, bool bIn
 {
 	if (!bInterrupted)
 	{
-		RemoveTag(FSTGameplayTags::Get().Character_State_Skill);
-		RemoveTag(FSTGameplayTags::Get().Character_State_Step);
-		RemoveTag(FSTGameplayTags::Get().Character_State_Attack);
+		ClearTag(FSTGameplayTags::Get().Character_State_Skill);
+		ClearTag(FSTGameplayTags::Get().Character_State_Step);
+		ClearTag(FSTGameplayTags::Get().Character_State_Attack);
 		ResetAttackInfo();
 	}
 	else if(bInterrupted && IsSkillMontage(GetCurrentMontage()))
 	{
-		AddTag(FSTGameplayTags::Get().Character_State_Skill);
+		AddUniqueTag(FSTGameplayTags::Get().Character_State_Skill);
 	}
 }
 
@@ -364,7 +364,7 @@ void ASTPlayerCharacter::NormalAttack_Pressed()
 
 	if (!CanDoAttack()) return;
 
-	AddTag(FSTGameplayTags::Get().Character_State_Attack);
+	AddUniqueTag(FSTGameplayTags::Get().Character_State_Attack);
 
 	if (CurrentCombo == 0)
 	{
@@ -496,7 +496,7 @@ void ASTPlayerCharacter::Step_Pressed()
 
 	Step_Pressed_Server();
 	PlayMontage_Step();
-	AddTag(FSTGameplayTags::Get().Character_State_Step);
+	AddUniqueTag(FSTGameplayTags::Get().Character_State_Step);
 }
 
 void ASTPlayerCharacter::PlayMontage_Step()
@@ -570,7 +570,7 @@ void ASTPlayerCharacter::Skill_Q_Pressed()
 	{
 		SkillComp->ActivateSkill(0);
 
-		AddTag(FSTGameplayTags::Get().Character_State_Skill);
+		AddUniqueTag(FSTGameplayTags::Get().Character_State_Skill);
 		PlayMontage_Skill_Q();
 		Skill_Q_Pressed_Server();
 	}
@@ -607,7 +607,7 @@ void ASTPlayerCharacter::Skill_W_Pressed()
 	{
 		SkillComp->ActivateSkill(1);
 
-		AddTag(FSTGameplayTags::Get().Character_State_Skill);
+		AddUniqueTag(FSTGameplayTags::Get().Character_State_Skill);
 		PlayMontage_Skill_W();
 		Skill_W_Pressed_Server();
 	}
@@ -644,7 +644,7 @@ void ASTPlayerCharacter::Skill_E_Pressed()
 	{
 		SkillComp->ActivateSkill(2);
 
-		AddTag(FSTGameplayTags::Get().Character_State_Skill);
+		AddUniqueTag(FSTGameplayTags::Get().Character_State_Skill);
 		PlayMontage_Skill_E();
 		Skill_E_Pressed_Server();
 	}
@@ -681,7 +681,7 @@ void ASTPlayerCharacter::Skill_R_Pressed()
 	{
 		SkillComp->ActivateSkill(3);
 
-		AddTag(FSTGameplayTags::Get().Character_State_Skill);
+		AddUniqueTag(FSTGameplayTags::Get().Character_State_Skill);
 		PlayMontage_Skill_R();
 		Skill_R_Pressed_Server();
 	}

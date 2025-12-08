@@ -14,6 +14,9 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "SubSystem/STEventSubsystem.h"
+#include "Kismet/GameplayStatics.h"
+#include "STGameplayTags.h"
 
 AInteractableTank::AInteractableTank()
 {
@@ -38,6 +41,12 @@ void AInteractableTank::BeginPlay()
 		RemainedBullet = MaxBullet;
 
 		GetCharacterMovement()->Deactivate();
+
+		if (UWorld* world = GetWorld())
+		{
+			USTEventSubsystem* eventSubSystem = world->GetSubsystem<USTEventSubsystem>();
+			eventSubSystem->Delegate_EventOccur.AddDynamic(this, &AInteractableTank::OnEventOccur);
+		}
 	}
 }
 
@@ -94,6 +103,14 @@ void AInteractableTank::PossessedCallback_Multicast_Implementation()
 
 			}
 		}
+	}
+}
+
+void AInteractableTank::OnEventOccur(FGameplayTag InTag)
+{
+	if (HasAuthority() && InTag == FSTGameplayTags::Get().Level_MilitaryAirport_Event_Destroy_ControlTower)
+	{
+		GetOffFromTank_Server();
 	}
 }
 
@@ -198,6 +215,13 @@ void AInteractableTank::ConvertMode_Pressed()
 
 void AInteractableTank::GetOffFromTank()
 {
+	GetOffFromTank_Server();
+	GetOffFromTank_Client();
+}
+
+void AInteractableTank::GetOffFromTank_Client_Implementation()
+{
+	// Remove UI and Recover Camera Mode
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
 		if (CurrentCameraMode == ETankCameraMode::ETC_Focus)
@@ -216,8 +240,6 @@ void AInteractableTank::GetOffFromTank()
 			}
 		}
 	}
-
-	GetOffFromTank_Server();
 }
 
 void AInteractableTank::GetOffFromTank_Server_Implementation()
@@ -231,6 +253,8 @@ void AInteractableTank::GetOffFromTank_Server_Implementation()
 		CachedPC->Possess(CachedPlayerPawn);
 
 		bIsInteractable = true;
+
+		GetOffFromTank_Client();
 	}
 }
 

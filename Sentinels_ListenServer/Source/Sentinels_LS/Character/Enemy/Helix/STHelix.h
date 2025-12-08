@@ -17,6 +17,13 @@ class SENTINELS_LS_API ASTHelix : public ASTBossBase
 protected:
 	virtual void BeginPlay() override;
 
+	/*
+		Damaged
+	*/
+protected:
+	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+
 public:
 	void HelixAttack(EHelixAttackType AttackType);
 

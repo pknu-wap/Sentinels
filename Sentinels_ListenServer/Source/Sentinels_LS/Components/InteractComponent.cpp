@@ -162,7 +162,7 @@ void UInteractComponent::PlayThrowMontage_Server_Implementation()
 	if (LiftingActor)
 	{
 		// Remove Tag For Animation
-		character->RemoveTag(FSTGameplayTags::Get().Character_Player_State_Lifting);
+		character->ClearTag(FSTGameplayTags::Get().Character_Player_State_Lifting);
 
 		// Play Montage 
 		PlayThrowMontage_Multicast();

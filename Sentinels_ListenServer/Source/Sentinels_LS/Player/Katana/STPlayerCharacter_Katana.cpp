@@ -112,13 +112,18 @@ void ASTPlayerCharacter_Katana::Skill_Passive_Pressed_Multicast_Implementation()
 
 void ASTPlayerCharacter_Katana::ApplyPassiveDamage()
 {
-	if (StatusComponent)
+	if (HasAuthority() && StatusComponent)
 	{
 		for (AActor* actor : AllTargetActors_Passive)
 		{
-			if (actor)
+			if (ASTCharacterBase* character = Cast<ASTCharacterBase>(actor))
 			{
-				UGameplayStatics::ApplyDamage(actor, StatusComponent->ATK, GetController(), this, UDamageType::StaticClass());
+				// Applay Damage (ATK * 0.5 * NumOfTag)
+				int numOfTag = character->GetNumOfTag(FSTGameplayTags::Get().Character_State_Bleed);
+				UGameplayStatics::ApplyDamage(actor, StatusComponent->ATK * 0.5 * numOfTag, GetController(), this, UDamageType::StaticClass());
+
+				// Clear Bleed Tag
+				character->ClearTag(FSTGameplayTags::Get().Character_State_Bleed);
 			}
 		}
 	}

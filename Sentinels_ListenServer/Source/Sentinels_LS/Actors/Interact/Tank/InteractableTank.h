@@ -41,6 +41,13 @@ protected:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void PossessedCallback_Multicast();
+
+/*
+*	Event 
+*/
+protected:
+	UFUNCTION()
+	void OnEventOccur(FGameplayTag inTag);
 	
 
 /*
@@ -95,6 +102,9 @@ protected:
 
 	UFUNCTION(Server, Reliable)
 	void GetOffFromTank_Server();
+
+	UFUNCTION(Client, Reliable)
+	void GetOffFromTank_Client();
 
 protected:
 	UPROPERTY(EditAnywhere)

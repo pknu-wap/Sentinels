@@ -9,10 +9,119 @@
 #include "NavigationPath.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/STEnemyStatusComponent.h"
+#include "STGameplayTags.h"
+#include "Character/Enemy/STEnemyBase_AIController.h"
+#include "BrainComponent.h"
 
 void ASTHelix::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+float ASTHelix::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	if (HasAuthority())
+	{
+		if (StatusComponent && StatusComponent->IsDied())
+			return 0.f;
+
+		/*
+			Set Target & Apply DamageType
+		*/
+		ASTEnemyBase_AIController* controller = Cast<ASTEnemyBase_AIController>(GetController());
+		USTBaseDamageType* STDamageType = Cast<USTBaseDamageType>(DamageEvent.DamageTypeClass.GetDefaultObject());
+		USTKatanaDamageType* KatanaDamageType = Cast<USTKatanaDamageType>(DamageEvent.DamageTypeClass.GetDefaultObject());
+		if (controller)
+		{
+			/*
+				Set Target as DamageCauser
+			*/
+			controller->SetTarget(DamageCauser);
+
+			/*
+				Critical
+			*/
+			FLinearColor damageTextColor = FLinearColor::White;
+			if (DamageEvent.GetTypeID() == FSTPointDamageEvent::ClassID)
+			{
+				const FSTPointDamageEvent& PointDamageEvent = static_cast<const FSTPointDamageEvent&>(DamageEvent);
+				FString Str_DamageType = PointDamageEvent.bIsCritical ? FString("Critical") : FString("Normal");
+				damageTextColor = PointDamageEvent.bIsCritical ? FLinearColor::Yellow : FLinearColor::White;
+				UE_LOG(LogTemp, Warning, TEXT("ASTEnemyBase : %s Damage %f"), *Str_DamageType, Damage);
+			}
+			else
+			{
+				damageTextColor = FLinearColor::White;
+				UE_LOG(LogTemp, Warning, TEXT("ASTEnemyBase : Extra Damage %f"), Damage);
+			}
+
+			/*
+				Apply DamageType
+			*/
+			if (STDamageType)
+			{
+				if (STDamageType->StunnedTime > 0)
+				{
+					// Apply Stun to Behavior Tree
+					controller->ApplyStun(STDamageType->StunnedTime);
+
+					// Apply Stun to Character (Animation)
+					if (!HasTag(FSTGameplayTags::Get().Character_State_Stunned))
+						UpdateEnemyStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Stunned, true);
+
+					AddTag(FSTGameplayTags::Get().Character_State_Stunned);
+					GetWorldTimerManager().SetTimer(Handle_Stunned,
+						[&]() {
+							ClearTag(FSTGameplayTags::Get().Character_State_Stunned);
+							UpdateEnemyStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Stunned, false);
+						},
+						STDamageType->StunnedTime, false);
+				}
+			}
+
+			if (KatanaDamageType)
+			{
+				AddTag(FSTGameplayTags::Get().Character_State_Bleed);
+				Delegate_OnEnemyStateAdd.Broadcast(FSTGameplayTags::Get().Character_State_Bleed);
+				UE_LOG(LogTemp, Display, TEXT("Katana Damage Type ! ! !"));
+			}
+
+			/*
+			Damage Indicate
+			*/
+			ShowDamageIndicateWidget_Multicast(Damage, damageTextColor);
+
+			/*
+				Calculate Current HP & Check Died
+			*/
+			if (StatusComponent && StatusComponent->TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser) <= 0)
+			{
+				// Play Died Montage
+				GetWorld()->GetTimerManager().SetTimer(Handle_Deactivate,
+					[this]()
+					{
+						this->Deactivate();
+					}, 5.f, false);
+
+				PlayDiedMontage_Multicast();
+
+				// Stop Behavior Tree
+				AAIController* AIController = Cast<AAIController>(GetController());
+				if (AIController && AIController->GetBrainComponent())
+				{
+					AIController->GetBrainComponent()->StopLogic(FString("Died."));
+				}
+
+				// Drop Item
+				DropItem();
+
+				return Damage;
+			}
+		}
+	}
+
+	return 0.0f;
 }
 
 void ASTHelix::HelixAttack(EHelixAttackType AttackType)

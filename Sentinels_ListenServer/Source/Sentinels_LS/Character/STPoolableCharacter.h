@@ -29,5 +29,5 @@ public:
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool bIsActivated = false;
+	bool bIsActivated = true;
 };

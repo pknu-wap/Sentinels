@@ -369,11 +369,11 @@ void USTSessionSubSystem::OnJoinSessionCompleted(FName SessionName, EOnJoinSessi
 		LocalPlayer->RegisterSelfToSession(SessionName, false);
 	}
 
-	/*ASTPlayerController* PC = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+	ASTPlayerController* PC = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
 	if (PC)
 	{
-		PC->RegisterSelfToSession(SessionName);
-	}*/
+		PC->RegisterSelfToSession_Client();
+	}
 
 	/*ASTPlayerController* PC = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
 	if (PC)

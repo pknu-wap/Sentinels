@@ -15,6 +15,9 @@ class SENTINELS_LS_API ASTEliteBase : public ASTEnemyBase
 {
 	GENERATED_BODY()
 
+protected:
+	virtual void BeginPlay() override;
+
 	/*
 		Elite Atack
 	*/

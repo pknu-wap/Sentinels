@@ -6,13 +6,17 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "System/STGameState.h"
-#include "Player/STPlayerCharacter.h"
+#include "System/STGameMode_Roguelite.h"
 #include "SubSystem/STAIPoolingWorldSubsystem.h"
 #include "SubSystem/STWorldSpawnSubsystem.h"
+#include "Character/Enemy/STEliteBase.h"
+#include "Player/STPlayerCharacter.h"
 #include "Character/Enemy/STEnemyBase_AIController.h"
 #include "Character/Enemy/STEnemyBase.h"
 #include "NavigationSystem.h"
 #include "NavigationPath.h"
+#include "BrainComponent.h"
+#include "Blueprint/AIBlueprintHelperLibrary.h"
 
 // Sets default values
 ASTMissionSection::ASTMissionSection()
@@ -63,7 +67,7 @@ void ASTMissionSection::RegisterRandomMission()
 
 void ASTMissionSection::StartSpawnEnemy()
 {
-	if (!HasAuthority())
+	if (!HasAuthority() || !bShouldSpawnEnemy)
 		return;
 
 	int numOfPlayers =  UGameplayStatics::GetNumPlayerControllers(this);
@@ -105,6 +109,38 @@ void ASTMissionSection::StopSpawnEnemy()
 	}
 
 	GetWorld()->GetTimerManager().ClearTimer(SpawnHandle);
+}
+
+void ASTMissionSection::DespawnAllEnemys()
+{
+	if (!HasAuthority()) return;
+
+	for (int i = 0; i < SpawnInfos.Num(); i++)
+	{
+		for (auto character : SpawnInfos[i].SpawnedCharacters)
+		{
+			if (ASTEnemyBase* enemy = Cast<ASTEnemyBase>(character))
+			{
+				AAIController* AIController = Cast<AAIController>(enemy->GetController());
+				if (AIController && AIController->GetBrainComponent())
+				{
+					AIController->GetBrainComponent()->StopLogic(FString("Died."));
+				}
+
+				enemy->DissolveStart_Multicast();
+
+				FTimerHandle handle;
+				GetWorldTimerManager().SetTimer(handle, [enemy]() {
+					if (enemy)
+						enemy->Deactivate();
+					}, 5.f, false);
+			}
+			else if(character)
+			{
+				character->Deactivate();
+			}
+		}
+	}
 }
 
 void ASTMissionSection::TrySpawnAI()
@@ -154,6 +190,8 @@ void ASTMissionSection::SpawnEnemy(int InfoIdx)
 		ASTEnemyBase* Enemy = PoolingSystem->GetCharacter<ASTEnemyBase>(Info.SpawnPawnClasses[rand], SpawnNavLocation.Location);
 		if (Enemy)
 		{
+			Info.SpawnedCharacters.Add(Enemy);
+
 			Enemy->SetAdditionalDropInfos(Info.AdditionalDropInfos);
 
 			ASTEnemyBase_AIController* controller = Cast<ASTEnemyBase_AIController>(Enemy->GetController());
@@ -246,6 +284,7 @@ void ASTMissionSection::OnEnemyDied(AActor* DiedEnemy)
 		Enemy->Delegate_OnEnemyDied.RemoveAll(this);
 		for (int i = 0; i < SpawnInfos.Num(); i++)
 		{
+			SpawnInfos[i].SpawnedCharacters.Remove(Enemy);
 			for (auto& SubClass : SpawnInfos[i].SpawnPawnClasses)
 				if (DiedEnemy->GetClass() == SubClass.Get())
 				{
@@ -254,5 +293,26 @@ void ASTMissionSection::OnEnemyDied(AActor* DiedEnemy)
 		}
 
 		CurrentSpawned--;
+	}
+}
+
+void ASTMissionSection::SpawnEliteBoss()
+{
+ 	StopSpawnEnemy();
+
+	if (EliteBossSpawnIndicator)
+	{
+		FVector spawnLocation = EliteBossSpawnIndicator->GetActorLocation();
+		FRotator spawnRotation = EliteBossSpawnIndicator->GetActorRotation();
+
+		ASTEliteBase* eliteBoss = Cast<ASTEliteBase>(
+			UAIBlueprintHelperLibrary::SpawnAIFromClass(this, EliteBossClass, nullptr,
+			spawnLocation, spawnRotation, true));
+
+		ASTGameMode_Roguelite* gameMode = Cast<ASTGameMode_Roguelite>(UGameplayStatics::GetGameMode(this));
+		if (eliteBoss && gameMode)
+		{
+			gameMode->EliteBossSpawned(eliteBoss);
+		}
 	}
 }

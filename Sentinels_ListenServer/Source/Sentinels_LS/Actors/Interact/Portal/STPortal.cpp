@@ -11,9 +11,11 @@
 #include "STStructs.h"
 #include "UI/WidgetComponent/STWC_LocalPlayerFacing.h"
 #include "UI/Widget/STWidget_Portal.h"
+#include "System/STGameMode_MissionBase.h"
+
 
 ASTPortal::ASTPortal()
-	: CurrentVoteCount(0)
+	: WC_World(nullptr), PortalType(EPortalType::None)
 {
 	bReplicates = true;
 }
@@ -24,115 +26,56 @@ void ASTPortal::BeginPlay()
 
 	//InteractWidgetClass_ForDebug change widget to show vote count
 
-	TSubclassOf<USTWC_LocalPlayerFacing> wcClass = LoadClass<USTWC_LocalPlayerFacing>(nullptr, TEXT("/Script/Engine.Blueprint'/Game/Sentinels/UI/Interact/Portal/WCBP/WCBP_Portal.WCBP_Portal_C'"));
-	if (wcClass)
+	// TSubclassOf<USTWC_LocalPlayerFacing> wcClass = LoadClass<USTWC_LocalPlayerFacing>(nullptr, TEXT("/Script/Engine.Blueprint'/Game/Sentinels/UI/Interact/Portal/WCBP/WCBP_Portal.WCBP_Portal_C'"));
+	if (FacingWidgetClass)
 	{
-		WC_World = NewObject<USTWC_LocalPlayerFacing>(this, wcClass);
+		WC_World = NewObject<USTWC_LocalPlayerFacing>(this, FacingWidgetClass);
 		if (WC_World)
 		{
 			WC_World->RegisterComponent();
 			WC_World->AttachToComponent(Mesh, FAttachmentTransformRules::KeepRelativeTransform);
 		}
 	}
+
+	if (ASTGameMode_MissionBase* gamemode = Cast<ASTGameMode_MissionBase>(UGameplayStatics::GetGameMode(this)))
+	{
+		gamemode->Delegate_StartVoting.AddDynamic(this, &ASTPortal::OnStartVoting);
+		gamemode->Delegate_VoteUpdated.AddDynamic(this, &ASTPortal::OnVoteUpdated);
+	}
+
 }
 
 void ASTPortal::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(ASTPortal, CurrentVoteCount);
 }
 
-void ASTPortal::Interact_Implementation(UInteractComponent* InteractingComponent)
+void ASTPortal::OnStartVoting()
 {
-	ASTPlayerController* pc = Cast<ASTPlayerController>(InteractingComponent->GetOwner());
-	if (!pc)
-		return;
-
-	ASTPlayerCharacter* player = Cast<ASTPlayerCharacter>(pc->GetCharacter());
-	if (!player)
-		return;
-
-	if (LevelHandle_DataRow.DataTable)
+	// Reset Widget && Show Widget
+	if (WC_World)
 	{
-		FPortalInfo* portalInfo = LevelHandle_DataRow.DataTable->FindRow<FPortalInfo>(LevelHandle_DataRow.RowName, LevelHandle_DataRow.RowName.ToString());
-		if (!portalInfo)
-			return;
-
-		Teleport(player, portalInfo->ArrivalPoint);
-	}
-
-	MulticastRPCUpdate();
-}
-
-void ASTPortal::Interact_Finish_Implementation(UInteractComponent* InteractingComponent)
-{
-}
-
-void ASTPortal::ShowInteractiveUI_Implementation(UInteractComponent* InteractingComponent)
-{
-	// show vote count
-	// ex) 3/5
-	if (!bIsInteractable)
-		return;
-
-	if (InteractWidget_ForDebug)
-	{
-		InteractWidget_ForDebug->RemoveFromParent();
-	}
-
-	if (InteractWidgetClass_ForDebug)
-	{
-		APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
-		if (PC)
+		if (USTWidget_Portal* widget_portal = Cast<USTWidget_Portal>(WC_World->GetWidget()))
 		{
-			InteractWidget_ForDebug = CreateWidget<UUserWidget>(PC, InteractWidgetClass_ForDebug);
-			if (InteractWidget_ForDebug)
-			{
-				InteractWidget_ForDebug->AddToViewport();
-			}
+			widget_portal->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			widget_portal->VoteCountUpdated(0);
 		}
 	}
 }
 
-void ASTPortal::HideInteractiveUI_Implementation(UInteractComponent* InteractingComponent)
+void ASTPortal::OnVoteUpdated(EPortalType inPortalType, int voteCount)
 {
-	Super::HideInteractiveUI_Implementation(InteractingComponent);
-	if (InteractWidget_ForDebug)
-	{
-		InteractWidget_ForDebug->RemoveFromParent();
-	}
+	if (PortalType == inPortalType)
+		OnVoteUpdated_Multicast(inPortalType, voteCount);
 }
 
-void ASTPortal::Activate()
-{
-	Mesh->SetVisibility(true, true);
-	bIsInteractable = true;
-}
-
-void ASTPortal::Deactivate()
-{
-	Mesh->SetVisibility(false, true);
-	bIsInteractable = false;
-}
-
-void ASTPortal::Teleport(AActor* Target, FVector& Location)
-{
-	Target->SetActorLocation(Location, false);
-}
-
-void ASTPortal::MulticastRPCUpdate_Implementation()
+void ASTPortal::OnVoteUpdated_Multicast_Implementation(EPortalType inPortalType, int voteCount)
 {
 	if (WC_World)
 	{
-		USTWidget_Portal* widget_portal = Cast<USTWidget_Portal>(WC_World->GetWidget());
-		if (widget_portal)
+		if (USTWidget_Portal* widget_portal = Cast<USTWidget_Portal>(WC_World->GetWidget()))
 		{
-			widget_portal->SetTB_VoteCount();
+			widget_portal->VoteCountUpdated(voteCount);
 		}
 	}
-}
-
-void ASTPortal::ServerRPCVote_Implementation()
-{
 }

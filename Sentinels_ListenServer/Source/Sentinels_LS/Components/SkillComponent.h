@@ -35,8 +35,11 @@ private:
 	void StartCoolDown(int SkillIdx);
 	void Tick_SkillCoolDown(float DeltaTime);
 
-private:
+protected:
+	UPROPERTY(BlueprintReadOnly)
 	TArray<FSkillStruct> ClassSkills;
+
+	UPROPERTY(BlueprintReadOnly)
 	TArray<float> Skill_CoolDowns;
 
 public:

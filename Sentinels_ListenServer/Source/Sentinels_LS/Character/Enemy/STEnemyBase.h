@@ -23,6 +23,7 @@ public:
 	ASTEnemyBase(const FObjectInitializer& object_initializer);
 
 protected:
+	virtual void PossessedBy(AController* NewController) override;
 	virtual void BeginPlay() override;
 	virtual void Destroyed() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -30,7 +31,7 @@ protected:
 protected:
 	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
-private:
+protected:
 	FTimerHandle Handle_Stunned;
 	FTimerHandle Handle_Deactivate;
 
@@ -47,6 +48,14 @@ public:
 public:
 	UFUNCTION(Server, Reliable)
 	void StopCurrentAnimMontage_Multicast();
+
+/*
+	Play Montage
+*/
+public:
+	UFUNCTION(NetMulticast, Reliable)
+	void PlayMontage_Multicast(UAnimMontage* MontageToPlay);
+
 
 /*
 	Attack
@@ -89,6 +98,9 @@ protected:
 	void PlayKnockbackMontage();
 
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bShouldStopMontageWhenKnockback = true;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	class UWidgetComponent* WC_EnemyMain_Screen;
 
@@ -154,12 +166,21 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void DropItem();
 
+	UFUNCTION(BlueprintCallable)
+	virtual void DropExp(AActor* DamageCauser);
+
 protected:
 	UPROPERTY(EditAnywhere, Category = "Drop")
 	FDropInfo DropInfo_Base;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Drop")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Drop")
 	TArray<FDropInfo> DropInfos_Additional;
+
+	UPROPERTY(EditAnywhere, Category = "Drop")
+	float BaseDropExp;
+
+	UPROPERTY(EditAnywhere, Category = "Drop")
+	UCurveFloat* ExpDropCurve;
 
 
 public:

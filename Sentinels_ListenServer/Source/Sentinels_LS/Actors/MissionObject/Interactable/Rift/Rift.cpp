@@ -81,7 +81,7 @@ void ARift::Interact_Finish_Implementation(UInteractComponent* InteractingCompon
 				ASTCharacterBase* Character = Cast<ASTCharacterBase>(PC->GetPawn());
 				if (Character)
 				{
-					Character->RemoveTag(FSTGameplayTags::Get().Character_Player_State_RescueHostage);
+					Character->ClearTag(FSTGameplayTags::Get().Character_Player_State_RescueHostage);
 				}
 			}
 		}

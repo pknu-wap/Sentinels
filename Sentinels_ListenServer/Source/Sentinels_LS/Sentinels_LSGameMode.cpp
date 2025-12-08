@@ -74,7 +74,7 @@ void ASentinels_LSGameMode::PostLogin(APlayerController* NewPlayer)
 	//	// SessionInterface->RegisterPlayer(LocalPlayer->SessionName, *LocalPlayer->GetPreferredUniqueNetId(), false);
 	//}
 
-	if (PlayerState)
+	/*if (PlayerState)
 	{
 		SessionInterface->AddOnRegisterPlayersCompleteDelegate_Handle(Delegate_RegisterPlayerComplete);
 
@@ -82,7 +82,7 @@ void ASentinels_LSGameMode::PostLogin(APlayerController* NewPlayer)
 		{
 			SessionInterface->ClearOnRegisterPlayersCompleteDelegate_Handle(Handle_RegisterPlayerComplete);
 		}
-	}
+	}*/
 
 }
 

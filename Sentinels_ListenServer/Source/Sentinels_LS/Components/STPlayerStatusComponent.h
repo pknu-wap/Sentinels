@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "STEnums.h"
 #include "DamageType/STDamageTypes.h"
+#include "STGameplayTags.h"
 #include "STPlayerStatusComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHPDelegate, float, Current, float, Max);
@@ -45,6 +46,8 @@ struct SENTINELS_LS_API FSTDamageInfo
 	float DamageAmount = 0.f;
 };
 
+class UUserWidget;
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SENTINELS_LS_API USTPlayerStatusComponent : public UActorComponent
 {
@@ -78,6 +81,9 @@ protected:
 
 public:
 	UFUNCTION(BlueprintCallable)
+	void AddExp(float InExp);
+
+	UFUNCTION(BlueprintCallable)
 	FSTDamageInfo GetCalculatedDamageInfo(FSTPointDamageEvent& DamageEvent, AActor* DamagedActor);
 
 	UFUNCTION(BlueprintCallable)
@@ -99,9 +105,15 @@ public:
 		< Function Call Order >
 		1. Get Item! -> UInventoryComponent::AddItem_Server -> USTPlayerStatusComponent::CalculateStatus
 		2. Get Buff! -> USTPlayerStatusComponent::ApplyBuff_Server -> USTPlayerStatusComponent::CalculateStatus
+		3. Get Enhancement! -> USTPlayerStatusComponent::EnhancementSelected_Server -> USTPlayerStatusComponent::CalculateStatus
 	*/ 
+	void InitializeEnhancement();
+
 	UFUNCTION(BlueprintCallable)
-	void SetDefaultStatus();
+	void InitializeDefaultStatus();
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateDefaultStatus();
 
 	UFUNCTION(BlueprintCallable)
 	void CalculateStatus();
@@ -112,41 +124,97 @@ public:
 	UFUNCTION()
 	void OnRep_HPUpdated();
 
+	UFUNCTION()
+	void OnRep_LevelUpdated();
+
+	UFUNCTION()
+	void OnRep_ExpUpdated();
+
 protected:
 	void RegenHP();
+
+	UFUNCTION(Client, Reliable)
+	void GiveEnhancementSelections_Client(const TArray<FGameplayTag>& enhancements);
+
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void EnhancementSelected_Server(FGameplayTag SelectedEnhancement);
 
 protected:
 	UPROPERTY(VisibleAnywhere)
 	TMap<ESTBuffType, FSTBuffStruct> BuffMap;
 
 public:
+	// Level & Exp
+	UPROPERTY(Category = "Level", EditAnywhere, BlueprintReadOnly)
+	UCurveFloat* ExpCurve;
+
+	UPROPERTY(ReplicatedUsing = OnRep_LevelUpdated, Category = "Level", VisibleAnywhere, BlueprintReadOnly)
+	int Level = 1;
+
+	UPROPERTY(Category = "Level", VisibleAnywhere, BlueprintReadOnly)
+	float MaxExp;
+
+	UPROPERTY(ReplicatedUsing = OnRep_ExpUpdated, Category = "Level", VisibleAnywhere, BlueprintReadOnly)
+	float Exp;
+
+	// Enhancement
+	UPROPERTY(Category = "Enhancement", EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<UUserWidget> WidgetClass_EnhancementSelect;
+
+	UPROPERTY(Category = "Enhancement", EditAnywhere, BlueprintReadOnly)
+	UDataTable* DB_Enhancement;
+
+	UPROPERTY()
+	TMap<FGameplayTag, int> SelectedEnhancements;
+
+	UPROPERTY()
+	TMap<FGameplayTag, int> NotSelectedEnhancements;
+
 	// HP 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(Category = "HP", EditAnywhere, BlueprintReadOnly)
+	UCurveFloat* MaxHPCurve;
+
+	UPROPERTY(Category = "HP", EditAnywhere, BlueprintReadOnly)
 	float BaseMaxHP;
 
-	UPROPERTY(ReplicatedUsing = OnRep_HPUpdated, EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(ReplicatedUsing = OnRep_HPUpdated, Category = "HP", EditAnywhere, BlueprintReadWrite)
 	float MaxHP;
 
-	UPROPERTY(ReplicatedUsing = OnRep_HPUpdated, EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(ReplicatedUsing = OnRep_HPUpdated, Category = "HP", EditAnywhere, BlueprintReadOnly)
 	float HP;
 
 
 	// HP Regen
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(Category = "HP", EditAnywhere, BlueprintReadOnly)
+	UCurveFloat* HPRegenCurve;
+
+	UPROPERTY(Category = "HP", EditAnywhere, BlueprintReadOnly)
 	float BaseMaxHPRegen;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(Category = "HP", EditAnywhere, BlueprintReadOnly)
 	float MaxHPRegen;
 
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(Category = "HP", EditAnywhere, BlueprintReadOnly)
+	float BaseHPRegen;
+
+	UPROPERTY(Replicated, Category = "HP", EditAnywhere, BlueprintReadWrite)
 	float HPRegen;
 
 
 	// ATK & DEF
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(Category = "Combat", EditAnywhere, BlueprintReadOnly)
+	UCurveFloat* ATKCurve;
+	UPROPERTY(Category = "Combat", EditAnywhere, BlueprintReadOnly)
+	UCurveFloat* DEFCurve;
+
+	UPROPERTY(Replicated, Category = "Combat", EditAnywhere, BlueprintReadWrite)
 	int ATK;
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(Replicated, Category = "Combat", EditAnywhere, BlueprintReadWrite)
+	int BaseATK;
+	UPROPERTY(Replicated, Category = "Combat", EditAnywhere, BlueprintReadWrite)
 	int DEF;
+	UPROPERTY(Replicated, Category = "Combat", EditAnywhere, BlueprintReadWrite)
+	int BaseDEF;
 
 	/*
 		Movement Speed (MS)
@@ -154,11 +222,13 @@ public:
 		Calculation formula : MovementSpeed = BaseMovementSpeed * (1 + Item_MS) * (1 + Buff_MS)
 			eg) 939 = 600 * (1 + 0.2) * (1 + 0.3)
 	*/
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(Category = "Speed", EditAnywhere, BlueprintReadOnly)
+	UCurveFloat* MoveSpeedCurve;
+	UPROPERTY(Replicated, Category = "Speed", EditAnywhere, BlueprintReadOnly)
 	float MaxMovementSpeed;
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite)
+	UPROPERTY(Replicated, Category = "Speed", VisibleAnywhere, BlueprintReadWrite)
 	float MovementSpeed;
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(Replicated, Category = "Speed", EditAnywhere, BlueprintReadOnly)
 	float BaseMovementSpeed;
 
 	/*
@@ -167,11 +237,13 @@ public:
 		Calculation formula : AttackSpeed = BaseAttackSpeed * (1 + Item_AS) * (1 + Buff_AS)
 			eg) 1.43 = 1 * (1 + 0.1) * (1 + 0.3)
 	*/
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(Category = "Combat", EditAnywhere, BlueprintReadOnly)
+	UCurveFloat* AttackSpeedCurve;
+	UPROPERTY(Replicated, Category = "Combat", EditAnywhere, BlueprintReadOnly)
 	float MaxAttackSpeed;
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite)
+	UPROPERTY(Replicated, Category = "Combat", VisibleAnywhere, BlueprintReadWrite)
 	float AttackSpeed;
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(Replicated, Category = "Combat", EditAnywhere, BlueprintReadOnly)
 	float BaseAttackSpeed;
 
 	/*
@@ -179,9 +251,9 @@ public:
 
 		Calculation formula : DIR = Item_DIR + Buff_DIR
 	*/
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(Replicated, Category = "Combat", EditAnywhere, BlueprintReadOnly)
 	float MaxDamageIncreaseRate;
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite)
+	UPROPERTY(Replicated, Category = "Combat", VisibleAnywhere, BlueprintReadWrite)
 	float DamageIncreaseRate;
 
 	/*
@@ -192,9 +264,9 @@ public:
 			
 		CoolTime formula : CoolTime = CoolTime * (1 - CDR);
 	*/
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(Replicated, Category = "Combat", EditAnywhere, BlueprintReadOnly)
 	float MaxCDR;
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite)
+	UPROPERTY(Replicated, Category = "Combat", VisibleAnywhere, BlueprintReadWrite)
 	float CDR;
 
 	/*
@@ -205,11 +277,11 @@ public:
 
 		BaseCDP : 2.0f
 	*/
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(Replicated, Category = "Combat", EditAnywhere, BlueprintReadOnly)
 	float MaxCriticalDamagePercent;
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite)		//
+	UPROPERTY(Replicated, Category = "Combat", VisibleAnywhere, BlueprintReadWrite)		//
 	float CriticalDamagePercent;
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(Replicated, Category = "Combat", EditAnywhere, BlueprintReadOnly)
 	float BaseCriticalDamagePercent;
 
 	/*
@@ -218,11 +290,11 @@ public:
 		Calculation formula : CR = BaseCR + Item_CR + Buff_CR 
 			eg) 0.8 = 0.1 + 0.2 + 0.5
 	*/
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(Replicated, Category = "Combat", EditAnywhere, BlueprintReadOnly)
 	float MaxCriticalRate;
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite)
+	UPROPERTY(Replicated, Category = "Combat", VisibleAnywhere, BlueprintReadWrite)
 	float CriticalRate;
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(Replicated, Category = "Combat", EditAnywhere, BlueprintReadOnly)
 	float BaseCriticalRate;
 
 public:

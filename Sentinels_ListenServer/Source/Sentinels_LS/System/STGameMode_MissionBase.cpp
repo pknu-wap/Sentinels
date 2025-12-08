@@ -28,7 +28,17 @@ void ASTGameMode_MissionBase::InitGame(const FString& MapName, const FString& Op
 
 	if (Actors.Num() > 0)
 	{
-		CurrentMissionSection = Cast<ASTMissionSection>(Actors[UKismetMathLibrary::RandomIntegerInRange(0, Actors.Num() - 1)]);
+		for (int i = 0; i < CachedMissionSections.Num(); i++)
+		{
+			// Find Voting Section
+			if (CachedMissionSections[i]->HasTag(FSTGameplayTags::Get().Section_SelectMissionOrBoss))
+			{
+				CurrentMissionSection = CachedMissionSections[i];
+				break;
+			}
+		}
+
+		// CurrentMissionSection = Cast<ASTMissionSection>(Actors[UKismetMathLibrary::RandomIntegerInRange(0, Actors.Num() - 1)]);
 	}
 }
 
@@ -56,6 +66,9 @@ AActor* ASTGameMode_MissionBase::ChoosePlayerStart_Implementation(AController* P
 void ASTGameMode_MissionBase::BeginPlay()
 {
 	Super::BeginPlay();
+
+	FTimerHandle votingHandle;
+	GetWorldTimerManager().SetTimerForNextTick(this, &ASTGameMode_MissionBase::StartVoting);
 }
 
 void ASTGameMode_MissionBase::InitMissionInfos()
@@ -82,24 +95,37 @@ void ASTGameMode_MissionBase::OnMissionEnded(USTMissionBase* InMission, bool IsC
 {
 	if (IsCleared)
 	{
-		// Teleport Players to Select Area
-		bool bTeleportSuccess = false;
-		for (int i = 0; i < CachedMissionSections.Num(); i++)
-		{
-			if (CachedMissionSections[i] && CachedMissionSections[i]->HasTag(FSTGameplayTags::Get().Section_SelectMissionOrBoss))
+		FTimerHandle TeleportTimer;
+		GetWorldTimerManager().SetTimer(TeleportTimer, [&]() {
+			// Teleport Players to Select Area
+			bool bTeleportSuccess = false;
+			for (int i = 0; i < CachedMissionSections.Num(); i++)
 			{
-				bTeleportSuccess = true;
-				TeleportPlayersToPlayerStarts(CachedMissionSections[i]->PlayerStarts);
-				break;
+				if (CachedMissionSections[i] && CachedMissionSections[i]->HasTag(FSTGameplayTags::Get().Section_SelectMissionOrBoss))
+				{
+					bTeleportSuccess = true;
+					TeleportPlayersToPlayerStarts(CachedMissionSections[i]->PlayerStarts);
+					break;
+				}
 			}
-		}
 
-		if (bTeleportSuccess) 
-		{
-			// Set Timer for Determine
-			GetWorldTimerManager().SetTimer(Handle_MissionOrBoss, this, &ASTGameMode_MissionBase::DetermineMissionOrBoss, 20.f, false);
-		}
+			if (bTeleportSuccess)
+			{
+				StartVoting();
+			}
+		}, 5.f, false);
+
+
 	}
+}
+
+void ASTGameMode_MissionBase::StartVoting()
+{
+	// Set Timer for Determine
+	GetWorldTimerManager().SetTimer(Handle_MissionOrBoss, this, &ASTGameMode_MissionBase::DetermineMissionOrBoss, 20.f, false);
+
+	// Show UI (CountDown, Portal)
+	Delegate_StartVoting.Broadcast();
 }
 
 void ASTGameMode_MissionBase::VoteToMission(const APlayerController* PC)
@@ -112,12 +138,17 @@ void ASTGameMode_MissionBase::VoteToMission(const APlayerController* PC)
 	{
 		DetermineMissionOrBoss();
 	}*/
+
+	Delegate_VoteUpdated.Broadcast(EPortalType::Mission, MissionVotedPlayers.Num());
 }
 
 void ASTGameMode_MissionBase::VoteToBoss(const APlayerController* PC)
 {
 	MissionVotedPlayers.Remove(PC->GetUniqueID());
 	BossVotedPlayers.Add(PC->GetUniqueID());
+
+	Delegate_VoteUpdated.Broadcast(EPortalType::Boss, BossVotedPlayers.Num());
+	Delegate_VoteUpdated.Broadcast(EPortalType::Mission, MissionVotedPlayers.Num());
 }
 
 void ASTGameMode_MissionBase::DetermineMissionOrBoss()
