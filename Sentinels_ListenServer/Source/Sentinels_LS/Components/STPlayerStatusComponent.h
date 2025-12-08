@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "STEnums.h"
 #include "DamageType/STDamageTypes.h"
+#include "STGameplayTags.h"
 #include "STPlayerStatusComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHPDelegate, float, Current, float, Max);
@@ -44,6 +45,8 @@ struct SENTINELS_LS_API FSTDamageInfo
 	UPROPERTY(BlueprintReadOnly)
 	float DamageAmount = 0.f;
 };
+
+class UUserWidget;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SENTINELS_LS_API USTPlayerStatusComponent : public UActorComponent
@@ -102,7 +105,10 @@ public:
 		< Function Call Order >
 		1. Get Item! -> UInventoryComponent::AddItem_Server -> USTPlayerStatusComponent::CalculateStatus
 		2. Get Buff! -> USTPlayerStatusComponent::ApplyBuff_Server -> USTPlayerStatusComponent::CalculateStatus
+		3. Get Enhancement! -> USTPlayerStatusComponent::EnhancementSelected_Server -> USTPlayerStatusComponent::CalculateStatus
 	*/ 
+	void InitializeEnhancement();
+
 	UFUNCTION(BlueprintCallable)
 	void InitializeDefaultStatus();
 
@@ -127,6 +133,12 @@ public:
 protected:
 	void RegenHP();
 
+	UFUNCTION(Client, Reliable)
+	void GiveEnhancementSelections_Client(const TArray<FGameplayTag>& enhancements);
+
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void EnhancementSelected_Server(FGameplayTag SelectedEnhancement);
+
 protected:
 	UPROPERTY(VisibleAnywhere)
 	TMap<ESTBuffType, FSTBuffStruct> BuffMap;
@@ -137,13 +149,26 @@ public:
 	UCurveFloat* ExpCurve;
 
 	UPROPERTY(ReplicatedUsing = OnRep_LevelUpdated, Category = "Level", VisibleAnywhere, BlueprintReadOnly)
-	int Level;
+	int Level = 1;
 
 	UPROPERTY(Category = "Level", VisibleAnywhere, BlueprintReadOnly)
 	float MaxExp;
 
 	UPROPERTY(ReplicatedUsing = OnRep_ExpUpdated, Category = "Level", VisibleAnywhere, BlueprintReadOnly)
 	float Exp;
+
+	// Enhancement
+	UPROPERTY(Category = "Enhancement", EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<UUserWidget> WidgetClass_EnhancementSelect;
+
+	UPROPERTY(Category = "Enhancement", EditAnywhere, BlueprintReadOnly)
+	UDataTable* DB_Enhancement;
+
+	UPROPERTY()
+	TMap<FGameplayTag, int> SelectedEnhancements;
+
+	UPROPERTY()
+	TMap<FGameplayTag, int> NotSelectedEnhancements;
 
 	// HP 
 	UPROPERTY(Category = "HP", EditAnywhere, BlueprintReadOnly)

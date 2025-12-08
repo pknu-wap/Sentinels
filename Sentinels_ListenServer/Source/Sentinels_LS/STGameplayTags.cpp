@@ -239,6 +239,25 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 	);
 
 	/*
+		Enhancement
+	*/
+	GameplayTags.Character_Enhance_Default_AttackSpeed = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Character.Enhance.Default.AttackSpeed"),
+		FString("Character.Enhance.Default.AttackSpeed")
+	);
+
+	GameplayTags.Character_Enhance_Default_BossAttackDamage = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Character.Enhance.Default.BossAttackDamage"),
+		FString("Character.Enhance.Default.BossAttackDamage")
+	);
+
+	GameplayTags.Character_Enhance_Default_CoolDown = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Character.Enhance.Default.CoolDown"),
+		FString("Character.Enhance.Default.CoolDown")
+	);
+
+
+	/*
 		Levels
 	*/
 	GameplayTags.Level_Lobby = UGameplayTagsManager::Get().AddNativeGameplayTag(

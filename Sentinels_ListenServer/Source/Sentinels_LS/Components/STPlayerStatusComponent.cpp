@@ -12,7 +12,10 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/DamageType.h"
 #include "Engine/DamageEvents.h"
-
+#include "Algo/RandomShuffle.h"
+#include "Blueprint/UserWidget.h"
+#include "UI/Widget/STWidget_SelectEnhancement.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values for this component's properties
 USTPlayerStatusComponent::USTPlayerStatusComponent()
@@ -120,10 +123,7 @@ void USTPlayerStatusComponent::AddExp(float InExp)
 			Level++;
 			Exp -= MaxExp;
 
-			if (ExpCurve)
-			{
-				MaxExp = ExpCurve->GetFloatValue(Level);
-			}
+			OnRep_LevelUpdated();
 
 			CalculateStatus();
 		}
@@ -292,6 +292,23 @@ void USTPlayerStatusComponent::ClearBuff_Server_Implementation(ESTBuffType inTyp
 	ApplyStatus();
 }
 
+void USTPlayerStatusComponent::InitializeEnhancement()
+{
+	if (DB_Enhancement)
+	{
+		TArray<FEnhancementInfo*> outArray;
+		DB_Enhancement->GetAllRows<FEnhancementInfo>(FString("Get Enhancement"), outArray);
+
+		for (auto info : outArray)
+		{
+			if (info)
+			{
+				NotSelectedEnhancements.Emplace(info->EnhancementTag, info->Quantity);
+			}
+		}
+	}
+}
+
 void USTPlayerStatusComponent::InitializeDefaultStatus()
 {
 	Level = 1;
@@ -338,7 +355,7 @@ void USTPlayerStatusComponent::CalculateStatus()
 		// Reset Status 
 		UpdateDefaultStatus();
 
-		// ReCalculate Status
+		// ReCalculate Status (Item)
 		const TArray<FInvSlotStruct>& Inventory = InvComp->GetInventory();
 		for (auto& Slot : Inventory)
 		{
@@ -348,6 +365,16 @@ void USTPlayerStatusComponent::CalculateStatus()
 			}
 		}
 
+		// ReCalculate Status (Enhancement)
+		// Maybe 
+		TArray<TPair<FGameplayTag, int>> enhancements = SelectedEnhancements.Array();
+		for (TPair<FGameplayTag, int>& pair : SelectedEnhancements)
+		{
+			FGameplayTag tag = pair.Key; int quan = pair.Value;
+
+		}
+
+		// ReCalculate Status (Buff)
 		for (auto& pair : BuffMap)
 		{
 			FSTBuffStruct& buff = pair.Value;
@@ -413,6 +440,27 @@ void USTPlayerStatusComponent::OnRep_LevelUpdated()
 	{
 		MaxExp = ExpCurve->GetFloatValue(Level);
 	}
+
+	if (GetOwner()->HasAuthority())
+	{
+		if (Level >= 2 && Level % 3 == 1)
+		{
+			// Give Enhancement Select Option To Client
+			TArray<TPair<FGameplayTag, int>> selectArray = NotSelectedEnhancements.Array(); 
+			Algo::RandomShuffle(selectArray);
+
+			TArray<FGameplayTag> Selections;
+			for (int i = 0; i < 3; i++)
+			{
+				if (selectArray.IsValidIndex(i))
+				{
+					Selections.Push(selectArray[i].Key);
+				}
+			}
+
+			GiveEnhancementSelections_Client(Selections);
+		}
+	}
 }
 
 void USTPlayerStatusComponent::OnRep_ExpUpdated()
@@ -424,5 +472,29 @@ void USTPlayerStatusComponent::RegenHP()
 {
 	HP = FMath::Clamp(HP + HPRegen, 0, MaxHP);
 	OnRep_HPUpdated();
+}
+
+void USTPlayerStatusComponent::GiveEnhancementSelections_Client_Implementation(const TArray<FGameplayTag>& enhancements)
+{
+	APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
+	USTWidget_SelectEnhancement* widget = CreateWidget<USTWidget_SelectEnhancement>(PC, WidgetClass_EnhancementSelect);
+	if (widget)
+	{
+		widget->ShowSelections(enhancements);
+		widget->AddToViewport();
+	}
+}
+
+void USTPlayerStatusComponent::EnhancementSelected_Server_Implementation(FGameplayTag SelectedEnhancement)
+{
+	SelectedEnhancements[SelectedEnhancement] = SelectedEnhancements[SelectedEnhancement] + 1;
+
+	NotSelectedEnhancements[SelectedEnhancement] = NotSelectedEnhancements[SelectedEnhancement] - 1;
+	if (NotSelectedEnhancements[SelectedEnhancement] == 0)
+	{
+		NotSelectedEnhancements.Remove(SelectedEnhancement);
+	}
+
+	CalculateStatus();
 }
 

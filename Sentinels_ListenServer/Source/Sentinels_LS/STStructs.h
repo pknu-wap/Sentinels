@@ -33,6 +33,21 @@ struct FStatusEntry
 };
 
 USTRUCT(BlueprintType)
+struct SENTINELS_LS_API FEnhancementInfo : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGameplayTag EnhancementTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int Quantity = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FText Description;
+};
+
+USTRUCT(BlueprintType)
 struct SENTINELS_LS_API FDropInfo : public FTableRowBase
 {
 	GENERATED_BODY()
