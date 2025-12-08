@@ -6,6 +6,7 @@
 #include "Animation/AnimNotifies/AnimNotify.h"
 #include "STEnums.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "DamageType/STDamageTypes.h"
 #include "AN_ApplyRadialDamage.generated.h"
 
 class ASTPlayerCharacter;
@@ -20,7 +21,7 @@ protected:
 	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
 
 private:
-	void CalculateFinalDamage();
+	void CalculateFinalDamage(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference);
 	TSubclassOf<UDamageType> GetDamageType() const;
 
 protected:
@@ -44,5 +45,5 @@ private:
 	TArray<AActor*> DamagedActors;
 
 	UPROPERTY()
-	float FinalDamage = 10.f;
+	class USTPlayerStatusComponent* StatusComp;
 };

@@ -4,13 +4,16 @@
 #include "Actors/MissionObject/Interactable/EscortObject/EscortObject.h"
 #include "Actors/SplineRoute/SplineRouteActor.h"
 #include "Components/SplineComponent.h"
+#include "Components/BoxComponent.h"
+#include "Components/SpawnEnemyComponent.h"
 #include "NavigationSystem.h"
 #include "NavigationPath.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Character/Enemy/STEnemyBase_AIController.h"
-#include "Components/SpawnEnemyComponent.h"
+#include "Player/STPlayerCharacter.h"
+#include "Character/Enemy/STEnemyBase.h"
 
 AEscortObject::AEscortObject()
 {
@@ -20,6 +23,9 @@ AEscortObject::AEscortObject()
 	PrimaryActorTick.bCanEverTick = true;
 
 	SpawnEnemyComp = CreateDefaultSubobject<USpawnEnemyComponent>(FName("SpawnComp"));
+
+	BoxComp = CreateDefaultSubobject<UBoxComponent>(FName("BoxComponent"));
+	BoxComp->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 }
 
 void AEscortObject::BeginPlay()
@@ -27,6 +33,12 @@ void AEscortObject::BeginPlay()
 	Super::BeginPlay();
 
 	SetActorTickEnabled(false);
+
+	if (BoxComp)
+	{
+		BoxComp->OnComponentBeginOverlap.AddDynamic(this, &AEscortObject::BoxBeginOverlapped);
+		BoxComp->OnComponentEndOverlap.AddDynamic(this, &AEscortObject::BoxEndOverlapped);
+	}
 }
 
 void AEscortObject::Tick(float DeltaSeconds)
@@ -48,7 +60,15 @@ void AEscortObject::Tick(float DeltaSeconds)
 			if (DistanceAlongSpline >= SplineActor->GetSplineLength())
 			{
 				SpawnEnemyComp->StopSpawnEnemy();
+
+				bIsSuccessed = true;
 				StopMove();
+
+				// Update Mission Info
+				Delegate_MissionConditionUpdate.Broadcast(ObjectID, true);
+
+				// Disable Spawn Enemy while Escort Mission
+				SpawnEnemyComp->StopSpawnEnemy();
 			}
 		}
 	}
@@ -72,12 +92,6 @@ void AEscortObject::StopMove()
 	{
 		bShouldMove = false;
 		SetActorTickEnabled(false);
-
-		// Update Mission Info
-		Delegate_MissionConditionUpdate.Broadcast(ObjectID, true);
-		
-		// Disable Spawn Enemy while Escort Mission
-		SpawnEnemyComp->StopSpawnEnemy();
 	}
 }
 
@@ -87,5 +101,39 @@ void AEscortObject::Interact_Implementation(UInteractComponent* InteractingCompo
 	{
 		StartMoveAlongSpline();
 		bIsInteractable = false;
+	}
+}
+
+void AEscortObject::BoxBeginOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (ASTEnemyBase* enemy = Cast<ASTEnemyBase>(OtherActor))
+	{
+		OverlappedEnemys.Add(enemy);
+	}
+	else if(ASTPlayerCharacter* player = Cast<ASTPlayerCharacter>(OtherActor))
+	{
+		OverlappedPlayers.Add(player);
+	}
+
+	if (OverlappedEnemys.Num() <= 5 && OverlappedPlayers.Num() > 0)
+	{
+		StartMoveAlongSpline();
+	}
+}
+
+void AEscortObject::BoxEndOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (ASTEnemyBase* enemy = Cast<ASTEnemyBase>(OtherActor))
+	{
+		OverlappedEnemys.Remove(enemy);
+	}
+	else if (ASTPlayerCharacter* player = Cast<ASTPlayerCharacter>(OtherActor))
+	{
+		OverlappedPlayers.Remove(player);
+	}
+
+	if (OverlappedEnemys.Num() > 5 || OverlappedPlayers.Num() == 0)
+	{
+		StopMove();
 	}
 }

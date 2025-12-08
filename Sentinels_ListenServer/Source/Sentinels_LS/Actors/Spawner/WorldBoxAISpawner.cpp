@@ -68,7 +68,7 @@ void AWorldBoxAISpawner::BoxBeginOverlapped(UPrimitiveComponent* OverlappedCompo
 	{
 		if (NumOfOverlappedPlayers == 0)
 		{
-			StartSpawnEnemy();
+			// StartSpawnEnemy();
 		}
 
 		NumOfOverlappedPlayers++;
@@ -86,14 +86,14 @@ void AWorldBoxAISpawner::BoxEndOverlapped(UPrimitiveComponent* OverlappedCompone
 
 		if (NumOfOverlappedPlayers == 0)
 		{
-			StopSpawnEnemy();
+			// StopSpawnEnemy();
 		}
 	}
 }
 
 void AWorldBoxAISpawner::StartSpawnEnemy()
 {
-	if (!HasAuthority())
+	if (!HasAuthority() || !bCanActivated)
 		return;
 
 	for (int i = 0; i < SpawnInfos.Num(); i++)
@@ -103,11 +103,17 @@ void AWorldBoxAISpawner::StartSpawnEnemy()
 			GetWorld()->GetTimerManager().SetTimer(SpawnInfos[i].TimerHandle,
 				[this, i]()
 				{
-					SpawnEnemy(i);
+					if (!SpawnReserveSet.Contains(i))
+					{
+						SpawnReserveSet.Add(i);
+						SpawnReserveQue.Enqueue(i);
+					}
 				}
-			, SpawnInfos[i].SpawnPeriod, true);
+			, SpawnInfos[i].SpawnPeriod, true, 0.f);
 		}
 	}
+
+	GetWorld()->GetTimerManager().SetTimer(SpawnHandle, this, &AWorldBoxAISpawner::TrySpawnAI, 1.f, true);
 }
 
 void AWorldBoxAISpawner::StopSpawnEnemy()
@@ -115,6 +121,18 @@ void AWorldBoxAISpawner::StopSpawnEnemy()
 	for (int i = 0; i < SpawnInfos.Num(); i++)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(SpawnInfos[i].TimerHandle);
+	}
+
+	GetWorld()->GetTimerManager().ClearTimer(SpawnHandle);
+}
+
+void AWorldBoxAISpawner::TrySpawnAI()
+{
+	if (!SpawnReserveQue.IsEmpty())
+	{
+		int idx = 0;
+		SpawnReserveQue.Dequeue(idx); SpawnReserveSet.Remove(idx);
+		SpawnEnemy(idx);
 	}
 }
 
@@ -128,6 +146,7 @@ void AWorldBoxAISpawner::SpawnEnemy(int InfoIdx)
 	}
 
 	FSpawnInfo& Info = SpawnInfos[InfoIdx];
+	if (Info.SpawnPawnClasses.Num() == 0) return;
 
 	int rand; FNavLocation SpawnNavLocation;
 	for (int i = 0; i < Info.SpawnRate; i++)
@@ -135,8 +154,10 @@ void AWorldBoxAISpawner::SpawnEnemy(int InfoIdx)
 		if (Info.CurrentSpawned >= Info.MaxSpawnCount)
 			break;
 
-		if (!SpawnSystem->CanSpawnCharacter()) 
+		if (!SpawnSystem->CanSpawnCharacter())
+		{
 			break;
+		}
 
 		int playerIdx = UKismetMathLibrary::RandomIntegerInRange(0, Players.Num() - 1);
 
@@ -159,7 +180,7 @@ void AWorldBoxAISpawner::SpawnEnemy(int InfoIdx)
 				controller->SetTarget(Players[playerIdx]);
 
 			// Bind Function on Enemy Died!
-			Enemy->Delegate_OnEnemyDied.RemoveDynamic(this, &AWorldBoxAISpawner::OnEnemyDied);
+			Enemy->Delegate_OnEnemyDied.RemoveAll(this);
 			Enemy->Delegate_OnEnemyDied.AddDynamic(this, &AWorldBoxAISpawner::OnEnemyDied);
 
 			Info.CurrentSpawned++;
@@ -280,10 +301,18 @@ bool AWorldBoxAISpawner::GetSpawnNavLocationForPlayer(int playerIdx, int infoIdx
 
 void AWorldBoxAISpawner::OnEnemyDied(AActor* DiedEnemy)
 {
+	USTWorldSpawnSubsystem* SpawnSystem = GetWorld()->GetSubsystem<USTWorldSpawnSubsystem>();
+	if (SpawnSystem)
+	{
+		SpawnSystem->CharacterDeactivated(DiedEnemy);
+	}
+
 	UE_LOG(LogTemp, Display, TEXT("AWorldBoxAISpawner::OnEnemyDied"));
 	// Called when enemy died
-	if (DiedEnemy)
+	ASTEnemyBase* Enemy = Cast<ASTEnemyBase>(DiedEnemy);
+	if (Enemy)
 	{
+		Enemy->Delegate_OnEnemyDied.RemoveAll(this);
 		for (int i = 0; i < SpawnInfos.Num(); i++)
 		{
 			for (auto& SubClass : SpawnInfos[i].SpawnPawnClasses)

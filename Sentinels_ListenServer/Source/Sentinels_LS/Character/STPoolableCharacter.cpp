@@ -14,9 +14,15 @@ ASTPoolableCharacter::ASTPoolableCharacter(const FObjectInitializer& object_init
 
 void ASTPoolableCharacter::Activate(const FVector ActivateLocation, const FRotator ActivateRotation)
 {
+	if (bIsActivated) return;
+
 	bIsActivated = true;
 
-	SetActorLocation(ActivateLocation); SetActorRotation(ActivateRotation);
+	if (!ActivateLocation.Equals(FVector::ZeroVector))
+		SetActorLocation(ActivateLocation);
+	
+	if (!ActivateRotation.Equals(FRotator::ZeroRotator))
+		SetActorRotation(ActivateRotation);
 
 	// Enable Tick
 	GetMesh()->Activate();
@@ -41,6 +47,8 @@ void ASTPoolableCharacter::Activate(const FVector ActivateLocation, const FRotat
 
 void ASTPoolableCharacter::Deactivate()
 {
+	if (!bIsActivated) return;
+
 	bIsActivated = false;
 
 	// Disable Tick

@@ -13,6 +13,7 @@ DECLARE_MULTICAST_DELEGATE(FSetWarpTarget_Q);
 DECLARE_MULTICAST_DELEGATE(FSpawnSlash_Q);
 DECLARE_MULTICAST_DELEGATE(FSetWarpTarget_Passive);
 DECLARE_MULTICAST_DELEGATE(FSetWarpTarget_Step);
+DECLARE_MULTICAST_DELEGATE(FApplyDamage)
 
 UCLASS()
 class SENTINELS_LS_API USTPlayerAnimInstance : public USTCharacterAnimInstanceBase
@@ -52,10 +53,14 @@ protected:
 	UFUNCTION()
 	void AnimNotify_SetWarpTarget_Passive();
 
+	UFUNCTION()
+	void AnimNotify_ApplyDamage();
+
 public:
 	FSetWarpTarget_Q Delegate_SetWarpTarget_Q;
 	FSpawnSlash_Q Delegate_SpawnSlash_Q;
 	FSetWarpTarget_Passive Delegate_SetWarpTarget_Passive;
+	FApplyDamage Delegate_ApplyDamage;
 
 	/*
 		DualBlade

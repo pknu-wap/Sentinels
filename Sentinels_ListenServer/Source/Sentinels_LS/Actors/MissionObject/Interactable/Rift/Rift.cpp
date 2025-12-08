@@ -18,14 +18,19 @@ void ARift::BeginPlay()
 {
 	Super::BeginPlay();
 
-	bIsInteractable = false;
-	SpawnComponent->Delegate_OnEnemyAllDied.AddLambda( 
-		[&]()
-		{
-			UE_LOG(LogTemp, Display, TEXT("ARift : bIsInteractable = true "));
-			bIsInteractable = true; 
-		} 
-	);
+	if (HasAuthority())
+	{
+		bIsInteractable = true;
+
+		/*bIsInteractable = false;
+		SpawnComponent->Delegate_OnEnemyAllDied.AddLambda(
+			[&]()
+			{
+				UE_LOG(LogTemp, Display, TEXT("ARift : bIsInteractable = true "));
+				bIsInteractable = true;
+			}
+		);*/
+	}
 }
 
 void ARift::Interact_Implementation(UInteractComponent* InteractingComponent)
@@ -76,7 +81,7 @@ void ARift::Interact_Finish_Implementation(UInteractComponent* InteractingCompon
 				ASTCharacterBase* Character = Cast<ASTCharacterBase>(PC->GetPawn());
 				if (Character)
 				{
-					Character->RemoveTag(FSTGameplayTags::Get().Character_Player_State_RescueHostage);
+					Character->ClearTag(FSTGameplayTags::Get().Character_Player_State_RescueHostage);
 				}
 			}
 		}
@@ -93,6 +98,7 @@ void ARift::SpawnInitialEnemy()
 
 void ARift::RepairSuccessed()
 {
+	bIsSuccessed = true;
 	Delegate_MissionConditionUpdate.Broadcast(ObjectID, true);
 	bIsInteractable = false;
 
@@ -112,4 +118,6 @@ void ARift::RepairSuccessed()
 			}
 		}
 	}
+
+	Shirink();
 }

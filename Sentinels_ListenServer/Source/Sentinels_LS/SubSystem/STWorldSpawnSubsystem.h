@@ -21,6 +21,7 @@ public:
 	void PlayerNumUpdated(int NewPlayerNum);
 	bool CanSpawnCharacter() const;
 	void NewCharacterSpawned(AActor* NewSpawnedCharacter);
+	void CharacterDeactivated(AActor* DeactivatedCharacter);
 
 protected:
 	UPROPERTY()

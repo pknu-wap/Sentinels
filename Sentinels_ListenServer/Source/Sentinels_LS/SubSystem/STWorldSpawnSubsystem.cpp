@@ -12,7 +12,7 @@ void USTWorldSpawnSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 void USTWorldSpawnSubsystem::PlayerNumUpdated(int NewPlayerNum)
 {
-	MaxSpawnableCharacters = FMath::Clamp(NewPlayerNum * 7, 20, 40);
+	MaxSpawnableCharacters = FMath::Clamp(20 + NewPlayerNum * 7, 20, 45);
 }
 
 bool USTWorldSpawnSubsystem::CanSpawnCharacter() const
@@ -22,5 +22,10 @@ bool USTWorldSpawnSubsystem::CanSpawnCharacter() const
 
 void USTWorldSpawnSubsystem::NewCharacterSpawned(AActor* NewSpawnedCharacter)
 {
-	CurrentSpawnedCharacters++;
+	CurrentSpawnedCharacters = FMath::Clamp(CurrentSpawnedCharacters + 1, 0, MaxSpawnableCharacters);
+}
+
+void USTWorldSpawnSubsystem::CharacterDeactivated(AActor* DeactivatedCharacter)
+{
+	CurrentSpawnedCharacters = FMath::Clamp(CurrentSpawnedCharacters - 1, 0, MaxSpawnableCharacters);
 }

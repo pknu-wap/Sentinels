@@ -8,10 +8,21 @@
 #include "GameFramework/DamageType.h"
 #include "Perception/AISense_Damage.h"
 #include "Character/Enemy/STEnemyBase.h"
+#include "Components/STEnemyStatusComponent.h"
 
 void UANS_CheckAttackHit_Enemy::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
     Super::NotifyBegin(MeshComp, Animation, TotalDuration);
+
+    if (ACharacter* owner = Cast<ACharacter>(MeshComp->GetOwner()))
+    {
+        if (USTEnemyStatusComponent* StatusComp = owner->GetComponentByClass<USTEnemyStatusComponent>())
+        {
+            Damage = StatusComp->GetCurrentATK() * DamageMultiplier;
+        }
+
+        owner->GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+    }
 }
 
 void UANS_CheckAttackHit_Enemy::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference)
@@ -56,4 +67,9 @@ void UANS_CheckAttackHit_Enemy::NotifyTick(USkeletalMeshComponent* MeshComp, UAn
 void UANS_CheckAttackHit_Enemy::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
     DamagedActors.Empty();
+
+    if (ACharacter* owner = Cast<ACharacter>(MeshComp->GetOwner()))
+    {
+        owner->GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPose;
+    }
 }

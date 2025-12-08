@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Character/Enemy/STEnemyBase.h"
+#include "STStructs.h"
 #include "STEliteBase.generated.h"
 
 /**
@@ -13,6 +14,9 @@ UCLASS()
 class SENTINELS_LS_API ASTEliteBase : public ASTEnemyBase
 {
 	GENERATED_BODY()
+
+protected:
+	virtual void BeginPlay() override;
 
 	/*
 		Elite Atack
@@ -35,4 +39,15 @@ protected:
 
 private:
 	int LastEliteAttackMontageIndex;
+
+
+	/*
+		Drop Item
+	*/
+protected:
+	virtual void DropItem() override;
+
+protected:
+	UPROPERTY(EditAnywhere, Category = "Drop")
+	FDropInfo DropInfo_Unique;
 };

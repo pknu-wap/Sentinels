@@ -11,6 +11,8 @@ class USTEnemyStatusComponent;
 class AProjectileBase;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyDied, AActor*, DiedEnemy);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyStateAdd, FGameplayTag, AddedState);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyStateRemove, FGameplayTag, RemovedState);
 
 UCLASS()
 class SENTINELS_LS_API ASTEnemyBase : public ASTPoolableCharacter
@@ -21,13 +23,15 @@ public:
 	ASTEnemyBase(const FObjectInitializer& object_initializer);
 
 protected:
+	virtual void PossessedBy(AController* NewController) override;
 	virtual void BeginPlay() override;
+	virtual void Destroyed() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
 	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
-private:
+protected:
 	FTimerHandle Handle_Stunned;
 	FTimerHandle Handle_Deactivate;
 
@@ -44,6 +48,14 @@ public:
 public:
 	UFUNCTION(Server, Reliable)
 	void StopCurrentAnimMontage_Multicast();
+
+/*
+	Play Montage
+*/
+public:
+	UFUNCTION(NetMulticast, Reliable)
+	void PlayMontage_Multicast(UAnimMontage* MontageToPlay);
+
 
 /*
 	Attack
@@ -66,6 +78,9 @@ protected:
 	UFUNCTION()
 	virtual void PrimaryFire();
 
+	UFUNCTION(NetMulticast, Reliable)
+	void PrimaryFire_Multicast();
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<AProjectileBase> ProjectileClass_PrimaryFire;
@@ -81,9 +96,35 @@ protected:
 	void PlayKnockbackMontage_Multicast();
 
 	void PlayKnockbackMontage();
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bShouldStopMontageWhenKnockback = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	class UWidgetComponent* WC_EnemyMain_Screen;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	class USTWC_LocalPlayerFacing* WC_EnemyMain_World;
+
+/*
+	UI
+*/
+protected:
+	UFUNCTION(NetMulticast, Reliable)
+	void ShowDamageIndicateWidget_Multicast(float Damage, FLinearColor Color);
+
+	void ShowDamageIndicateWidget(float Damage, FLinearColor Color);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void UpdateEnemyStateWidget_Multicast(FGameplayTag StateTag, bool bShow);
+
 /*
 	Die
 */
+public:
+	bool IsAlive() const;
+
 	UFUNCTION(NetMulticast, Reliable)
 	void DissolveStart_Multicast();
 
@@ -123,14 +164,23 @@ public:
 	void SetAdditionalDropInfos(const TArray<FDropInfo>& inDropInfos);
 
 	UFUNCTION(BlueprintCallable)
-	void DropItem();
+	virtual void DropItem();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void DropExp(AActor* DamageCauser);
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Drop")
 	FDropInfo DropInfo_Base;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Drop")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Drop")
 	TArray<FDropInfo> DropInfos_Additional;
+
+	UPROPERTY(EditAnywhere, Category = "Drop")
+	float BaseDropExp;
+
+	UPROPERTY(EditAnywhere, Category = "Drop")
+	UCurveFloat* ExpDropCurve;
 
 
 public:
@@ -149,6 +199,12 @@ public:
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnEnemyDied Delegate_OnEnemyDied;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnEnemyStateAdd Delegate_OnEnemyStateAdd;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnEnemyStateRemove Delegate_OnEnemyStateRemove;
 
 private:
 	int LastNormalAttackMontageIndex;

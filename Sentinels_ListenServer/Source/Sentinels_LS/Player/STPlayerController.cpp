@@ -23,7 +23,8 @@
 #include "Components/UI/STPlayerUIComponent.h"
 #include "SubSystem/STGameTravelDataSubsystem.h"
 #include "Player/STLocalPlayer.h"
-
+#include "Player/STPlayerCharacter.h"
+#include "SubSystem/STWorldSpawnSubsystem.h"
 
 ASTPlayerController::ASTPlayerController()
 {
@@ -46,11 +47,19 @@ void ASTPlayerController::OnPossess(APawn* aPawn)
 
 	if(InteractComponent)
 		InteractComponent->BindDelegates();
+
+	RequestLoadSKMeshParts();
 }
 
 void ASTPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
+
+	USTWorldSpawnSubsystem* WorldSpawnSystem = GetWorld()->GetSubsystem<USTWorldSpawnSubsystem>();
+	if (WorldSpawnSystem)
+	{
+		WorldSpawnSystem->PlayerNumUpdated(GetWorld()->GetNumPlayerControllers());
+	}
 
 	/*USTLocalPlayer* LocalPlayer = Cast<USTLocalPlayer>(GetLocalPlayer());
 	if (LocalPlayer && !(LocalPlayer->bIsRegistered))
@@ -132,16 +141,13 @@ void ASTPlayerController::UpdatePlayerClass_Implementation(ESTClassType InClass)
 	GetWorldTimerManager().SetTimerForNextTick([GameMode, PC]() { GameMode->RestartPlayer(PC); });
 }
 
-void ASTPlayerController::ServerRPCImportPlayerClass_Implementation()
+void ASTPlayerController::RequestLoadSKMeshParts_Implementation()
 {
-	//USTGameInstance* gameInstance = Cast<USTGameInstance>(GetWorld()->GetGameInstance());
+	USTGameTravelDataSubsystem* gameTravelData = GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
+	FPlayerInfo playerInfo = gameTravelData->LoadPlayerInfo(PlayerState->GetUniqueId());
 
-	ESTClassType inClass = ESTClassType::GreatSword;
-
-	//if (gameInstance->PlayerInfos.Contains(PlayerState->GetUniqueId()))
-	//	inClass = gameInstance->PlayerInfos.Find(PlayerState->GetUniqueId())->PlayerClass;
-
-	UpdatePlayerClass(inClass);
+	if(ASTPlayerCharacter* player = Cast<ASTPlayerCharacter>(GetCharacter()))
+		player->UpdateSKMeshParts(playerInfo.PlayerSKMeshesRowName);
 }
 
 void ASTPlayerController::MoveClick_Started()

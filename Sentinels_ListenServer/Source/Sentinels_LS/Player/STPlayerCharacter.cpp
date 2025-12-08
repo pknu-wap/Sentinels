@@ -77,20 +77,6 @@ void ASTPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//Add Input Mapping Context
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		}
-
-		if (USkillComponent* SkillComp = PlayerController->GetComponentByClass<USkillComponent>())
-		{
-			SkillComp->InitSkillInfos(DataTable_Skill);
-		}
-	}
-
 	BindAttackDelegate();
 	if (USTPlayerAnimInstance* PAnimInst = Cast<USTPlayerAnimInstance>(GetMesh()->GetAnimInstance()))
 	{
@@ -117,6 +103,9 @@ void ASTPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+
+		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Started, this, &ASTPlayerCharacter::Run_Pressed);
+		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Completed, this, &ASTPlayerCharacter::Run_Released);
 	}
 }
 
@@ -191,6 +180,41 @@ void ASTPlayerCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
+void ASTPlayerCharacter::Run_Pressed()
+{
+	Run_Pressed_Server();
+}
+
+void ASTPlayerCharacter::Run_Released()
+{
+	// Run_Released_Server();
+}
+
+void ASTPlayerCharacter::Run_Pressed_Server_Implementation()
+{
+	UCharacterMovementComponent* MoveComp = GetCharacterMovement();
+	if (StatusComponent && MoveComp)
+	{
+		if (MoveComp->MaxWalkSpeed == StatusComponent->MovementSpeed)
+		{
+			MoveComp->MaxWalkSpeed = StatusComponent->MovementSpeed * 1.5;
+		}
+		else
+		{
+			MoveComp->MaxWalkSpeed = StatusComponent->MovementSpeed;
+		}
+	}
+}
+
+void ASTPlayerCharacter::Run_Released_Server_Implementation()
+{
+	UCharacterMovementComponent* MoveComp = GetCharacterMovement();
+	if (StatusComponent && MoveComp)
+	{
+		MoveComp->MaxWalkSpeed = StatusComponent->MovementSpeed;
+	}
+}
+
 void ASTPlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -202,19 +226,47 @@ float ASTPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 {
 	float actualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	if (HasTag(FSTGameplayTags::Get().Character_Player_State_RescueHostage))
+	if (HasAuthority())
 	{
-		// if damaged while Rescuing, Fail Interact
-
-		AController* controller = GetController();
-		if (controller)
+		if (HasTag(FSTGameplayTags::Get().Character_Player_State_RescueHostage) || HasTag(FSTGameplayTags::Get().Character_Player_State_RepairRift))
 		{
-			UInteractComponent* IC = controller->GetComponentByClass<UInteractComponent>();
-			if (IC)
+			// if damaged while Rescuing, Fail Interact
+
+			AController* controller = GetController();
+			if (controller)
 			{
-				IC->Interact_Finish_Server();
+				UInteractComponent* IC = controller->GetComponentByClass<UInteractComponent>();
+				if (IC)
+				{
+					IC->Interact_Finish_Server();
+				}
 			}
 		}
+
+		if (InventoryComponent)
+		{
+			const TArray<FInvSlotStruct>& inventory = InventoryComponent->GetInventory();
+			for (const auto& item : inventory)
+			{
+				if (item.ItemObject)
+				{
+					actualDamage = item.ItemObject->OnDamaged(actualDamage, DamageEvent, EventInstigator, DamageCauser);
+				}
+			}
+		}
+
+		if (StatusComponent)
+		{
+			float HP = StatusComponent->TakeDamage(actualDamage, DamageEvent, EventInstigator, DamageCauser);
+			if (HP <= 0)
+			{
+				if (APlayerController* PC = Cast<APlayerController>(GetController()))
+				{
+					PC->ServerRestartPlayer();
+				}
+			}
+		}
+
 	}
 
 	return 0.0f;
@@ -226,8 +278,19 @@ void ASTPlayerCharacter::PossessedBy(AController* NewController)
 
 	if (IsLocallyControlled())
 	{
+		//Add Input Mapping Context
+		if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+		{
+			if (USkillComponent* SkillComp = PlayerController->GetComponentByClass<USkillComponent>())
+			{
+				SkillComp->InitSkillInfos(DataTable_Skill);
+			}
+		}
+
 		BindDefaultThirdPersonInput();
 		CameraManager->InitCameraMode();
+
+		TagContainer.Reset();
 	}
 }
 
@@ -243,14 +306,14 @@ void ASTPlayerCharacter::OnMontageEnded_Callback(UAnimMontage* Montage, bool bIn
 {
 	if (!bInterrupted)
 	{
-		RemoveTag(FSTGameplayTags::Get().Character_State_Skill);
-		RemoveTag(FSTGameplayTags::Get().Character_State_Step);
-		RemoveTag(FSTGameplayTags::Get().Character_State_Attack);
+		ClearTag(FSTGameplayTags::Get().Character_State_Skill);
+		ClearTag(FSTGameplayTags::Get().Character_State_Step);
+		ClearTag(FSTGameplayTags::Get().Character_State_Attack);
 		ResetAttackInfo();
 	}
 	else if(bInterrupted && IsSkillMontage(GetCurrentMontage()))
 	{
-		AddTag(FSTGameplayTags::Get().Character_State_Skill);
+		AddUniqueTag(FSTGameplayTags::Get().Character_State_Skill);
 	}
 }
 
@@ -289,7 +352,7 @@ void ASTPlayerCharacter::NormalAttack_Pressed()
 
 	if (!CanDoAttack()) return;
 
-	AddTag(FSTGameplayTags::Get().Character_State_Attack);
+	AddUniqueTag(FSTGameplayTags::Get().Character_State_Attack);
 
 	if (CurrentCombo == 0)
 	{
@@ -405,9 +468,10 @@ void ASTPlayerCharacter::ApplyAttackCameraShake_Implementation()
 
 bool ASTPlayerCharacter::CanDoStep() const
 {
-	if (HasTag(FSTGameplayTags::Get().Character_State_Skill)
-		|| HasTag(FSTGameplayTags::Get().Character_State_Attack)
-		|| HasTag(FSTGameplayTags::Get().Character_State_Step)
+	/* || HasTag(FSTGameplayTags::Get().Character_State_Skill)
+	|| HasTag(FSTGameplayTags::Get().Character_State_Attack)*/
+
+	if (HasTag(FSTGameplayTags::Get().Character_State_Step)
 		|| HasTag(FSTGameplayTags::Get().Character_State_Jump))
 		return false;
 
@@ -420,7 +484,7 @@ void ASTPlayerCharacter::Step_Pressed()
 
 	Step_Pressed_Server();
 	PlayMontage_Step();
-	AddTag(FSTGameplayTags::Get().Character_State_Step);
+	AddUniqueTag(FSTGameplayTags::Get().Character_State_Step);
 }
 
 void ASTPlayerCharacter::PlayMontage_Step()
@@ -494,7 +558,7 @@ void ASTPlayerCharacter::Skill_Q_Pressed()
 	{
 		SkillComp->ActivateSkill(0);
 
-		AddTag(FSTGameplayTags::Get().Character_State_Skill);
+		AddUniqueTag(FSTGameplayTags::Get().Character_State_Skill);
 		PlayMontage_Skill_Q();
 		Skill_Q_Pressed_Server();
 	}
@@ -531,7 +595,7 @@ void ASTPlayerCharacter::Skill_W_Pressed()
 	{
 		SkillComp->ActivateSkill(1);
 
-		AddTag(FSTGameplayTags::Get().Character_State_Skill);
+		AddUniqueTag(FSTGameplayTags::Get().Character_State_Skill);
 		PlayMontage_Skill_W();
 		Skill_W_Pressed_Server();
 	}
@@ -568,7 +632,7 @@ void ASTPlayerCharacter::Skill_E_Pressed()
 	{
 		SkillComp->ActivateSkill(2);
 
-		AddTag(FSTGameplayTags::Get().Character_State_Skill);
+		AddUniqueTag(FSTGameplayTags::Get().Character_State_Skill);
 		PlayMontage_Skill_E();
 		Skill_E_Pressed_Server();
 	}
@@ -605,7 +669,7 @@ void ASTPlayerCharacter::Skill_R_Pressed()
 	{
 		SkillComp->ActivateSkill(3);
 
-		AddTag(FSTGameplayTags::Get().Character_State_Skill);
+		AddUniqueTag(FSTGameplayTags::Get().Character_State_Skill);
 		PlayMontage_Skill_R();
 		Skill_R_Pressed_Server();
 	}
@@ -660,19 +724,26 @@ void ASTPlayerCharacter::Skill_Passive_Pressed_Multicast_Implementation()
 
 #pragma endregion
 
+void ASTPlayerCharacter::ApplyDamageToActor(float DamagePercent, TSubclassOf<UDamageType> DamageType, AActor* DamagedActor)
+{
+	FSTPointDamageEvent DamageEvent;
+
+	FSTDamageInfo DamageInfo = StatusComponent->GetCalculatedDamageInfo(DamageEvent, DamagedActor);
+	float damage = DamageInfo.DamageAmount * DamagePercent;
+
+	DamageEvent.bIsCritical = DamageInfo.bIsCritical;
+	DamageEvent.DamageTypeClass = DamageType;
+
+	// Apply Damage
+	DamagedActor->TakeDamage(damage, DamageEvent, GetController(), this);
+
+	// Player Logic Execute (After)
+	OnAttackSuccess_Server(damage, DamageEvent, DamagedActor);
+}
+
 void ASTPlayerCharacter::AdjustFinalDamage(float& DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor)
 {
 	if (!HasAuthority()) return;
-
-	// Item (Combo Amplifier)
-	const FInvSlotStruct& ItemInfo_CA = InventoryComponent->GetItem(8);
-	if (ItemInfo_CA.ItemID != 0 && ItemInfo_CA.Quantity > 0)
-	{
-		if (ItemInfo_CA.ItemObject)
-		{
-			DamageAmount = ItemInfo_CA.ItemObject->AdjustFinalDamage(DamageAmount, DamageEvent, DamagedActor);
-		}
-	}
 }
 
 
@@ -683,23 +754,32 @@ void ASTPlayerCharacter::OnAttackSuccess_Server_Implementation(float DamageAmoun
 	USTEnemyStatusComponent* EnemyStatusComp = DamagedActor->GetComponentByClass<USTEnemyStatusComponent>();
 	if (!EnemyStatusComp) return;
 
-	// Item (Severance Matrix)
-	const FInvSlotStruct& ItemInfo_SM = InventoryComponent->GetItem(7);
-	if (ItemInfo_SM.ItemID != 0 && ItemInfo_SM.Quantity > 0)
-	{
-		if ((DamageAmount / EnemyStatusComp->GetMaxHP()) > 0.5f)
-		{
-			DamagedActor->TakeDamage(5.f * ItemInfo_SM.Quantity, DamageEvent, GetController(), this);
-		}
-	}
+	//// Item (Severance Matrix)
+	//const FInvSlotStruct& ItemInfo_SM = InventoryComponent->GetItem(7);
+	//if (ItemInfo_SM.ItemID != 0 && ItemInfo_SM.Quantity > 0)
+	//{
+	//	if ((DamageAmount / EnemyStatusComp->GetMaxHP()) > 0.5f)
+	//	{
+	//		DamagedActor->TakeDamage(5.f * ItemInfo_SM.Quantity, DamageEvent, GetController(), this);
+	//	}
+	//}
 
-	// Item (Combo Amplifier)
-	const FInvSlotStruct& ItemInfo_CA = InventoryComponent->GetItem(8);
-	if (ItemInfo_CA.ItemID != 0 && ItemInfo_CA.Quantity > 0)
+	//// Item (Combo Amplifier)
+	//const FInvSlotStruct& ItemInfo_CA = InventoryComponent->GetItem(8);
+	//if (ItemInfo_CA.ItemID != 0 && ItemInfo_CA.Quantity > 0)
+	//{
+	//	if(ItemInfo_CA.ItemObject)
+	//	{
+	//		ItemInfo_CA.ItemObject->OnAttackSuccess(DamageAmount, DamageEvent, DamagedActor);
+	//	}
+	//}
+
+	const TArray<FInvSlotStruct>& Inventory = InventoryComponent->GetInventory();
+	for (auto& item : Inventory)
 	{
-		if(ItemInfo_CA.ItemObject)
+		if (item.ItemObject)
 		{
-			ItemInfo_CA.ItemObject->OnAttackSuccess(DamageAmount, DamageEvent, DamagedActor);
+			item.ItemObject->OnAttackSuccess(DamageAmount, DamageEvent, DamagedActor);
 		}
 	}
 

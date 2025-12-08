@@ -11,6 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Components/STEnemyStatusComponent.h"
+#include "Components/STPlayerStatusComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Character/Enemy/STEnemyBase_AIController.h"
 #include "SkeletalMeshComponentBudgeted.h"
@@ -20,6 +21,10 @@
 #include "STGameplayTags.h"
 #include "Character/STCharacterAnimInstanceBase.h"
 #include "Actors/Projectile/ProjectileBase.h"
+#include "Components/WidgetComponent.h"
+#include "UI/Widget/STWidget_EnemyMain_Screen.h"
+#include "UI/Widget/STWidget_EnemyMain_World.h"
+#include "UI/WidgetComponent/STWC_LocalPlayerFacing.h"
 #include "Actors/Interact/Item/InteractableItem.h"
 #include "SubSystem/STProjectilePoolingSubSystem.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -54,6 +59,17 @@ ASTEnemyBase::ASTEnemyBase(const FObjectInitializer& object_initializer)
 	PrimaryActorTick.bStartWithTickEnabled = false;
 }
 
+void ASTEnemyBase::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	if (HasAuthority())
+	{
+		if (bIsActivated)
+			Activate(GetActorLocation(), GetActorRotation());
+	}
+}
+
 void ASTEnemyBase::BeginPlay()
 {
 	Super::BeginPlay();
@@ -67,16 +83,59 @@ void ASTEnemyBase::BeginPlay()
 			AnimInst->Delegate_PrimaryFire.AddUObject(this, &ASTEnemyBase::PrimaryFire);
 			AnimInst->Delegate_DissolveStart.AddUObject(this, &ASTEnemyBase::DissolveStart);
 		}
+	}
 
-		if(bIsActivated)
-			Activate(GetActorLocation(), GetActorRotation());
+	if (ProjectileClass_PrimaryFire)
+	{
+		USTProjectilePoolingSubSystem* ProjectileSubSystem = GetWorld()->GetSubsystem<USTProjectilePoolingSubSystem>();
+		ProjectileSubSystem->InitProjectilePool(this, ProjectileClass_PrimaryFire, 100);
+	}
 
-		if (ProjectileClass_PrimaryFire)
+	WC_EnemyMain_Screen = NewObject<UWidgetComponent>(this, UWidgetComponent::StaticClass());
+	if (WC_EnemyMain_Screen)
+	{
+		WC_EnemyMain_Screen->RegisterComponent();
+		WC_EnemyMain_Screen->SetWidgetSpace(EWidgetSpace::Screen);
+		WC_EnemyMain_Screen->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+
+		TSubclassOf<USTWidget_EnemyMain_Screen> enemyMainScreenClass = LoadClass<USTWidget_EnemyMain_Screen>(nullptr, TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/Sentinels/UI/InGame/WBP/Enemy/WBP_EnemyMain_Screen.WBP_EnemyMain_Screen_C'"));
+
+		if (enemyMainScreenClass)
 		{
-			USTProjectilePoolingSubSystem* ProjectileSubSystem = GetWorld()->GetSubsystem<USTProjectilePoolingSubSystem>();
-			ProjectileSubSystem->InitProjectilePool(this, ProjectileClass_PrimaryFire, 100);
+			WC_EnemyMain_Screen->SetWidgetClass(enemyMainScreenClass);
+			USTWidget_EnemyMain_Screen* widgetInstance = Cast<USTWidget_EnemyMain_Screen>(WC_EnemyMain_Screen->GetWidget());
+			if (widgetInstance)
+			{
+				widgetInstance->Owner = this;
+			}
 		}
 	}
+
+	WC_EnemyMain_World = NewObject<USTWC_LocalPlayerFacing>(this, USTWC_LocalPlayerFacing::StaticClass());
+	if (WC_EnemyMain_World)
+	{
+		WC_EnemyMain_World->RegisterComponent();
+		WC_EnemyMain_World->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+
+		TSubclassOf<USTWidget_EnemyMain_World> enemyMainWorldClass = LoadClass<USTWidget_EnemyMain_World>(nullptr, TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/Sentinels/UI/InGame/WBP/Enemy/WBP_EnemyMain_World.WBP_EnemyMain_World_C'"));
+
+		if (enemyMainWorldClass)
+		{
+			WC_EnemyMain_World->SetWidgetClass(enemyMainWorldClass);
+			USTWidget_EnemyMain_World* widgetInstance = Cast<USTWidget_EnemyMain_World>(WC_EnemyMain_World->GetWidget());
+			if (widgetInstance)
+			{
+				widgetInstance->Owner = this;
+			}
+		}	
+	}
+}
+
+void ASTEnemyBase::Destroyed()
+{
+	UE_LOG(LogTemp, Warning, TEXT("%s is destroyed!"), *GetName());
+
+	Super::Destroyed();
 }
 
 void ASTEnemyBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -93,20 +152,35 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 	if (StatusComponent && StatusComponent->IsDied())
 		return 0.f;
 
+	if (HasTag(FSTGameplayTags::Get().Character_State_Invincible))
+	{
+		return 0.f;
+	}
+
+	if (HasTag(FSTGameplayTags::Get().Character_State_Reflect))
+	{
+		UGameplayStatics::ApplyDamage(DamageCauser, Damage, GetController(), this, UDamageType::StaticClass());
+		// DamageCauser->TakeDamage(Damage, FDamageEvent(), GetController(), this);
+		return 0.f;
+	}
+
 	if (HasAuthority())
 	{
 		/*
 			Critical
 		*/
+		FLinearColor damageTextColor = FLinearColor::White;
 		if (DamageEvent.GetTypeID() == FSTPointDamageEvent::ClassID)
 		{
 			const FSTPointDamageEvent& PointDamageEvent = static_cast<const FSTPointDamageEvent&>(DamageEvent);
 			FString Str_DamageType = PointDamageEvent.bIsCritical ? FString("Critical") : FString("Normal");
+			damageTextColor = PointDamageEvent.bIsCritical ? FLinearColor::Yellow : FLinearColor::White;
 			UE_LOG(LogTemp, Warning, TEXT("ASTEnemyBase : %s Damage %f"), *Str_DamageType, Damage);
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("ASTEnemyBase : Damage %f"), Damage);
+			damageTextColor = FLinearColor::White;
+			UE_LOG(LogTemp, Warning, TEXT("ASTEnemyBase : Extra Damage %f"), Damage);
 		}
 		
 
@@ -134,24 +208,44 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 					controller->ApplyStun(STDamageType->StunnedTime);
 
 					// Apply Stun to Character (Animation)
+					if (!HasTag(FSTGameplayTags::Get().Character_State_Stunned))
+						UpdateEnemyStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Stunned, true);
+
 					AddTag(FSTGameplayTags::Get().Character_State_Stunned);
 					GetWorldTimerManager().SetTimer(Handle_Stunned,
-						[&]() { RemoveTag(FSTGameplayTags::Get().Character_State_Stunned); },
+						[&]() {
+							ClearTag(FSTGameplayTags::Get().Character_State_Stunned);
+							UpdateEnemyStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Stunned, false);
+						},
 						STDamageType->StunnedTime, false);
 				}
 			}
 
 			if (KatanaDamageType)
 			{
-				AddTag(FSTGameplayTags::Get().Character_State_Bleed);
+				if (GetNumOfTag(FSTGameplayTags::Get().Character_State_Bleed) >= 5)
+				{
+
+				}
+				else
+				{
+					AddTag(FSTGameplayTags::Get().Character_State_Bleed);
+					Delegate_OnEnemyStateAdd.Broadcast(FSTGameplayTags::Get().Character_State_Bleed);
+				}
 				UE_LOG(LogTemp, Display, TEXT("Katana Damage Type ! ! !"));
 			}
 		}
 
 		/*
+			Damage Indicate
+		*/
+		ShowDamageIndicateWidget_Multicast(Damage, damageTextColor);
+
+		/*
 			Calculate Current HP & Check Died
 		*/
-		if (StatusComponent && StatusComponent->TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser) <= 0)
+		if (StatusComponent 
+			&& StatusComponent->TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser) <= 0)
 		{
 			// Play Died Montage
 			GetWorld()->GetTimerManager().SetTimer(Handle_Deactivate,
@@ -161,7 +255,6 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 				}, 5.f, false);
 
 			PlayDiedMontage_Multicast();
-			// GetCharacterMovement()->Deactivate();
 			
 			// Stop Behavior Tree
 			AAIController* AIController = Cast<AAIController>(GetController());
@@ -170,11 +263,11 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 				AIController->GetBrainComponent()->StopLogic(FString("Died."));
 			}
 
-			// Delegate Broadcast
-			Delegate_OnEnemyDied.Broadcast(this);
-
 			// Drop Item
 			DropItem();
+
+			// Drop Exp
+			DropExp(DamageCauser);
 
 			return ActualDamage;
 		}
@@ -188,9 +281,12 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 		}
 		else
 		{
-			StopCurrentAnimMontage_Multicast();
-			FVector LaunchDir = (GetActorLocation() - DamageCauser->GetActorLocation()).GetSafeNormal2D();
-			LaunchCharacter(LaunchDir * LaunchVelocity, false, false);
+			if (bShouldStopMontageWhenKnockback)
+			{
+				StopCurrentAnimMontage_Multicast();
+				FVector LaunchDir = (GetActorLocation() - DamageCauser->GetActorLocation()).GetSafeNormal2D();
+				LaunchCharacter(LaunchDir * LaunchVelocity, false, false);
+			}
 		}
 	}
 
@@ -200,6 +296,11 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 void ASTEnemyBase::Activate(const FVector ActivateLocation, const FRotator ActivateRotation)
 {
 	Super::Activate(ActivateLocation, ActivateRotation);
+
+	if (ASTEnemyBase_AIController* controller = Cast<ASTEnemyBase_AIController>(GetController()))
+	{
+		controller->StartAILogic();
+	}
 	
 	StopAnimMontage();
 	StatusComponent->InitStatus();
@@ -209,6 +310,9 @@ void ASTEnemyBase::Activate(const FVector ActivateLocation, const FRotator Activ
 void ASTEnemyBase::Deactivate()
 {
 	Super::Deactivate();
+
+	// Delegate Broadcast
+	Delegate_OnEnemyDied.Broadcast(this);
 }
 
 bool ASTEnemyBase::IsNormalAttackMontage(UAnimMontage* InMontage)
@@ -221,12 +325,21 @@ bool ASTEnemyBase::IsNormalAttackMontage(UAnimMontage* InMontage)
 	return false;
 }
 
+void ASTEnemyBase::PlayMontage_Multicast_Implementation(UAnimMontage* MontageToPlay)
+{
+	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+	if (AnimInst)
+	{
+		AnimInst->Montage_Play(MontageToPlay);
+	}
+}
+
 int ASTEnemyBase::GetRandomNormalAttackMontageIndex()
 {
 	const int32 NumMontages = Montage_NormalAttackSet.Num();
 
 	if (NumMontages <= 1)
-		return 0; // 하나뿐이면 어쩔 수 없음
+		return 0;
 
 	int32 NewIndex;
 	do
@@ -268,15 +381,52 @@ void ASTEnemyBase::PlayNormalAttackMontage(int MontageIdx)
 	}
 }
 
+void ASTEnemyBase::ShowDamageIndicateWidget_Multicast_Implementation(float Damage, FLinearColor Color)
+{
+	ShowDamageIndicateWidget(Damage, Color);
+}
+
+void ASTEnemyBase::ShowDamageIndicateWidget(float Damage, FLinearColor Color)
+{
+	if (WC_EnemyMain_Screen)
+	{
+		USTWidget_EnemyMain_Screen* wEnemyMain = Cast<USTWidget_EnemyMain_Screen>(WC_EnemyMain_Screen->GetWidget());
+		FSlateColor damageTextColor = FSlateColor(Color);
+		if (IsValid(wEnemyMain))
+		{
+			USTWidget_DamageInd* wDamageInd = Cast<USTWidget_DamageInd>(wEnemyMain->Overlay_DamageInd->GetChildAt(0));
+			if (IsValid(wDamageInd))
+			{
+				wDamageInd->SetDamageTextColor(damageTextColor);
+				wDamageInd->SetDamage(Damage);
+				wDamageInd->PlayCustomAnimation();
+			}
+		}
+	}
+}
+
+void ASTEnemyBase::UpdateEnemyStateWidget_Multicast_Implementation(FGameplayTag StateTag, bool bShow)
+{
+	if (bShow)
+		Delegate_OnEnemyStateAdd.Broadcast(StateTag);
+	else
+		Delegate_OnEnemyStateRemove.Broadcast(StateTag);
+}
+
 void ASTEnemyBase::PrimaryFire()
+{
+	PrimaryFire_Multicast();
+}
+
+void ASTEnemyBase::PrimaryFire_Multicast_Implementation()
 {
 	USTProjectilePoolingSubSystem* ProjectileSubSystem = GetWorld()->GetSubsystem<USTProjectilePoolingSubSystem>();
 
 	FVector SpawnLocation = GetMesh()->GetSocketLocation(SocketName_PrimaryFire);
 	AProjectileBase* projectile = ProjectileSubSystem->GetActor<AProjectileBase>(ProjectileClass_PrimaryFire, SpawnLocation);
-	// AProjectileBase* projectile = GetWorld()->SpawnActor<AProjectileBase>(ProjectileClass_PrimaryFire, SpawnLocation, GetActorForwardVector().Rotation());
 	if (projectile)
 	{
+		projectile->SetInstigator(this);
 		UParticleSystemComponent* Particle = projectile->GetComponentByClass<UParticleSystemComponent>();
 		if (Particle)
 		{
@@ -298,6 +448,14 @@ void ASTEnemyBase::PlayKnockbackMontage()
 	{
 		AnimInst->Montage_Play(Montage_Knockback);
 	}
+}
+
+bool ASTEnemyBase::IsAlive() const
+{
+	if (StatusComponent) 
+		return StatusComponent->GetCurrentHP() > 0;
+
+	return false;
 }
 
 void ASTEnemyBase::DissolveStart_Multicast_Implementation()
@@ -373,6 +531,27 @@ void ASTEnemyBase::DropItem()
 			}
 		}
 		
+	}
+}
+
+void ASTEnemyBase::DropExp(AActor* DamageCauser)
+{
+	if (DamageCauser)
+	{
+		float TimeSeconds = UGameplayStatics::GetTimeSeconds(this);
+
+		if (USTPlayerStatusComponent* playerStatComp
+			= DamageCauser->GetComponentByClass<USTPlayerStatusComponent>())
+		{
+			if (ExpDropCurve)
+			{
+				playerStatComp->AddExp(BaseDropExp * ExpDropCurve->GetFloatValue(TimeSeconds));
+			}
+			else
+			{
+				playerStatComp->AddExp(BaseDropExp);
+			}
+		}
 	}
 }
 

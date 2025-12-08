@@ -42,7 +42,10 @@ protected:
 	virtual void SetupInputComponent() override;
 
 public:
+	UFUNCTION(BlueprintCallable)
 	void BindDefaultTopDownInput();
+
+	UFUNCTION(BlueprintCallable)
 	void BindDefaultThirdPersonInput();
 
 /*
@@ -52,10 +55,10 @@ public:
 	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void UpdatePlayerClass(ESTClassType InClass);
 
-	UFUNCTION(Server, Reliable, BlueprintCallable)
-	void ServerRPCImportPlayerClass();
-
 	TSubclassOf<APawn> GetDefaultPlayerClass() { return DefaultPlayerClass; }
+
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void RequestLoadSKMeshParts();
 
 
 /*

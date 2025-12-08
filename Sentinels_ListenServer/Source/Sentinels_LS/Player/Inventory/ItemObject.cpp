@@ -28,3 +28,21 @@ void UItemObject::OnRep_Quantity()
 		Update UI
 	*/
 }
+
+void UItemObject::OnItemInitaillyAcquired_Implementation()
+{
+}
+
+float UItemObject::AdjustFinalDamage_Implementation(float DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor)
+{
+	return DamageAmount;
+}
+
+void UItemObject::OnAttackSuccess_Implementation(float DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor)
+{
+}
+
+float UItemObject::OnDamaged_Implementation(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	return DamageAmount;
+}

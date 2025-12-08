@@ -29,10 +29,20 @@ void ASTPlayerCharacter_DualBlade::OnAttackSuccess_Server_Implementation(float D
 	Super::OnAttackSuccess_Server_Implementation(DamageAmount, DamageEvent, DamagedActor);
 
 	CurrentComboStack = FMath::Clamp(CurrentComboStack + 1, 0, MaxComboStack);
+	UE_LOG(LogTemp, Warning, TEXT("CurrentComboStack : %d"), CurrentComboStack);
+	OnRep_CurrentComboStack();
 }
 
 void ASTPlayerCharacter_DualBlade::OnRep_CurrentComboStack()
 {
+	if (CurrentComboStack >= 30)
+	{
+		OnPassiveSkillReadyStateChanged.Broadcast(true);
+	}
+	else
+	{
+		OnPassiveSkillReadyStateChanged.Broadcast(false);
+	}
 }
 
 void ASTPlayerCharacter_DualBlade::Skill_Passive_Pressed()
@@ -50,4 +60,9 @@ void ASTPlayerCharacter_DualBlade::Skill_Passive_Pressed_Server_Implementation()
 		Skill_Passive_Pressed_Multicast();
 		PlayMontage_Skill_Passive();
 	}
+}
+
+void ASTPlayerCharacter_DualBlade::Skill_Passive_Pressed_Multicast_Implementation()
+{
+	PlayMontage_Skill_Passive();
 }

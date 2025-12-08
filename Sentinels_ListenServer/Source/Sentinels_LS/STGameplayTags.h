@@ -21,9 +21,16 @@ public:
 	FGameplayTag Character_State_Step;
 	FGameplayTag Character_State_Stunned;
 	FGameplayTag Character_State_Bleed;
+	FGameplayTag Character_State_Invincible;
+	FGameplayTag Character_State_Reflect;
 	FGameplayTag Character_Player_State_RepairRift;
 	FGameplayTag Character_Player_State_RescueHostage;
 	FGameplayTag Character_Player_State_Lifting;
+
+	////////// Enhance /////////
+	FGameplayTag Character_Enhance_Default_AttackSpeed;
+	FGameplayTag Character_Enhance_Default_BossAttackDamage;
+	FGameplayTag Character_Enhance_Default_CoolDown;
 
 	//////////  Widget   /////////
 	FGameplayTag Widget_OutGame_MainMenu;
@@ -40,6 +47,7 @@ public:
 	FGameplayTag Widget_InGame_Quest;
 	FGameplayTag Widget_InGame_Inventory;
 	FGameplayTag Widget_InGame_TeamInfo;
+	FGameplayTag Widget_InGame_Interactive;
 
 
 	//////////  Mission  /////////
@@ -56,6 +64,10 @@ public:
 	FGameplayTag SubMission_Explosion;
 
 
+	//////////  Section  /////////
+	FGameplayTag Section_SelectMissionOrBoss;
+
+
 	/////////  SpawnPoint  /////////
 	FGameplayTag SpawnPoint_DefenseCore;
 	FGameplayTag SpawnPoint_DominationPoint;
@@ -66,7 +78,6 @@ public:
 
 	/////////  Level  /////////
 	FGameplayTag Level_Lobby;
-	FGameplayTag Level_AbandonedFactory;
 	FGameplayTag Level_MilitaryAirport;
 	FGameplayTag Level_EX2;
 

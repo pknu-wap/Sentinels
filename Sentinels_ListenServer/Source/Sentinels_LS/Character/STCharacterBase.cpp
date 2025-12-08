@@ -29,6 +29,13 @@ void ASTCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(ASTCharacterBase, TagContainer);
 }
 
+void ASTCharacterBase::ApplyCustomDamage(float Damage, FSTPointDamageEvent DamageEvent, TSubclassOf<UDamageType> DamageType, AController* EventInstigator, AActor* DamageCauser)
+{
+	if (DamageType)
+		DamageEvent.DamageTypeClass = DamageType;
+	TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+}
+
 // Called every frame
 void ASTCharacterBase::Tick(float DeltaTime)
 {
@@ -49,11 +56,11 @@ void ASTCharacterBase::Jump()
 
 	Super::Jump();
 
-	AddTag(FSTGameplayTags::Get().Character_State_Jump);
+	AddUniqueTag(FSTGameplayTags::Get().Character_State_Jump);
 }
 
 void ASTCharacterBase::OnCharacterLanded(const FHitResult& Hit)
 {
-	RemoveTag(FSTGameplayTags::Get().Character_State_Jump);
+	ClearTag(FSTGameplayTags::Get().Character_State_Jump);
 }
 

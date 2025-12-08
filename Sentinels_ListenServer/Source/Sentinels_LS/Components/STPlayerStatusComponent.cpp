@@ -4,11 +4,18 @@
 #include "Components/STPlayerStatusComponent.h"
 #include "Components/InventoryComponent.h"
 #include "Components/UI/STPlayerUIComponent.h"
+#include "Player/STPlayerCharacter.h"
 #include "SubSystem/InventorySubsystem.h"
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Player/Inventory/ItemObject.h"
-
+#include "Kismet/KismetMathLibrary.h"
+#include "GameFramework/DamageType.h"
+#include "Engine/DamageEvents.h"
+#include "Algo/RandomShuffle.h"
+#include "Blueprint/UserWidget.h"
+#include "UI/Widget/STWidget_SelectEnhancement.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values for this component's properties
 USTPlayerStatusComponent::USTPlayerStatusComponent()
@@ -33,16 +40,25 @@ void USTPlayerStatusComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SetDefaultStatus();
+	CachedPlayer = Cast<ASTPlayerCharacter>(GetOwner());
+	if (CachedPlayer)
+	{
+		CachedInventory = GetOwner()->GetComponentByClass<UInventoryComponent>();
+		BaseDamageType = CachedPlayer->BaseDamageType;
+		CriticalDamageType = CachedPlayer->CriticalDamageType;
+	}
+
+	InitializeDefaultStatus();
+	ApplyStatus();
+
+	HP = MaxHP;
+	OnRep_HPUpdated();
 
 	if (GetOwner() && GetOwner()->HasAuthority())
 	{
 		FTimerHandle HPRegenHandle;
 		GetWorld()->GetTimerManager().SetTimer(HPRegenHandle, 
-			[&]()
-			{
-				HP = FMath::Clamp(HP + HPRegen, 0, MaxHP);
-			},
+			this, &USTPlayerStatusComponent::RegenHP,
 			1.f, true);
 	}
 }
@@ -64,6 +80,9 @@ void USTPlayerStatusComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 	/*
 		Replicate to Only for Owner
 	*/
+	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, Level, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, Exp, COND_OwnerOnly);
+
 	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, HPRegen, COND_OwnerOnly);
 
 	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, ATK, COND_OwnerOnly);
@@ -85,6 +104,71 @@ void USTPlayerStatusComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 	DOREPLIFETIME_CONDITION(USTPlayerStatusComponent, CDR, COND_OwnerOnly);
 }
 
+float USTPlayerStatusComponent::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	HP = FMath::Clamp(HP - DamageAmount, 0, MaxHP);
+	OnRep_HPUpdated();
+
+	return HP;
+}
+
+void USTPlayerStatusComponent::AddExp(float InExp)
+{
+	if (GetOwner() && GetOwner()->HasAuthority())
+	{
+		Exp += InExp;
+
+		if (Exp >= MaxExp)
+		{
+			Level++;
+			Exp -= MaxExp;
+
+			OnRep_LevelUpdated();
+
+			CalculateStatus();
+		}
+	}
+}
+
+FSTDamageInfo USTPlayerStatusComponent::GetCalculatedDamageInfo(FSTPointDamageEvent& DamageEvent, AActor* DamagedActor)
+{
+	FSTDamageInfo DamageInfo; 
+
+	DamageInfo.bIsCritical = DamageEvent.bIsCritical = UKismetMathLibrary::RandomFloatInRange(0, 1) <= CriticalRate ? true : false;
+	if (DamageInfo.bIsCritical)
+	{
+		DamageInfo.DamageAmount = GetCriticalBaseDamage();
+	}
+	else
+	{
+		DamageInfo.DamageAmount = GetBaseDamage();
+	}
+
+	if (CachedInventory)
+	{
+		DamageInfo.DamageAmount = CachedInventory->AdjustFinalDamage(DamageInfo.DamageAmount, DamageEvent, DamagedActor);
+	}
+
+	if (CachedPlayer)
+	{
+		CachedPlayer->AdjustFinalDamage(DamageInfo.DamageAmount, DamageEvent, DamagedActor);
+	}
+
+	return DamageInfo;
+}
+
+float USTPlayerStatusComponent::GetBaseDamage() const
+{
+	UE_LOG(LogTemp, Display, TEXT("Damage : %f = %f * (1 + %f)"), ATK * (1 + DamageIncreaseRate), ATK, (1 + DamageIncreaseRate));
+	return ATK * (1 + DamageIncreaseRate);
+}
+
+float USTPlayerStatusComponent::GetCriticalBaseDamage() const
+{
+	UE_LOG(LogTemp, Display, TEXT("Critical Damage : %f = %f * %f * (1 + %f)"), ATK * (1 + DamageIncreaseRate), ATK, CriticalDamagePercent, (1 + DamageIncreaseRate));
+	return ATK * CriticalDamagePercent * (1 + DamageIncreaseRate);
+}
+
 void USTPlayerStatusComponent::SetStatus_Server_Implementation(ESTStatusType inType, float inValue, bool forceApply)
 {
 	if (forceApply)
@@ -93,6 +177,7 @@ void USTPlayerStatusComponent::SetStatus_Server_Implementation(ESTStatusType inT
 		{
 		case ESTStatusType::HP:
 			HP = inValue;
+			OnRep_HPUpdated();
 			break;
 		case ESTStatusType::ATK:
 			ATK = inValue;
@@ -129,6 +214,7 @@ void USTPlayerStatusComponent::SetStatus_Server_Implementation(ESTStatusType inT
 	{
 	case ESTStatusType::HP:
 		HP = FMath::Clamp(inValue, 0.f, MaxHP);
+		OnRep_HPUpdated();
 		break;
 	case ESTStatusType::ATK:
 		ATK = inValue;
@@ -206,15 +292,56 @@ void USTPlayerStatusComponent::ClearBuff_Server_Implementation(ESTBuffType inTyp
 	ApplyStatus();
 }
 
-void USTPlayerStatusComponent::SetDefaultStatus()
+void USTPlayerStatusComponent::InitializeEnhancement()
 {
-	HP = BaseMaxHP;
-	MovementSpeed = BaseMovementSpeed;
-	AttackSpeed = BaseAttackSpeed;
+	if (DB_Enhancement)
+	{
+		TArray<FEnhancementInfo*> outArray;
+		DB_Enhancement->GetAllRows<FEnhancementInfo>(FString("Get Enhancement"), outArray);
+
+		for (auto info : outArray)
+		{
+			if (info)
+			{
+				NotSelectedEnhancements.Emplace(info->EnhancementTag, info->Quantity);
+			}
+		}
+	}
+}
+
+void USTPlayerStatusComponent::InitializeDefaultStatus()
+{
+	Level = 1;
 	CriticalDamagePercent = BaseCriticalDamagePercent;
 	CriticalRate = BaseCriticalRate;
 	DamageIncreaseRate = 0.f;
 	CDR = 0.f;
+
+	UpdateDefaultStatus();
+}
+
+void USTPlayerStatusComponent::UpdateDefaultStatus()
+{
+	if (ExpCurve)
+		MaxExp = ExpCurve->GetFloatValue(Level);
+
+	if (MaxHPCurve)
+		MaxHP = BaseMaxHP * MaxHPCurve->GetFloatValue(Level);
+
+	if (HPRegenCurve)
+		HPRegen = BaseHPRegen * HPRegenCurve->GetFloatValue(Level);
+
+	if (MoveSpeedCurve)
+		MovementSpeed = BaseMovementSpeed * MoveSpeedCurve->GetFloatValue(Level);
+
+	if (AttackSpeedCurve)
+		AttackSpeed = BaseAttackSpeed * AttackSpeedCurve->GetFloatValue(Level);
+
+	if (ATKCurve)
+		ATK = BaseATK * ATKCurve->GetFloatValue(Level);
+
+	if (DEFCurve)
+		DEF = BaseDEF * DEFCurve->GetFloatValue(Level);
 }
 
 void USTPlayerStatusComponent::CalculateStatus()
@@ -226,9 +353,9 @@ void USTPlayerStatusComponent::CalculateStatus()
 		if (!InvComp || !InvSubSystem) return;
 
 		// Reset Status 
-		SetDefaultStatus();
+		UpdateDefaultStatus();
 
-		// ReCalculate Status
+		// ReCalculate Status (Item)
 		const TArray<FInvSlotStruct>& Inventory = InvComp->GetInventory();
 		for (auto& Slot : Inventory)
 		{
@@ -238,6 +365,16 @@ void USTPlayerStatusComponent::CalculateStatus()
 			}
 		}
 
+		// ReCalculate Status (Enhancement)
+		// Maybe 
+		TArray<TPair<FGameplayTag, int>> enhancements = SelectedEnhancements.Array();
+		for (TPair<FGameplayTag, int>& pair : SelectedEnhancements)
+		{
+			FGameplayTag tag = pair.Key; int quan = pair.Value;
+
+		}
+
+		// ReCalculate Status (Buff)
 		for (auto& pair : BuffMap)
 		{
 			FSTBuffStruct& buff = pair.Value;
@@ -295,5 +432,69 @@ void USTPlayerStatusComponent::OnRep_HPUpdated()
 	// Update UI
 	OnHPDelegate.Broadcast(HP, MaxHP);
 	// Check Died
+}
+
+void USTPlayerStatusComponent::OnRep_LevelUpdated()
+{
+	if (ExpCurve)
+	{
+		MaxExp = ExpCurve->GetFloatValue(Level);
+	}
+
+	if (GetOwner()->HasAuthority())
+	{
+		if (Level >= 2 && Level % 3 == 1)
+		{
+			// Give Enhancement Select Option To Client
+			TArray<TPair<FGameplayTag, int>> selectArray = NotSelectedEnhancements.Array(); 
+			Algo::RandomShuffle(selectArray);
+
+			TArray<FGameplayTag> Selections;
+			for (int i = 0; i < 3; i++)
+			{
+				if (selectArray.IsValidIndex(i))
+				{
+					Selections.Push(selectArray[i].Key);
+				}
+			}
+
+			GiveEnhancementSelections_Client(Selections);
+		}
+	}
+}
+
+void USTPlayerStatusComponent::OnRep_ExpUpdated()
+{
+
+}
+
+void USTPlayerStatusComponent::RegenHP()
+{
+	HP = FMath::Clamp(HP + HPRegen, 0, MaxHP);
+	OnRep_HPUpdated();
+}
+
+void USTPlayerStatusComponent::GiveEnhancementSelections_Client_Implementation(const TArray<FGameplayTag>& enhancements)
+{
+	APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
+	USTWidget_SelectEnhancement* widget = CreateWidget<USTWidget_SelectEnhancement>(PC, WidgetClass_EnhancementSelect);
+	if (widget)
+	{
+		widget->ShowSelections(enhancements);
+		widget->AddToViewport();
+	}
+}
+
+void USTPlayerStatusComponent::EnhancementSelected_Server_Implementation(FGameplayTag SelectedEnhancement)
+{
+	SelectedEnhancements[SelectedEnhancement] = SelectedEnhancements[SelectedEnhancement] + 1;
+
+	NotSelectedEnhancements[SelectedEnhancement] = NotSelectedEnhancements[SelectedEnhancement] - 1;
+	if (NotSelectedEnhancements[SelectedEnhancement] == 0)
+	{
+		NotSelectedEnhancements.Remove(SelectedEnhancement);
+	}
+
+	CalculateStatus();
 }
 

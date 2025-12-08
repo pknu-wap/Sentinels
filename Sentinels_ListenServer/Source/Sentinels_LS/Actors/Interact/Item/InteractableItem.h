@@ -18,6 +18,8 @@ protected:
 
 public:
 	virtual void Interact_Implementation(UInteractComponent* InteractingComponent) override;
+	virtual void ShowInteractiveUI_Implementation(UInteractComponent* InteractingComponent) override;
+	virtual void HideInteractiveUI_Implementation(UInteractComponent* InteractingComponent) override;
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void SetItemID();

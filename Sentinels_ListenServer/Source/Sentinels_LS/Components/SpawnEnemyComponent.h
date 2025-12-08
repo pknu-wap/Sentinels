@@ -62,6 +62,9 @@ struct SENTINELS_LS_API FSpawnInfo
     int CurrentSpawned = 0;
 
     UPROPERTY()
+    TSet<ASTPoolableCharacter*> SpawnedCharacters;
+
+    UPROPERTY()
     TArray<ACharacterObjectPool*> ObjectPools;
 
     FTimerHandle TimerHandle;

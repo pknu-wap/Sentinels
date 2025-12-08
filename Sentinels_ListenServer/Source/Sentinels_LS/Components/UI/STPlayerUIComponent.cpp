@@ -73,7 +73,7 @@ void USTPlayerUIComponent::ServerRPCRegisterWidget_Implementation(FGameplayTag W
 {
 	ASTPlayerController* serverPC = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
 	if (serverPC)
-		serverPC->GetUIComponent()->RegisterWidget(WidgetTag, WidgetClass);
+		serverPC->GetUIComponent()->CreateAndRegisterWidget(WidgetTag, WidgetClass);
 
 	for (ASTPlayerController* playerController : TActorRange<ASTPlayerController>(GetWorld()))
 	{
@@ -86,7 +86,7 @@ void USTPlayerUIComponent::ServerRPCRegisterWidget_Implementation(FGameplayTag W
 
 void USTPlayerUIComponent::ClientRPCRegisterWidget_Implementation(FGameplayTag WidgetTag, TSubclassOf<UUserWidget> WidgetClass)
 {
-	RegisterWidget(WidgetTag, WidgetClass);
+	CreateAndRegisterWidget(WidgetTag, WidgetClass);
 }
 
 void USTPlayerUIComponent::ServerRPCUnRegisterPlayerID_Implementation(const FUniqueNetIdRepl& ID)
@@ -158,7 +158,11 @@ void USTPlayerUIComponent::ServerRPCCheckbIsReady_Implementation(FGameplayTag Wi
 		}
 	}
 
-	GetWorld()->GetGameState<ASTGameState>()->TryServerTravel();
+	USTGameTravelDataSubsystem* gameTravelDataSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
+	ASTGameState* gameState = Cast<ASTGameState>(GetWorld()->GetGameState<ASTGameState>());
+
+	gameTravelDataSubsystem->SetCurrentLevelTag(gameState->GetCurrentLevelTag());
+	gameState->TryServerTravel();
 }
 
 void USTPlayerUIComponent::ClientRPCAddToViewport_Implementation(FGameplayTag WidgetTag)
@@ -290,35 +294,34 @@ void USTPlayerUIComponent::UpdateCurrentGameLevelLayer()
 
 	USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
 
-	ASTPlayerController* pc = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
-	if (!pc)
-	{
-		return;
-	}
-
 	FGameplayTag loadoutTag = FSTGameplayTags::Get().Widget_Lobby_Loadout;
-	FGameplayTag selectLevelTag = FSTGameplayTags::Get().Widget_Lobby_LevelSelect;
-
 	UUserWidget* loadoutWidgetInstance = UISubSystem->GetWidget(loadoutTag);
-	UUserWidget* selectLevelWidgetInstance = UISubSystem->GetWidget(selectLevelTag);
-	if (!loadoutWidgetInstance || !selectLevelWidgetInstance)
+	if (!loadoutWidgetInstance)
 	{
-		ST_SUBLOG(LogSTNetwork, Warning, TEXT("NO loadoutWidgetInstance or NO selectLevelWidgetInstance"));
+		ST_SUBLOG(LogSTNetwork, Warning, TEXT("NO loadoutWidgetInstance"));
 		return;
 	}
 
-	FString cleanTagName = currentLevelTag.ToString().Replace(TEXT("."), TEXT("_"));
-	FString widgetNameStr = FString::Printf(TEXT("IMG_%s"), *cleanTagName);
+	UDataTable* mapDT = LoadObject<UDataTable>(nullptr, TEXT("/Script/Engine.DataTable'/Game/Sentinels/UI/InGame/Map/DT_Map.DT_Map'"));
 
-	const FSlateBrush& sourceBrush = Cast<UImage>(selectLevelWidgetInstance->GetWidgetFromName(*widgetNameStr))->GetBrush();
-	FSlateBrush copiedBrush = sourceBrush;
+	if (!mapDT)
+		return;
+
+	const FMapInfoStruct* mapInfoRow = mapDT->FindRow<FMapInfoStruct>(*currentLevelTag.ToString(), TEXT(""));
+	if (!mapInfoRow)
+		return;
 
 	UImage* img_CurrentLevel = Cast<UImage>(loadoutWidgetInstance->GetWidgetFromName(TEXT("IMG_Map")));
-	img_CurrentLevel->SetBrush(copiedBrush);
+	FSlateBrush newBrush = img_CurrentLevel->GetBrush();
+	newBrush.SetResourceObject(mapInfoRow->MapImage);
+	img_CurrentLevel->SetBrush(newBrush);
 	img_CurrentLevel->SetVisibility(ESlateVisibility::Visible);
 
-	UTextBlock* tb_LevelName = Cast<UTextBlock>(loadoutWidgetInstance->GetWidgetFromName(TEXT("TB_MapDescription")));
-	tb_LevelName->SetText(FText::FromString(cleanTagName));
+	UTextBlock* tb_MapName = Cast<UTextBlock>(loadoutWidgetInstance->GetWidgetFromName(TEXT("TB_MapName")));
+	UTextBlock* tb_MapDescription = Cast<UTextBlock>(loadoutWidgetInstance->GetWidgetFromName(TEXT("TB_MapDescription")));
+
+	tb_MapName->SetText(FText::FromString(mapInfoRow->MapName));
+	tb_MapDescription->SetText(FText::FromString(mapInfoRow->MapDescription));
 }
 
 void USTPlayerUIComponent::UpdateCharacterSelectUI()
@@ -399,7 +402,19 @@ void USTPlayerUIComponent::UpdateTeamInfoUI()
 
 }
 
-void USTPlayerUIComponent::RegisterWidget(FGameplayTag WidgetTag, TSubclassOf<UUserWidget> WidgetClass)
+void USTPlayerUIComponent::RegisterWidget(FGameplayTag WidgetTag, UUserWidget* Widget)
+{
+	USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
+
+	ASTPlayerController* pc = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+	UUserWidget* widget = UISubSystem->GetWidget(WidgetTag);
+	if (!widget)
+	{
+		UISubSystem->RegisterWidget(WidgetTag, Widget);
+	}
+}
+
+void USTPlayerUIComponent::CreateAndRegisterWidget(FGameplayTag WidgetTag, TSubclassOf<UUserWidget> WidgetClass)
 {
 	USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
 
@@ -432,6 +447,20 @@ void USTPlayerUIComponent::AddToViewport(FGameplayTag WidgetTag)
 	widget->AddToViewport();
 }
 
+void USTPlayerUIComponent::SetVisibility(FGameplayTag WidgetTag, ESlateVisibility Visibility)
+{
+	USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
+
+	UUserWidget* widget = UISubSystem->GetWidget(WidgetTag);
+	if (!widget)
+	{
+		ST_SUBLOG(LogSTNetwork, Warning, TEXT("No Widget"));
+		return;
+	}
+	
+	widget->SetVisibility(Visibility);
+}
+
 void USTPlayerUIComponent::AddPlayerID(const FUniqueNetIdRepl& ID)
 {
 	ASTPlayerController* serverPC = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
@@ -462,21 +491,22 @@ void USTPlayerUIComponent::AddPlayerID(const FUniqueNetIdRepl& ID)
 
 void USTPlayerUIComponent::RegisterIDToDummyPlayer(const FUniqueNetIdRepl& ID)
 {
-	for (ASTDummyPlayer* dummyCharacter : TActorRange<ASTDummyPlayer>(GetWorld()))
+	for (ASTDummyPlayer* dummyPlayer : TActorRange<ASTDummyPlayer>(GetWorld()))
 	{
-		if (dummyCharacter->GetPlayerID() == ID)
+		if (dummyPlayer->GetPlayerID() == ID)
 			return;
 
-		if (dummyCharacter->GetPlayerID().IsValid())
+		if (dummyPlayer->GetPlayerID().IsValid())
 			continue;
 		
-		dummyCharacter->SetPlayerID(ID);
+		dummyPlayer->SetPlayerID(ID);
 
 		for (ASTPlayerController* playerController : TActorRange<ASTPlayerController>(GetWorld()))
 		{
 			if (playerController->PlayerState->GetUniqueId() == ID)
 			{
-				dummyCharacter->SetOwner(playerController);
+				dummyPlayer->SetOwner(playerController);
+				break;
 			}
 		}
 

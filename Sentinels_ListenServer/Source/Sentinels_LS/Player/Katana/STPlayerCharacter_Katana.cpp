@@ -8,6 +8,8 @@
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
 #include "STGameplayTags.h"
+#include "SubSystem/STProjectilePoolingSubSystem.h"
+#include "Components/STPlayerStatusComponent.h"
 
 void ASTPlayerCharacter_Katana::BeginPlay()
 {
@@ -19,6 +21,13 @@ void ASTPlayerCharacter_Katana::BeginPlay()
 		AnimInst->Delegate_SetWarpTarget_Q.AddUObject(this, &ASTPlayerCharacter_Katana::SetWrapTarget_Q);
 		AnimInst->Delegate_SpawnSlash_Q.AddUObject(this, &ASTPlayerCharacter_Katana::SpawnSlash_Q);
 		AnimInst->Delegate_SetWarpTarget_Passive.AddUObject(this, &ASTPlayerCharacter_Katana::SetWrapTarget_Passive);
+		AnimInst->Delegate_ApplyDamage.AddUObject(this, &ASTPlayerCharacter_Katana::ApplyPassiveDamage);
+	}
+
+	if (HasAuthority())
+	{
+		USTProjectilePoolingSubSystem* PoolingSystem = GetWorld()->GetSubsystem<USTProjectilePoolingSubSystem>();
+		PoolingSystem->InitProjectilePool(this, SubclassOfSlash_R, 50);
 	}
 }
 
@@ -49,8 +58,9 @@ void ASTPlayerCharacter_Katana::Skill_Passive_Pressed_Server_Implementation()
 {
 	Super::Skill_Passive_Pressed_Server_Implementation();
 
-	// Capsule Trace Forward
+	AllTargetActors_Passive.Empty();
 
+	// Capsule Trace Forward
 	TArray<AActor*> IgnoreActors;
 	IgnoreActors.Add(this);
 
@@ -92,7 +102,30 @@ void ASTPlayerCharacter_Katana::Skill_Passive_Pressed_Server_Implementation()
 	{
 		AddTag(FSTGameplayTags::Get().Character_State_Skill);
 		Skill_Passive_Pressed_Multicast();
-		PlayMontage_Skill_Passive();
+	}
+}
+
+void ASTPlayerCharacter_Katana::Skill_Passive_Pressed_Multicast_Implementation()
+{
+	PlayMontage_Skill_Passive();
+}
+
+void ASTPlayerCharacter_Katana::ApplyPassiveDamage()
+{
+	if (HasAuthority() && StatusComponent)
+	{
+		for (AActor* actor : AllTargetActors_Passive)
+		{
+			if (ASTCharacterBase* character = Cast<ASTCharacterBase>(actor))
+			{
+				// Applay Damage (ATK * 0.5 * NumOfTag)
+				int numOfTag = character->GetNumOfTag(FSTGameplayTags::Get().Character_State_Bleed);
+				UGameplayStatics::ApplyDamage(actor, StatusComponent->ATK * 0.5 * numOfTag, GetController(), this, UDamageType::StaticClass());
+
+				// Clear Bleed Tag
+				character->ClearTag(FSTGameplayTags::Get().Character_State_Bleed);
+			}
+		}
 	}
 }
 
@@ -162,8 +195,9 @@ void ASTPlayerCharacter_Katana::SetWrapTarget_Q()
 
 void ASTPlayerCharacter_Katana::SpawnSlash_Q()
 {
-	if (HasAuthority())
+	AActor* Slash = GetWorld()->SpawnActor<AActor>(SubclassOfSlash_Q, SpawnLocation_Slash_Q, FRotator::ZeroRotator);
+	if (Slash)
 	{
-		GetWorld()->SpawnActor<AActor>(SubclassOfSlash_Q, SpawnLocation_Slash_Q, FRotator::ZeroRotator);
+		Slash->SetInstigator(this);
 	}
 }

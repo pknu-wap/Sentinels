@@ -51,7 +51,7 @@ void USkillComponent::InitSkillInfos(UDataTable* InDataTable)
 			}
 		}
 
-		int SkillID = 1;
+		int SkillID = 0;
 		for (int i = 0; i < ClassSkills.Num(); i++)
 		{
 			ClassSkills[i].ID = SkillID++;
@@ -70,8 +70,6 @@ bool USkillComponent::CanActivateSkill(int SkillIdx)
 {
 	// Owner Is Player Controller
 	APlayerController* PC = Cast<APlayerController>(GetOwner());
-	if (!PC) return false;
-
 	ACharacter* Player = PC->GetCharacter();
 	if (!Player) return false;
 
@@ -88,14 +86,16 @@ bool USkillComponent::CanActivateSkill(int SkillIdx)
 
 void USkillComponent::StartCoolDown(int SkillIdx)
 {
+	// Owner Is Player Controller
 	AController* Controller = Cast<AController>(GetOwner());
 	APawn* Player = Controller->GetPawn();
 
 	USTPlayerStatusComponent* StatusComp = Player->GetComponentByClass<USTPlayerStatusComponent>();
-	if (!StatusComp) return;
-
-	if (Skill_CoolDowns.IsValidIndex(SkillIdx) && ClassSkills.IsValidIndex(SkillIdx))
-		Skill_CoolDowns[SkillIdx] = ClassSkills[SkillIdx].SkillCoolTime * StatusComp->CDR;
+	if (StatusComp)
+	{
+		if (Skill_CoolDowns.IsValidIndex(SkillIdx) && ClassSkills.IsValidIndex(SkillIdx))
+			Skill_CoolDowns[SkillIdx] = ClassSkills[SkillIdx].SkillCoolTime * (1 - StatusComp->CDR);
+	}
 }
 
 void USkillComponent::Tick_SkillCoolDown(float DeltaTime)

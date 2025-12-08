@@ -20,6 +20,12 @@ void USTMissionBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	UBlueprintGeneratedClass* BPClass = Cast<UBlueprintGeneratedClass>(GetClass());
+	if (BPClass != NULL)
+	{
+		BPClass->GetLifetimeBlueprintReplicationList(OutLifetimeProps);
+	}
+
 	DOREPLIFETIME(USTMissionBase, MissionConditions);
 	DOREPLIFETIME(USTMissionBase, ProgressState);
 }
@@ -45,6 +51,9 @@ void USTMissionBase::RegisterMission()
 
 	ProgressState = EMissionProgressState::Registered;
 	OnRep_ProgressState();
+
+	// Execute On Blueprint
+	OnMissionRegistered();
 }
 
 void USTMissionBase::ActivateMission()
@@ -64,6 +73,9 @@ void USTMissionBase::ActivateMission()
 
 	ProgressState = EMissionProgressState::Activated;
 	OnRep_ProgressState();
+
+	// Execute On Blueprint
+	OnMissionActivated();
 }
 
 void USTMissionBase::DeactivateMission(bool IsCleared)
@@ -82,11 +94,14 @@ void USTMissionBase::DeactivateMission(bool IsCleared)
 
 	ProgressState = IsCleared ? EMissionProgressState::Cleared : EMissionProgressState::Failed;
 	OnRep_ProgressState();
+
+	// Execute On Blueprint
+	OnMissionDeactivated(IsCleared);
 }
 
 void USTMissionBase::MissionEnded_Multicast_Implementation(bool IsCleared)
 {
-	Delegate_MissionEnded.Broadcast(MissionTag, IsCleared);
+	Delegate_MissionEnded.Broadcast(this, IsCleared);
 }
 
 void USTMissionBase::CheckMissionClearable()

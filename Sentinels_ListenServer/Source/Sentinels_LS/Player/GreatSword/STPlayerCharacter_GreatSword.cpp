@@ -72,11 +72,15 @@ void ASTPlayerCharacter_GreatSword::Skill_Passive_Pressed_Server_Implementation(
 				TargetActor_Passive = newTarget;
 				AddTag(FSTGameplayTags::Get().Character_State_Skill);
 				Skill_Passive_Pressed_Multicast();
-				PlayMontage_Skill_Passive();
 				break;
 			}
 		}
 	}
+}
+
+void ASTPlayerCharacter_GreatSword::Skill_Passive_Pressed_Multicast_Implementation()
+{
+	PlayMontage_Skill_Passive();
 }
 
 void ASTPlayerCharacter_GreatSword::SetWrapTarget_Passive()
@@ -84,7 +88,8 @@ void ASTPlayerCharacter_GreatSword::SetWrapTarget_Passive()
 	if (HasAuthority())
 	{
 		UMotionWarpingComponent* motionWarpComp = GetComponentByClass<UMotionWarpingComponent>();
-		if (motionWarpComp && IsValid(TargetActor_Passive))
+		ASTEnemyBase* Enemy = Cast<ASTEnemyBase>(TargetActor_Passive);
+		if (motionWarpComp && IsValid(Enemy) && Enemy->IsAlive())
 		{
 			FVector towardVec = (TargetActor_Passive->GetActorLocation() - GetActorLocation()).GetSafeNormal2D();
 
@@ -95,6 +100,10 @@ void ASTPlayerCharacter_GreatSword::SetWrapTarget_Passive()
 			WarpTarget.Rotation = towardVec.ToOrientationRotator();
 
 			motionWarpComp->AddOrUpdateWarpTarget(WarpTarget);
+		}
+		else
+		{
+			motionWarpComp->RemoveWarpTarget(FName("WarpTarget"));
 		}
 	}
 }

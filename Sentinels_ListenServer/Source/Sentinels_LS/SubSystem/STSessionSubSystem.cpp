@@ -162,7 +162,7 @@ void USTSessionSubSystem::OnStartSessionCompleted(FName SessionName, bool bWasSu
 	// If the start was successful, we can open a NewMap if we want. Make sure to use "listen" as a parameter!
 	if (bWasSuccessful)
 	{
-		UGameplayStatics::OpenLevel(GetWorld(), "LobbyMap", true, "listen");
+		UGameplayStatics::OpenLevel(GetWorld(), "LV_SessionLobby", true, "listen");
 	}
 }
 
@@ -369,11 +369,11 @@ void USTSessionSubSystem::OnJoinSessionCompleted(FName SessionName, EOnJoinSessi
 		LocalPlayer->RegisterSelfToSession(SessionName, false);
 	}
 
-	/*ASTPlayerController* PC = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+	ASTPlayerController* PC = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
 	if (PC)
 	{
-		PC->RegisterSelfToSession(SessionName);
-	}*/
+		PC->RegisterSelfToSession_Client();
+	}
 
 	/*ASTPlayerController* PC = Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
 	if (PC)

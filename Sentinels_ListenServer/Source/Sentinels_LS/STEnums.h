@@ -16,6 +16,7 @@ enum class ESTClassType : uint8
 UENUM(BlueprintType)
 enum class ESKParts : uint8
 {
+	Head UMETA(DisplayName = "Head"),
 	Hood UMETA(DisplayName = "Hood"),
 	LongHair UMETA(DisplayName = "LongHair"),
 	Glasses UMETA(DisplayName = "Glasses"),
@@ -72,4 +73,21 @@ enum class EMissionProgressState : uint8
 	Activated,
 	Cleared,
 	Failed
+};
+
+UENUM(BlueprintType)
+enum class EHelixAttackType : uint8
+{
+	Special_01	UMETA(DisplayName = "Special_01"),
+	Special_02	UMETA(DisplayName = "Special_02"),
+	Special_03	UMETA(DisplayName = "Special_03"),
+	Cast		UMETA(DisplayName = "Cast"),
+};
+
+UENUM(BlueprintType)
+enum class EPortalType : uint8
+{
+	None	UMETA(DisplayName = "None"),
+	Boss	UMETA(DisplayName = "Boss"),
+	Mission	UMETA(DisplayName = "Mission"),
 };

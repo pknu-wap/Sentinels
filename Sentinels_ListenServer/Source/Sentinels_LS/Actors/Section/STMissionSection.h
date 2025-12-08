@@ -6,9 +6,11 @@
 #include "GameFramework/Actor.h"
 #include "GameplayTagContainer.h"
 #include "STStructs.h"
+#include "Components/SpawnEnemyComponent.h"
 #include "STMissionSection.generated.h"
 
 class ASpawnPointBase;
+class ASTEliteBase;
 
 UCLASS()
 class SENTINELS_LS_API ASTMissionSection : public AActor
@@ -49,6 +51,70 @@ public:
 
 	UPROPERTY(VisibleAnywhere)
 	bool bIsSelected = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bShouldSpawnEnemy = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bShouldClearEnemy = false;
+
+/*
+	Spawn Enemy
+*/
+public:
+	UFUNCTION(BlueprintCallable)
+	void StartSpawnEnemy();
+
+	UFUNCTION(BlueprintCallable)
+	void StopSpawnEnemy();
+
+	UFUNCTION(BlueprintCallable)
+	void DespawnAllEnemys();
+
+protected:
+	void TrySpawnAI();
+	void SpawnEnemy(int InfoIdx);
+	bool IsInFrontalCone(const FVector& locationToCheck, const FVector& originLocation, const FVector& forwardVector, float angleDeg) const;
+	bool GetSpawnNavLocationForPlayer(int playerIdx, int infoIdx, FNavLocation& OutLocation) const;
+
+protected:
+	UFUNCTION()
+	void OnEnemyDied(AActor* DiedEnemy);
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
+	bool bShouldLoop = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
+	TArray<FSpawnInfo> SpawnInfos;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TArray<AActor*> Players;
+
+private:
+	TQueue<int> SpawnReserveQue;
+
+	UPROPERTY()
+	TSet<int> SpawnReserveSet;
+
+	UPROPERTY()
+	FTimerHandle SpawnHandle;
+
+	float CurrentSpawned = 0;
+
+
+/*
+	Elite Boss
+*/
+public:
+	void SpawnEliteBoss();
+
+protected:
+	UPROPERTY(Category = "EliteBoss", EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<ASTEliteBase> EliteBossClass;
+
+	UPROPERTY(Category = "EliteBoss", EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<AActor> EliteBossSpawnIndicator;
 
 
 public:

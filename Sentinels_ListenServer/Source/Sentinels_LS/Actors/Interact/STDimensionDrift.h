@@ -42,6 +42,10 @@ protected:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class USkeletalMeshComponent> SKMesh;
 
+	/*
+		Widget
+	*/
+
 	UPROPERTY(EditAnywhere, Category = "WBP")
 	TSubclassOf<UUserWidget> Widget_LoadoutClass;
 
@@ -53,6 +57,10 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "WBP")
 	TSubclassOf<UUserWidget> Widget_LevelSelectClass;
+
+	/*
+		Level Info
+	*/
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level", meta = (AllowPrivateAccess = "true"))
 	TMap<FGameplayTag, TSoftObjectPtr<UWorld>> LevelMap;

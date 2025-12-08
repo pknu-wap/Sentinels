@@ -50,27 +50,108 @@ public:
 	static ASTDummyPlayer* FindByID(UObject* WorldContextObject, FUniqueNetIdRepl PlayerID);
 
 protected:
-	void AddSKComponents(FName ComponentName, FString SocketName = "");
-
-protected:
 	UFUNCTION()
 	void OnRep_PlayerID();
 
 	UFUNCTION()
 	void OnRep_CurrentClass();
 
+	UFUNCTION()
+	void OnRep_SKName();
+
 	UFUNCTION(Server, Reliable, BlueprintCallable)
-	void ServerRPCChangeCurrentClass(FUniqueNetIdRepl playerID, ESTClassType InClass);
+	void ServerRPCChangeCurrentClass(ESTClassType InClass);
+
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void ServerRPCChangeSKMesh(ESKParts Part, FName SKMeshRowName);
+
+	UFUNCTION(BlueprintCallable)
+	void ChangeSKMeshName(ESKParts Part, FName SKMeshRowName);
 
 protected:
+	/*
+		CaptureComponent
+	*/
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Capture Component", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USceneCaptureComponent2D> CaptureComponent;
 
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "SK Component", meta = (AllowPrivateAccess = "true"))
+	/*
+		About SkeletalMesh
+	*/
+
+	UPROPERTY(ReplicatedUsing = OnRep_PlayerID, EditAnywhere, BlueprintReadWrite, Category = "SK Component", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USkeletalMeshComponent> SKMeshComponent;
 
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "SkeletalMesh Components", meta = (AllowPrivateAccess = "true"))
-	TArray<USkeletalMeshComponent*> SKMeshComponents;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SkeletalMesh Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<USkeletalMeshComponent> HeadComponent;
+	UPROPERTY(ReplicatedUsing = OnRep_SKName, EditAnywhere, BlueprintReadWrite, Category = "SK Row Name", meta = (AllowPrivateAccess = "true"))
+	FName Name_Head;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SkeletalMesh Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<USkeletalMeshComponent> HoodComponent;
+	UPROPERTY(ReplicatedUsing = OnRep_SKName, EditAnywhere, BlueprintReadWrite, Category = "SK Row Name", meta = (AllowPrivateAccess = "true"))
+	FName Name_Hood;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SkeletalMesh Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<USkeletalMeshComponent> LongHairComponent;
+	UPROPERTY(ReplicatedUsing = OnRep_SKName, EditAnywhere, BlueprintReadWrite, Category = "SK Row Name", meta = (AllowPrivateAccess = "true"))
+	FName Name_LongHair;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SkeletalMesh Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<USkeletalMeshComponent> GlassesComponent;
+	UPROPERTY(ReplicatedUsing = OnRep_SKName, EditAnywhere, BlueprintReadWrite, Category = "SK Row Name", meta = (AllowPrivateAccess = "true"))
+	FName Name_Glasses;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SkeletalMesh Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<USkeletalMeshComponent> UpperBodyComponent;
+	UPROPERTY(ReplicatedUsing = OnRep_SKName, EditAnywhere, BlueprintReadWrite, Category = "SK Row Name", meta = (AllowPrivateAccess = "true"))
+	FName Name_UpperBody;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SkeletalMesh Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<USkeletalMeshComponent> BackpackComponent;
+	UPROPERTY(ReplicatedUsing = OnRep_SKName, EditAnywhere, BlueprintReadWrite, Category = "SK Row Name", meta = (AllowPrivateAccess = "true"))
+	FName Name_Backpack;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SkeletalMesh Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<USkeletalMeshComponent> Hand_LComponent;
+	UPROPERTY(ReplicatedUsing = OnRep_SKName, EditAnywhere, BlueprintReadWrite, Category = "SK Row Name", meta = (AllowPrivateAccess = "true"))
+	FName Name_Hand_L;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SkeletalMesh Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<USkeletalMeshComponent> Hand_RComponent;
+	UPROPERTY(ReplicatedUsing = OnRep_SKName, EditAnywhere, BlueprintReadWrite, Category = "SK Row Name", meta = (AllowPrivateAccess = "true"))
+	FName Name_Hand_R;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SkeletalMesh Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<USkeletalMeshComponent> BottomBodyComponent;
+	UPROPERTY(ReplicatedUsing = OnRep_SKName, EditAnywhere, BlueprintReadWrite, Category = "SK Row Name", meta = (AllowPrivateAccess = "true"))
+	FName Name_BottomBody;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SkeletalMesh Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<USkeletalMeshComponent> FeetComponent;
+	UPROPERTY(ReplicatedUsing = OnRep_SKName, EditAnywhere, BlueprintReadWrite, Category = "SK Row Name", meta = (AllowPrivateAccess = "true"))
+	FName Name_Feet;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SkeletalMesh Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<USkeletalMeshComponent> GreatSwordComponent;
+	UPROPERTY(ReplicatedUsing = OnRep_SKName, EditAnywhere, BlueprintReadWrite, Category = "SK Row Name", meta = (AllowPrivateAccess = "true"))
+	FName Name_GreatSword;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SkeletalMesh Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<USkeletalMeshComponent> KatanaComponent;
+	UPROPERTY(ReplicatedUsing = OnRep_SKName, EditAnywhere, BlueprintReadWrite, Category = "SK Row Name", meta = (AllowPrivateAccess = "true"))
+	FName Name_Katana;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SkeletalMesh Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<USkeletalMeshComponent> Blade_LComponent;
+	UPROPERTY(ReplicatedUsing = OnRep_SKName, EditAnywhere, BlueprintReadWrite, Category = "SK Row Name", meta = (AllowPrivateAccess = "true"))
+	FName Name_Blade_L;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SkeletalMesh Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<USkeletalMeshComponent> Blade_RComponent;
+	UPROPERTY(ReplicatedUsing = OnRep_SKName, EditAnywhere, BlueprintReadWrite, Category = "SK Row Name", meta = (AllowPrivateAccess = "true"))
+	FName Name_Blade_R;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SkeletalMesh", meta = (AllowPrivateAccess = "true"))
 	TMap<ESTClassType, USkeletalMesh*> WeaponMap;

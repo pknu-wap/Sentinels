@@ -3,16 +3,27 @@
 
 #include "System/STGameState.h"
 #include "System/Mission/STMissionBase.h"
+#include "System/STGameMode_MissionBase.h"
 #include "Net/UnrealNetwork.h"
 #include "Sentinels_LS.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Actors/Section/STMissionSection.h"
+#include "Kismet/GameplayStatics.h"
+#include "SubSystem/STGameTravelDataSubsystem.h"
 
 ASTGameState::ASTGameState() :
     CurrentLevelTag(FSTGameplayTags::Get().Level_Lobby)
 {
     bReplicates = true;
     bReplicateUsingRegisteredSubObjectList = true;
+}
+
+void ASTGameState::BeginPlay()
+{
+    Super::BeginPlay();
+
+    USTGameTravelDataSubsystem* gameTravelDataSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
+    CurrentLevelTag = gameTravelDataSubsystem->GetCurrentLevelTag();
 }
 
 void ASTGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -37,6 +48,19 @@ int ASTGameState::GetClearedMissionNum() const
     return count;
 }
 
+ASTMissionSection* ASTGameState::GetActivatedMissionSection() const
+{
+    for (const auto& missionInfo : ActivatedMissions)
+    {
+        if (missionInfo.Mission && missionInfo.Mission->GetProgressState() == EMissionProgressState::Activated)
+        {
+            return missionInfo.MissionSection;
+        }
+    }
+
+    return nullptr;
+}
+
 void ASTGameState::ActivateRandomMission()
 {
     if (!HasAuthority())
@@ -45,14 +69,23 @@ void ASTGameState::ActivateRandomMission()
         return;
     }
 
-    int rand = UKismetMathLibrary::RandomIntegerInRange(0, Missions.Num() - 1);
-    if (Missions.IsValidIndex(rand))
+    int count = 50;
+    while (count--)
     {
-        ActivateMission(Missions[rand].MissionTag);
+        int rand = UKismetMathLibrary::RandomIntegerInRange(0, Missions.Num() - 1);
+
+        if (Missions.IsValidIndex(rand) 
+            && Missions[rand].Mission 
+            && Missions[rand].Mission->GetProgressState() == EMissionProgressState::Registered)
+        {
+            ActivateMission(Missions[rand].MissionSection);
+
+            break;
+        }
     }
 }
 
-void ASTGameState::ActivateMission(FGameplayTag InMissionTag)
+void ASTGameState::ActivateSubMission(FGameplayTag InMissionTag)
 {
     if (!HasAuthority())
     {
@@ -60,26 +93,11 @@ void ASTGameState::ActivateMission(FGameplayTag InMissionTag)
         return;
     }
 
-    USTMissionBase* mission = GetMission(InMissionTag);
+    USTMissionBase* mission = GetSubMission(InMissionTag);
     if (mission)
     {
         mission->ActivateMission();
     }
-
-    for (int i = 0; i < Missions.Num(); i++)
-    {
-        if (Missions[i].MissionTag == InMissionTag)
-        {
-            if (Missions[i].MissionSection)
-            {
-                Missions[i].MissionSection->MissionActivated();
-            }
-
-            ActivatedMissions.Add(Missions[i]);
-        }
-    }
-
-    OnRep_ActivatedMission();
 }
 
 void ASTGameState::ActivateMission(ASTMissionSection* InMissionSection)
@@ -96,20 +114,11 @@ void ASTGameState::ActivateMission(ASTMissionSection* InMissionSection)
 
             ActivatedMissions.Add(Missions[i]);
 
+            OnRep_ActivatedMission();
+
             return;
         }
     }
-}
-
-bool ASTGameState::IsMissionCleared(FGameplayTag InMissionTag)
-{
-    USTMissionBase* mission = GetMission(InMissionTag);
-    if (mission)
-    {
-        return mission->IsMissionCleared();
-    }
-
-    return false;
 }
 
 void ASTGameState::RegisterRandomMissions(int RegisterMissionNum, const TArray<FRegisterMissionInfo>& AvailableMissionInfos, ASTMissionSection* MissionSection)
@@ -160,13 +169,6 @@ void ASTGameState::RegisterMission(FGameplayTag InMissionTag, TSubclassOf<USTMis
         return;
     }
 
-    /*USTMissionBase* mission = GetMission(InMissionTag);
-    if (mission)
-    {
-        UE_LOG(LogTemp, Display, TEXT("%s is Already Registered Mission ! "), *mission->GetName());
-        return;
-    }*/
-
     USTMissionBase* NewMission = NewObject<USTMissionBase>(this, MissionSubClass);
     if (NewMission)
     {
@@ -175,62 +177,52 @@ void ASTGameState::RegisterMission(FGameplayTag InMissionTag, TSubclassOf<USTMis
 
         NewMission->RegisterMission();
         NewMission->Delegate_MissionEnded.AddDynamic(this, &ASTGameState::OnMissionEnded);
+
+        ASTGameMode_MissionBase* STGameMode = Cast<ASTGameMode_MissionBase>(UGameplayStatics::GetGameMode(this));
+        if (STGameMode)
+        {
+            NewMission->Delegate_MissionEnded.AddDynamic(STGameMode, &ASTGameMode_MissionBase::OnMissionEnded);
+        }
+
+        OnRegisterMission.Broadcast();
     }
 }
 
-void ASTGameState::UnRegisterMission(FGameplayTag InMissionTag, bool IsCleared)
+void ASTGameState::OnMissionEnded(USTMissionBase* InMission, bool IsCleared)
 {
-    if (!HasAuthority())
-    {
-        ST_LOG(LogSTNetwork, Log, TEXT("UnRegisterMission should be called on server!"));
-        return;
-    }
+    // Mission Clear On Client
+    OnMissionEnded_Multicast(InMission, IsCleared);
 
     for (int i = 0; i < Missions.Num(); i++)
     {
-        if (Missions[i].MissionTag == InMissionTag)
+        if (Missions[i].Mission == InMission)
         {
+            if (Missions[i].MissionSection)
+            {
+                Missions[i].MissionSection->MissionDeactivated();
+                Missions[i].MissionSection->DespawnAllEnemys();
+            }
+            
+            break;
         }
     }
-
-    for (int i = 0; i < ActivatedMissions.Num(); i++)
-    {
-        if (ActivatedMissions[i].MissionTag == InMissionTag)
-        {
-            return;
-        }
-    }
-
-    for (int i = 0; i < SubMissions.Num(); i++)
-    {
-        if (SubMissions[i].MissionTag == InMissionTag)
-        {
-            return;
-        }
-    }
-}
-
-void ASTGameState::OnMissionEnded(FGameplayTag InMissionTag, bool IsCleared)
-{
-    // Mission Clear On Client
-    OnMissionEnded_Multicast(InMissionTag, IsCleared);
-
-    // UnRegister Mission On Server
-    UnRegisterMission(InMissionTag, IsCleared);
 
     // Start Next Random Mission
-    ActivateRandomMission();
+    // ActivateRandomMission();
 }
 
-void ASTGameState::OnMissionEnded_Multicast_Implementation(FGameplayTag InMissionTag, bool IsCleared)
+void ASTGameState::OnMissionEnded_Multicast_Implementation(USTMissionBase* InMission, bool IsCleared)
 {
-    if (IsCleared)
+    if (InMission)
     {
-        ST_LOG(LogSTNetwork, Log, TEXT(" %s Mission Cleared!"), *InMissionTag.GetTagName().ToString());
-    }
-    else
-    {
-        ST_LOG(LogSTNetwork, Log, TEXT(" %s Mission Failed!"), *InMissionTag.GetTagName().ToString());
+        if (IsCleared)
+        {
+            ST_LOG(LogSTNetwork, Log, TEXT(" %s Mission Cleared!"), *InMission->GetName());
+        }
+        else
+        {
+            ST_LOG(LogSTNetwork, Log, TEXT(" %s Mission Failed!"), *InMission->GetName());
+        }
     }
 }
 
@@ -258,7 +250,7 @@ void ASTGameState::RegisterSubMission(FGameplayTag InMissionTag, TSubclassOf<UST
         return;
     }
 
-    USTMissionBase* submission = GetMission(InMissionTag);
+    USTMissionBase* submission = GetSubMission(InMissionTag);
     if (submission)
     {
         UE_LOG(LogTemp, Display, TEXT("%s is Already Registered SubMission ! "), *submission->GetName());
@@ -276,24 +268,24 @@ void ASTGameState::RegisterSubMission(FGameplayTag InMissionTag, TSubclassOf<UST
     }
 }
 
-void ASTGameState::OnSubMissionEnded(FGameplayTag InMissionTag, bool IsCleared)
+void ASTGameState::OnSubMissionEnded(USTMissionBase* InMission, bool IsCleared)
 {
     // Mission Clear On Client
-    OnSubMissionEnded_Multicast(InMissionTag, IsCleared);
-
-    // UnRegister Mission On Server
-    UnRegisterMission(InMissionTag, IsCleared);
+    OnSubMissionEnded_Multicast(InMission, IsCleared);
 }
 
-void ASTGameState::OnSubMissionEnded_Multicast_Implementation(FGameplayTag InMissionTag, bool IsCleared)
+void ASTGameState::OnSubMissionEnded_Multicast_Implementation(USTMissionBase* InMission, bool IsCleared)
 {
-    if (IsCleared)
+    if (InMission)
     {
-        ST_LOG(LogSTNetwork, Log, TEXT(" %s SubMission Cleared!"), *InMissionTag.GetTagName().ToString());
-    }
-    else
-    {
-        ST_LOG(LogSTNetwork, Log, TEXT(" %s SubMission Failed!"), *InMissionTag.GetTagName().ToString());
+        if (IsCleared)
+        {
+            ST_LOG(LogSTNetwork, Log, TEXT(" %s SubMission Cleared!"), *InMission->GetName());
+        }
+        else
+        {
+            ST_LOG(LogSTNetwork, Log, TEXT(" %s SubMission Failed!"), *InMission->GetName());
+        }
     }
 }
 
@@ -308,6 +300,11 @@ USTMissionBase* ASTGameState::GetMission(FGameplayTag InMissionTag)
         }
     }
 
+    return nullptr;
+}
+
+USTMissionBase* ASTGameState::GetSubMission(FGameplayTag InMissionTag)
+{
     for (int i = 0; i < SubMissions.Num(); i++)
     {
         if (SubMissions[i].MissionTag == InMissionTag)

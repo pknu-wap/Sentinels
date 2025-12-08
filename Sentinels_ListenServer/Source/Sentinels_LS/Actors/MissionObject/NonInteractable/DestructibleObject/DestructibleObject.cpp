@@ -61,6 +61,8 @@ float ADestructibleObject::TakeDamage(float DamageAmount, FDamageEvent const& Da
 		GCComponent->SetCollisionResponseToChannel(ECC_Pawn, ECollisionResponse::ECR_Ignore);
 		GCComponent->SetCollisionResponseToChannel(ECC_PhysicsBody, ECollisionResponse::ECR_Ignore);
 
+		bIsSuccessed = true;
+
 		// Start Fracture
 		GetWorldTimerManager().SetTimerForNextTick(this, &ADestructibleObject::StartFracture);
 		// StartFracture();

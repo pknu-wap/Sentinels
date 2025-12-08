@@ -62,12 +62,6 @@ private:
 	UPROPERTY()
 	USTPlayerStatusComponent* StatusComp;
 
-	UPROPERTY()
-	float FinalDamage = 10.f;
-
-	UPROPERTY()
-	FSTPointDamageEvent DamageEvent;
-
 /*
 	Time Dilation	
 */

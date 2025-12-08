@@ -35,6 +35,10 @@ protected:
 protected:
 	virtual void Skill_Passive_Pressed() override;
 	virtual void Skill_Passive_Pressed_Server_Implementation() override;
+	virtual void Skill_Passive_Pressed_Multicast_Implementation() override;
+
+	UFUNCTION()
+	void ApplyPassiveDamage();
 
 	UFUNCTION()
 	void SetWrapTarget_Passive();
@@ -73,6 +77,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Skill")
 	TSubclassOf<AActor> SubclassOfSlash_Q;
+
+	UPROPERTY(EditAnywhere, Category = "Skill")
+	TSubclassOf<AProjectileBase> SubclassOfSlash_R;
 
 private:
 	FVector SpawnLocation_Slash_Q;

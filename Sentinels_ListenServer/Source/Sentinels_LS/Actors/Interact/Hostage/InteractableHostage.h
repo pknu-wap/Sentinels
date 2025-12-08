@@ -10,7 +10,7 @@
 class USpawnEnemyComponent;
 
 UCLASS()
-class SENTINELS_LS_API AInteractableHostage : public AInteractableCharacter
+class SENTINELS_LS_API AInteractableHostage : public AInteractableCharacter, public IMissionInterface
 {
 	GENERATED_BODY()
 
@@ -22,6 +22,8 @@ public:
 	*/
 protected:
 	virtual void BeginPlay() override;
+
+	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
 
 
 	/*
@@ -41,6 +43,8 @@ protected:
 public:
 	virtual void Interact_Implementation(UInteractComponent* InteractingComponent) override;
 	virtual void Interact_Finish_Implementation(UInteractComponent* InteractingComponent) override;
+
+	virtual bool IsSuccessed_Implementation() override { return bIsSuccessed; }
 
 
 	/*
@@ -62,6 +66,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float InteractionHoldTime = 7.5f;
+
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	bool bIsSuccessed = false;
 
 public:
 	FMissionConditionUpdate Delegate_MissionConditionUpdate;

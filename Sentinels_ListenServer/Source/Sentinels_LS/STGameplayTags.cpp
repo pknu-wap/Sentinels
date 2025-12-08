@@ -81,6 +81,11 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 		FString("Team Info")
 	);
 
+	GameplayTags.Widget_InGame_Interactive = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Widget.InGame.Interactive"),
+		FString("Interactive")
+	);
+
 	/*	
 		Character
 	*/
@@ -112,6 +117,16 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.Character_State_Step = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Character.State.Step"),
 		FString("Character State Step")
+	);
+
+	GameplayTags.Character_State_Invincible = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Character.State.Invincible"),
+		FString("Character State Invincible")
+	);
+
+	GameplayTags.Character_State_Reflect = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Character.State.Reflect"),
+		FString("Character State Reflect")
 	);
 
 	GameplayTags.Character_Player_State_RepairRift = UGameplayTagsManager::Get().AddNativeGameplayTag(
@@ -183,6 +198,14 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 	);
 
 	/*
+		Sections
+	*/
+	GameplayTags.Section_SelectMissionOrBoss = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Section.SelectMissionOrBoss"),
+		FString("Section SelectMissionOrBoss")
+	);
+
+	/*
 		Spawn Points
 	*/
 	GameplayTags.SpawnPoint_DefenseCore = UGameplayTagsManager::Get().AddNativeGameplayTag(
@@ -214,6 +237,25 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 		FName("SpawnPoint.DestructibleObject"),
 		FString("SpawnPoint DestructibleObject")
 	);
+
+	/*
+		Enhancement
+	*/
+	GameplayTags.Character_Enhance_Default_AttackSpeed = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Character.Enhance.Default.AttackSpeed"),
+		FString("Character.Enhance.Default.AttackSpeed")
+	);
+
+	GameplayTags.Character_Enhance_Default_BossAttackDamage = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Character.Enhance.Default.BossAttackDamage"),
+		FString("Character.Enhance.Default.BossAttackDamage")
+	);
+
+	GameplayTags.Character_Enhance_Default_CoolDown = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Character.Enhance.Default.CoolDown"),
+		FString("Character.Enhance.Default.CoolDown")
+	);
+
 
 	/*
 		Levels

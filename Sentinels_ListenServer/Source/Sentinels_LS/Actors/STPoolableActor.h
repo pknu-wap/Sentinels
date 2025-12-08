@@ -22,6 +22,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void Deactivate();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnActorActivated();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnActorDeactivated();
+
 public:
 	FORCEINLINE bool IsActivated() const { return bIsActivated; }
 
