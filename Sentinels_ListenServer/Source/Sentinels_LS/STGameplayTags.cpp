@@ -251,14 +251,9 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 		FString("MilitaryAirport")
 	);
 
-	GameplayTags.Level_MilitaryAirport = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("Level.MilitaryAirport"),
-		FString("MilitaryAirport")
-	);
-
-	GameplayTags.Level_EX2 = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("Level.EX2"),
-		FString("EX2")
+	GameplayTags.Level_Boss = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Level.Boss"),
+		FString("Boss")
 	);
 
 	/*

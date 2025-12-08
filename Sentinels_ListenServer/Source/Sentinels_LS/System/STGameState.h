@@ -114,10 +114,10 @@ public:
 	USTMissionBase* GetSubMission(FGameplayTag InMissionTag);
 
 	UFUNCTION(BlueprintCallable)
-	FGameplayTag GetCurrentLevelTag() { return CurrentLevelTag; }
+	FGameplayTag GetLevelTag() { return LevelTag; }
 
 	UFUNCTION(BlueprintCallable)
-	void SetCurrentLevelTag(FGameplayTag NewLevelTag);
+	void SetLevelTag(FGameplayTag NewLevelTag);
 
 protected:
 	UFUNCTION()
@@ -171,7 +171,5 @@ public:
 
 protected:
 	UPROPERTY(Replicated)
-	FGameplayTag CurrentLevelTag;
-
-
+	FGameplayTag LevelTag;
 };

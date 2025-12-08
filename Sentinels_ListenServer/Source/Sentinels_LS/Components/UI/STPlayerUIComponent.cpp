@@ -142,7 +142,7 @@ void USTPlayerUIComponent::ServerRPCCheckbIsReady_Implementation(FGameplayTag Wi
 	FGameplayTag loadoutTag = FSTGameplayTags::Get().Widget_Lobby_Loadout;
 	UUserWidget* loadoutWidgetInstance = UISubSystem->GetWidget(loadoutTag);
 
-	FGameplayTag currentLevelTag = GetWorld()->GetGameState<ASTGameState>()->GetCurrentLevelTag();
+	FGameplayTag currentLevelTag = GetWorld()->GetGameState<ASTGameState>()->GetLevelTag();
 
 	if (currentLevelTag == FSTGameplayTags::Get().Level_Lobby)
 		return;
@@ -161,7 +161,7 @@ void USTPlayerUIComponent::ServerRPCCheckbIsReady_Implementation(FGameplayTag Wi
 	USTGameTravelDataSubsystem* gameTravelDataSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
 	ASTGameState* gameState = Cast<ASTGameState>(GetWorld()->GetGameState<ASTGameState>());
 
-	gameTravelDataSubsystem->SetCurrentLevelTag(gameState->GetCurrentLevelTag());
+	gameTravelDataSubsystem->SetCurrentLevelTag(gameState->GetLevelTag());
 	gameState->TryServerTravel();
 }
 
@@ -287,7 +287,7 @@ void USTPlayerUIComponent::UpdatePlayerAvatarLayer()
 
 void USTPlayerUIComponent::UpdateCurrentGameLevelLayer()
 {
-	FGameplayTag currentLevelTag = GetWorld()->GetGameState<ASTGameState>()->GetCurrentLevelTag();
+	FGameplayTag currentLevelTag = GetWorld()->GetGameState<ASTGameState>()->GetLevelTag();
 
 	if (currentLevelTag == FSTGameplayTags::Get().Level_Lobby)
 		return;
@@ -302,7 +302,7 @@ void USTPlayerUIComponent::UpdateCurrentGameLevelLayer()
 		return;
 	}
 
-	UDataTable* mapDT = LoadObject<UDataTable>(nullptr, TEXT("/Script/Engine.DataTable'/Game/Sentinels/UI/InGame/Map/DT_Map.DT_Map'"));
+	UDataTable* mapDT = LoadObject<UDataTable>(nullptr, TEXT("/Script/Engine.DataTable'/Game/Sentinels/UI/InGame/DataTable/DT_Map.DT_Map'"));
 
 	if (!mapDT)
 		return;

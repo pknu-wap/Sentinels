@@ -73,8 +73,8 @@ public:
 
 	/////////  Level  /////////
 	FGameplayTag Level_Lobby;
+	FGameplayTag Level_Boss;
 	FGameplayTag Level_MilitaryAirport;
-	FGameplayTag Level_EX2;
 
 	/////////  Event  /////////
 	FGameplayTag Level_MilitaryAirport_Event_Interact_ControlTower;

@@ -73,29 +73,6 @@ void ASTDimensionDrift::Interact_Implementation(UInteractComponent* InteractingC
 	pc->SetShowMouseCursor(true);
 
 	uiComponent->ServerRPCUpdateUI(loadoutTag);
-	
-	//if (pc->HasAuthority())
-	//{
-	//	uiComponent->AddPlayerID(pc->PlayerState->GetUniqueId());
-	//	// 스스로 호출
-	//	//uiComponent->ServerRPCUpdateUI(loadoutTag);
-	//}
-	//else
-	//{
-	//	uiComponent->ServerRPCRegisterPlayerID(pc->PlayerState->GetUniqueId());
-	//	uiComponent->ServerRPCUpdateUI(loadoutTag);
-	//}
-
-	//if (pc->IsLocalController())
-	//{
-	//	uiComponent->AddPlayerID(pc->PlayerState->GetUniqueId());
-	//	uiComponent->UpdateLoadoutUI();
-	//	uiComponent->UpdatePlayerWeaponLayer();
-	//}
-	//else
-	//{
-	//	uiComponent->ServerRPCRegisterPlayerID(pc->PlayerState->GetUniqueId());
-	//}
 }
 
 void ASTDimensionDrift::Interact_Finish_Implementation(UInteractComponent* InteractingComponent)

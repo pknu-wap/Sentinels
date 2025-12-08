@@ -16,7 +16,33 @@ class USTPlayerStatusComponent;
 class UCameraModeManagerComponent;
 class UCameraShakeBase;
 struct FInputActionValue;
-struct FPlayerSKMeshes;
+
+USTRUCT()
+struct FPlayerSKMeshesPartsName
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FName Name_Head = "0";
+	UPROPERTY()
+	FName Name_Hood = "0";
+	UPROPERTY()
+	FName Name_LongHair = "0";
+	UPROPERTY()
+	FName Name_Glasses = "0";
+	UPROPERTY()
+	FName Name_UpperBody = "0";
+	UPROPERTY()
+	FName Name_Backpack = "0";
+	UPROPERTY()
+	FName Name_Hand_L = "0";
+	UPROPERTY()
+	FName Name_Hand_R = "0";
+	UPROPERTY()
+	FName Name_BottomBody = "0";
+	UPROPERTY()
+	FName Name_Feet = "0";
+};
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPassiveSkillReadyStateChanged, bool, IsReady);
 
@@ -251,6 +277,15 @@ public:
 	UPROPERTY(EditAnywhere, Category = Camera)
 	TSubclassOf<UCameraShakeBase> CameraShakeClass_Attack;
 
+	/*
+	Customize
+	*/
+public:
+	UFUNCTION()
+	void OnRep_SKMeshPartsName();
+
+	void ConvertRowNametoPartsName(FPlayerSKMeshesRowName RowName);
+	void ConvertPartsNametoRowName(FPlayerSKMeshesRowName& RowName);
 
 protected:
 	/*
@@ -350,4 +385,11 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* Montage_Skill_Passive;
+
+
+	/*
+	Customize
+	*/
+	UPROPERTY(ReplicatedUsing = OnRep_SKMeshPartsName)
+	FPlayerSKMeshesPartsName SKMeshPartsName;
 };

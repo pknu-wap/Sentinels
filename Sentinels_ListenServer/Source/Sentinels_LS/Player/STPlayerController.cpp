@@ -23,8 +23,8 @@
 #include "Components/UI/STPlayerUIComponent.h"
 #include "SubSystem/STGameTravelDataSubsystem.h"
 #include "Player/STLocalPlayer.h"
-#include "Player/STPlayerCharacter.h"
 #include "SubSystem/STWorldSpawnSubsystem.h"
+#include "System/STGameState.h"
 
 ASTPlayerController::ASTPlayerController()
 {
@@ -47,8 +47,6 @@ void ASTPlayerController::OnPossess(APawn* aPawn)
 
 	if(InteractComponent)
 		InteractComponent->BindDelegates();
-
-	RequestLoadSKMeshParts();
 }
 
 void ASTPlayerController::BeginPlay()
@@ -66,7 +64,7 @@ void ASTPlayerController::BeginPlay()
 	{
 		RegisterSelfToSession(LocalPlayer->GetSessionName());
 		LocalPlayer->bIsRegistered = true;
-	}*/
+	}*/	
 }
 
 void ASTPlayerController::Tick(float DeltaTime)
@@ -139,15 +137,6 @@ void ASTPlayerController::UpdatePlayerClass_Implementation(ESTClassType InClass)
 
 	AController* PC = this;
 	GetWorldTimerManager().SetTimerForNextTick([GameMode, PC]() { GameMode->RestartPlayer(PC); });
-}
-
-void ASTPlayerController::RequestLoadSKMeshParts_Implementation()
-{
-	USTGameTravelDataSubsystem* gameTravelData = GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
-	FPlayerInfo playerInfo = gameTravelData->LoadPlayerInfo(PlayerState->GetUniqueId());
-
-	if(ASTPlayerCharacter* player = Cast<ASTPlayerCharacter>(GetCharacter()))
-		player->UpdateSKMeshParts(playerInfo.PlayerSKMeshesRowName);
 }
 
 void ASTPlayerController::MoveClick_Started()

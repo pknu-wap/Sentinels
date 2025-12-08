@@ -25,6 +25,8 @@
 #include "STGameplayTags.h"
 #include "Player/Inventory/ItemObject.h"
 #include "MotionWarpingComponent.h"
+#include "SubSystem/STGameTravelDataSubsystem.h"
+#include "GameFramework/PlayerState.h"
 
 ASTPlayerCharacter::ASTPlayerCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<USTCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
@@ -220,6 +222,7 @@ void ASTPlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ASTPlayerCharacter, InventoryComponent);
 	DOREPLIFETIME(ASTPlayerCharacter, StatusComponent);
+	DOREPLIFETIME(ASTPlayerCharacter, SKMeshPartsName);
 }
 
 float ASTPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -292,6 +295,16 @@ void ASTPlayerCharacter::PossessedBy(AController* NewController)
 
 		TagContainer.Reset();
 	}
+
+	if (HasAuthority())
+	{
+		USTGameTravelDataSubsystem* gameTravelDataSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
+
+		FPlayerSKMeshesRowName sKMeshesRowName = gameTravelDataSubsystem->LoadPlayerInfo(GetController()->PlayerState->GetUniqueId()).PlayerSKMeshesRowName;
+		ConvertRowNametoPartsName(sKMeshesRowName);
+	}
+
+	OnRep_SKMeshPartsName();
 }
 
 void ASTPlayerCharacter::Jump()
@@ -316,7 +329,6 @@ void ASTPlayerCharacter::OnMontageEnded_Callback(UAnimMontage* Montage, bool bIn
 		AddTag(FSTGameplayTags::Get().Character_State_Skill);
 	}
 }
-
 
 #pragma region Region_NormalAttack
 
@@ -746,6 +758,40 @@ void ASTPlayerCharacter::AdjustFinalDamage(float& DamageAmount, FDamageEvent con
 	if (!HasAuthority()) return;
 }
 
+void ASTPlayerCharacter::OnRep_SKMeshPartsName()
+{
+	FPlayerSKMeshesRowName rowName;
+	ConvertPartsNametoRowName(rowName);
+	UpdateSKMeshParts(rowName);
+}
+
+void ASTPlayerCharacter::ConvertRowNametoPartsName(FPlayerSKMeshesRowName RowName)
+{
+	SKMeshPartsName.Name_Head = RowName.Name_Head;
+	SKMeshPartsName.Name_Hood = RowName.Name_Hood;
+	SKMeshPartsName.Name_LongHair = RowName.Name_LongHair;
+	SKMeshPartsName.Name_Glasses = RowName.Name_Glasses;
+	SKMeshPartsName.Name_UpperBody = RowName.Name_UpperBody;
+	SKMeshPartsName.Name_Backpack = RowName.Name_Backpack;
+	SKMeshPartsName.Name_Hand_L = RowName.Name_Hand_L;
+	SKMeshPartsName.Name_Hand_R = RowName.Name_Hand_R;
+	SKMeshPartsName.Name_BottomBody = RowName.Name_BottomBody;
+	SKMeshPartsName.Name_Feet = RowName.Name_Feet;
+}
+
+void ASTPlayerCharacter::ConvertPartsNametoRowName(FPlayerSKMeshesRowName& RowName)
+{
+	RowName.Name_Head = SKMeshPartsName.Name_Head;
+	RowName.Name_Hood = SKMeshPartsName.Name_Hood;
+	RowName.Name_LongHair = SKMeshPartsName.Name_LongHair;
+	RowName.Name_Glasses = SKMeshPartsName.Name_Glasses;
+	RowName.Name_UpperBody = SKMeshPartsName.Name_UpperBody;
+	RowName.Name_Backpack = SKMeshPartsName.Name_Backpack;
+	RowName.Name_Hand_L = SKMeshPartsName.Name_Hand_L;
+	RowName.Name_Hand_R = SKMeshPartsName.Name_Hand_R;
+	RowName.Name_BottomBody = SKMeshPartsName.Name_BottomBody;
+	RowName.Name_Feet = SKMeshPartsName.Name_Feet;
+}
 
 void ASTPlayerCharacter::OnAttackSuccess_Server_Implementation(float DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor)
 {
