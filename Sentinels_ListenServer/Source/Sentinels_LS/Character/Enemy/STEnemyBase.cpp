@@ -28,6 +28,7 @@
 #include "Actors/Interact/Item/InteractableItem.h"
 #include "SubSystem/STProjectilePoolingSubSystem.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Character/Enemy/STEliteBase.h"
 
 ASTEnemyBase::ASTEnemyBase(const FObjectInitializer& object_initializer)
 	: Super(object_initializer.SetDefaultSubobjectClass<USkeletalMeshComponentBudgeted>(ACharacter::MeshComponentName))
@@ -78,6 +79,8 @@ void ASTEnemyBase::BeginPlay()
 
 	if (HasAuthority())
 	{
+		EnemyAIController = Cast<ASTEnemyBase_AIController>(Controller);
+
 		if (USTCharacterAnimInstanceBase* AnimInst = Cast<USTCharacterAnimInstanceBase>(GetMesh()->GetAnimInstance()))
 		{
 			AnimInst->Delegate_PrimaryFire.AddUObject(this, &ASTEnemyBase::PrimaryFire);
@@ -202,7 +205,7 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 			*/
 			if (STDamageType)
 			{
-				if (STDamageType->StunnedTime > 0)
+				if (STDamageType->StunnedTime > 0 && !IsA<ASTEliteBase>())
 				{
 					// Apply Stun to Behavior Tree
 					controller->ApplyStun(STDamageType->StunnedTime);

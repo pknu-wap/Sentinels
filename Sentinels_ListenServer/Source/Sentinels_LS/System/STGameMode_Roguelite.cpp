@@ -177,6 +177,7 @@ void ASTGameMode_Roguelite::OnEliteBossCleared(AActor* DiedEnemy)
 	// Despawn All Section Enemys && Set Timer for EliteBoss
 	if (CurrentSection)
 	{
+		CurrentSection->MissionDeactivated();
 		CurrentSection->DespawnAllEnemys();
 
 		FTimerHandle handle;

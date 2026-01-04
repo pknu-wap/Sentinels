@@ -49,6 +49,10 @@ public:
 	UFUNCTION(Server, Reliable)
 	void StopCurrentAnimMontage_Multicast();
 
+protected:
+	UPROPERTY()
+	class ASTEnemyBase_AIController* EnemyAIController;
+
 /*
 	Play Montage
 */
