@@ -23,8 +23,9 @@
 #include "Components/UI/STPlayerUIComponent.h"
 #include "SubSystem/STGameTravelDataSubsystem.h"
 #include "Player/STLocalPlayer.h"
-#include "Player/STPlayerCharacter.h"
 #include "SubSystem/STWorldSpawnSubsystem.h"
+#include "System/STGameState.h"
+#include "SubSystem/STUISubSystem.h"
 
 ASTPlayerController::ASTPlayerController()
 {
@@ -47,8 +48,6 @@ void ASTPlayerController::OnPossess(APawn* aPawn)
 
 	if(InteractComponent)
 		InteractComponent->BindDelegates();
-
-	RequestLoadSKMeshParts();
 }
 
 void ASTPlayerController::BeginPlay()
@@ -66,7 +65,7 @@ void ASTPlayerController::BeginPlay()
 	{
 		RegisterSelfToSession(LocalPlayer->GetSessionName());
 		LocalPlayer->bIsRegistered = true;
-	}*/
+	}*/	
 }
 
 void ASTPlayerController::Tick(float DeltaTime)
@@ -92,6 +91,9 @@ void ASTPlayerController::SetupInputComponent()
 
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &ASTPlayerController::Interact_Pressed);
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, this, &ASTPlayerController::Interact_Released);
+
+		EnhancedInputComponent->BindAction(ShowTeamInfoUIAction, ETriggerEvent::Started, this, &ASTPlayerController::ShowTeamInfoUI_Pressed);
+		EnhancedInputComponent->BindAction(ShowTeamInfoUIAction, ETriggerEvent::Completed, this, &ASTPlayerController::ShowTeamInfoUI_Released);
 	}
 }
 
@@ -139,15 +141,6 @@ void ASTPlayerController::UpdatePlayerClass_Implementation(ESTClassType InClass)
 
 	AController* PC = this;
 	GetWorldTimerManager().SetTimerForNextTick([GameMode, PC]() { GameMode->RestartPlayer(PC); });
-}
-
-void ASTPlayerController::RequestLoadSKMeshParts_Implementation()
-{
-	USTGameTravelDataSubsystem* gameTravelData = GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
-	FPlayerInfo playerInfo = gameTravelData->LoadPlayerInfo(PlayerState->GetUniqueId());
-
-	if(ASTPlayerCharacter* player = Cast<ASTPlayerCharacter>(GetCharacter()))
-		player->UpdateSKMeshParts(playerInfo.PlayerSKMeshesRowName);
 }
 
 void ASTPlayerController::MoveClick_Started()
@@ -219,6 +212,28 @@ void ASTPlayerController::AutoRun()
 			StopMovement();
 			GetWorldTimerManager().ClearTimer(Handle_AutoRun);
 		}
+	}
+}
+
+void ASTPlayerController::ShowTeamInfoUI_Pressed()
+{
+	USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
+	UWidget* widget = UISubSystem->GetWidget(FSTGameplayTags::Get().Widget_InGame_TeamInfo);
+
+	if (widget)
+	{
+		widget->SetVisibility(ESlateVisibility::HitTestInvisible);
+	}
+}
+
+void ASTPlayerController::ShowTeamInfoUI_Released()
+{
+	USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
+	UWidget* widget = UISubSystem->GetWidget(FSTGameplayTags::Get().Widget_InGame_TeamInfo);
+
+	if (widget)
+	{
+		widget->SetVisibility(ESlateVisibility::Collapsed);
 	}
 }
 

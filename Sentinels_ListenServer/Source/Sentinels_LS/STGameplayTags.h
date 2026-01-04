@@ -39,6 +39,7 @@ public:
 	FGameplayTag Widget_Lobby_WeaponSelect;
 	FGameplayTag Widget_Lobby_LevelSelect;
 	FGameplayTag Widget_Lobby_Customize;
+	FGameplayTag Widget_LoadScreen;
 	FGameplayTag Widget_InGame;
 	FGameplayTag Widget_InGame_Map;
 	FGameplayTag Widget_InGame_Minimap;
@@ -78,8 +79,8 @@ public:
 
 	/////////  Level  /////////
 	FGameplayTag Level_Lobby;
+	FGameplayTag Level_Boss;
 	FGameplayTag Level_MilitaryAirport;
-	FGameplayTag Level_EX2;
 
 	/////////  Event  /////////
 	FGameplayTag Level_MilitaryAirport_Event_Interact_ControlTower;

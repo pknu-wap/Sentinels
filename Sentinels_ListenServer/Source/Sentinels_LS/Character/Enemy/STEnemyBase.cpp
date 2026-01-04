@@ -228,21 +228,17 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 			{
 				if (GetNumOfTag(FSTGameplayTags::Get().Character_State_Bleed) >= 5)
 				{
-
+					//UpdateEnemyStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Bleed, true);
 				}
 				else
 				{
+					if (!HasTag(FSTGameplayTags::Get().Character_State_Bleed))
+						UpdateEnemyStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Bleed, true);
 					AddTag(FSTGameplayTags::Get().Character_State_Bleed);
-					Delegate_OnEnemyStateAdd.Broadcast(FSTGameplayTags::Get().Character_State_Bleed);
 				}
 				UE_LOG(LogTemp, Display, TEXT("Katana Damage Type ! ! !"));
 			}
 		}
-
-		/*
-			Damage Indicate
-		*/
-		ShowDamageIndicateWidget_Multicast(Damage, damageTextColor);
 
 		/*
 			Calculate Current HP & Check Died
@@ -274,6 +270,8 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 
 			return ActualDamage;
 		}
+		else
+			ShowDamageIndicateWidget_Multicast(Damage, damageTextColor);
 
 		/*
 			Play Knockback Montage
@@ -316,6 +314,13 @@ void ASTEnemyBase::Deactivate()
 
 	// Delegate Broadcast
 	Delegate_OnEnemyDied.Broadcast(this);
+
+	// Delete Tag
+	UpdateEnemyStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Bleed, false);
+	UpdateEnemyStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Stunned, false);
+
+	ClearTag(FSTGameplayTags::Get().Character_State_Bleed);
+	ClearTag(FSTGameplayTags::Get().Character_State_Stunned);
 }
 
 bool ASTEnemyBase::IsNormalAttackMontage(UAnimMontage* InMontage)
@@ -408,13 +413,13 @@ void ASTEnemyBase::ShowDamageIndicateWidget(float Damage, FLinearColor Color)
 	}
 }
 
-void ASTEnemyBase::UpdateEnemyStateWidget_Multicast_Implementation(FGameplayTag StateTag, bool bShow)
-{
-	if (bShow)
-		Delegate_OnEnemyStateAdd.Broadcast(StateTag);
-	else
-		Delegate_OnEnemyStateRemove.Broadcast(StateTag);
-}
+//void ASTEnemyBase::UpdateEnemyStateWidget_Multicast_Implementation(FGameplayTag StateTag, bool bShow)
+//{
+//	if (bShow)
+//		Delegate_OnStateAdd.Broadcast(StateTag);
+//	else
+//		Delegate_OnStateRemove.Broadcast(StateTag);
+//}
 
 void ASTEnemyBase::PrimaryFire()
 {

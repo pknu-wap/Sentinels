@@ -86,9 +86,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	FGameplayTag GetCurrentLevelTag() { return CurrentLevelTag; }
-	
+
 protected:
+	UPROPERTY()
 	TMap<FUniqueNetIdRepl, FPlayerInfo> PlayerInfos;
+
+	UPROPERTY()
 	FGameplayTag CurrentLevelTag;
 
 	UDataTable* DT_Head;

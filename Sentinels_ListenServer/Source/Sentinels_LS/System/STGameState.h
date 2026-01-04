@@ -114,10 +114,10 @@ public:
 	USTMissionBase* GetSubMission(FGameplayTag InMissionTag);
 
 	UFUNCTION(BlueprintCallable)
-	FGameplayTag GetCurrentLevelTag() { return CurrentLevelTag; }
+	FGameplayTag GetLevelTag() { return LevelTag; }
 
 	UFUNCTION(BlueprintCallable)
-	void SetCurrentLevelTag(FGameplayTag NewLevelTag);
+	void SetLevelTag(FGameplayTag NewLevelTag);
 
 protected:
 	UFUNCTION()
@@ -160,7 +160,6 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_SubMissions, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TArray<FSubMissionInfo> SubMissions;
 
-
 public:
 	UFUNCTION(BlueprintCallable)
 	void TryServerTravel();
@@ -171,7 +170,5 @@ public:
 
 protected:
 	UPROPERTY(Replicated)
-	FGameplayTag CurrentLevelTag;
-
-
+	FGameplayTag LevelTag;
 };

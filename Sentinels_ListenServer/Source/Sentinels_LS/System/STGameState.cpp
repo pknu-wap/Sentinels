@@ -12,7 +12,7 @@
 #include "SubSystem/STGameTravelDataSubsystem.h"
 
 ASTGameState::ASTGameState() :
-    CurrentLevelTag(FSTGameplayTags::Get().Level_Lobby)
+    LevelTag(FSTGameplayTags::Get().Level_Lobby)
 {
     bReplicates = true;
     bReplicateUsingRegisteredSubObjectList = true;
@@ -22,8 +22,11 @@ void ASTGameState::BeginPlay()
 {
     Super::BeginPlay();
 
-    USTGameTravelDataSubsystem* gameTravelDataSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
-    CurrentLevelTag = gameTravelDataSubsystem->GetCurrentLevelTag();
+    if (HasAuthority())
+    {
+        USTGameTravelDataSubsystem* gameTravelDataSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
+        LevelTag = gameTravelDataSubsystem->GetCurrentLevelTag();
+    }
 }
 
 void ASTGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -32,7 +35,7 @@ void ASTGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
     DOREPLIFETIME(ASTGameState, Missions);
     DOREPLIFETIME(ASTGameState, ActivatedMissions);
     DOREPLIFETIME(ASTGameState, SubMissions);
-    DOREPLIFETIME(ASTGameState, CurrentLevelTag);
+    DOREPLIFETIME(ASTGameState, LevelTag);
 }
 
 int ASTGameState::GetClearedMissionNum() const
@@ -318,12 +321,12 @@ USTMissionBase* ASTGameState::GetSubMission(FGameplayTag InMissionTag)
 
 void ASTGameState::TryServerTravel()
 {
-    OnServerTravelReady.Broadcast(CurrentLevelTag);
+    OnServerTravelReady.Broadcast(LevelTag);
 }
 
-void ASTGameState::SetCurrentLevelTag(FGameplayTag NewLevelTag)
+void ASTGameState::SetLevelTag(FGameplayTag NewLevelTag)
 {
-    CurrentLevelTag = NewLevelTag;
+    LevelTag = NewLevelTag;
 }
 
 void ASTGameState::OnRep_ActivatedMission()
