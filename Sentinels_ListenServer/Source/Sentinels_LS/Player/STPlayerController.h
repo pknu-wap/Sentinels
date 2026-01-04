@@ -72,6 +72,9 @@ protected:
 public:
 	USTPlayerUIComponent* GetUIComponent() { return UIComponent; }
 
+	void ShowTeamInfoUI_Pressed();
+	void ShowTeamInfoUI_Released();
+
 /*
 	Interact
 */
@@ -106,6 +109,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* InteractAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* ShowTeamInfoUIAction;
 
 /*
 	Movement

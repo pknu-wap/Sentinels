@@ -52,6 +52,7 @@ void ASTDimensionDrift::Interact_Implementation(UInteractComponent* InteractingC
 	FGameplayTag weaponSelectTag = FSTGameplayTags::Get().Widget_Lobby_WeaponSelect;
 	FGameplayTag customizeTag = FSTGameplayTags::Get().Widget_Lobby_Customize;
 	FGameplayTag levelSelectTag = FSTGameplayTags::Get().Widget_Lobby_LevelSelect;
+	FGameplayTag loadscreenTag = FSTGameplayTags::Get().Widget_LoadScreen;
 
 	uiComponent->AddPlayerID(pc->PlayerState->GetUniqueId());
 
@@ -59,6 +60,7 @@ void ASTDimensionDrift::Interact_Implementation(UInteractComponent* InteractingC
 	uiComponent->ServerRPCRegisterWidget(weaponSelectTag, Widget_WeaponSelectClass);
 	uiComponent->ServerRPCRegisterWidget(customizeTag, Widget_CustomizeClass);
 	uiComponent->ServerRPCRegisterWidget(levelSelectTag, Widget_LevelSelectClass);
+	uiComponent->ServerRPCRegisterWidget(loadscreenTag, Widget_LoadScreen);
 
 	if (pc->IsLocalController())
 	{

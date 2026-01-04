@@ -22,8 +22,11 @@ void ASTGameState::BeginPlay()
 {
     Super::BeginPlay();
 
-    USTGameTravelDataSubsystem* gameTravelDataSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
-    LevelTag = gameTravelDataSubsystem->GetCurrentLevelTag();
+    if (HasAuthority())
+    {
+        USTGameTravelDataSubsystem* gameTravelDataSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
+        LevelTag = gameTravelDataSubsystem->GetCurrentLevelTag();
+    }
 }
 
 void ASTGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

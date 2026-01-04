@@ -14,7 +14,7 @@
 #include "System/STGameState.h"
 #include "System/STGameInstance.h"
 #include "Player/Dummy/STDummyPlayer.h"
-#include "Components/Widget.h"
+//#include "Components/Widget.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Materials/Material.h"
@@ -32,7 +32,7 @@ void USTPlayerUIComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-
+	// if trainsition ui in viewport, delete
 }
 
 void USTPlayerUIComponent::InitializeComponent()
@@ -152,6 +152,7 @@ void USTPlayerUIComponent::ServerRPCCheckbIsReady_Implementation(FGameplayTag Wi
 		if (playerController)
 		{
 			playerController->GetUIComponent()->ClientRPCRemoveFromParent(WidgetTag);
+			playerController->GetUIComponent()->ClientRPCAddToViewport(FSTGameplayTags::Get().Widget_LoadScreen);
 			playerController->SetInputMode(FInputModeGameOnly());
 			playerController->SetShowMouseCursor(false);
 			playerController->GetUIComponent()->bIsReady = false;

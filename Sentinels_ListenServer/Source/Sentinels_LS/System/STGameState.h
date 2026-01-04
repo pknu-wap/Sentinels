@@ -160,7 +160,6 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_SubMissions, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TArray<FSubMissionInfo> SubMissions;
 
-
 public:
 	UFUNCTION(BlueprintCallable)
 	void TryServerTravel();

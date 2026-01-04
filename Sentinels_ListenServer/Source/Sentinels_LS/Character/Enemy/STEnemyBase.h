@@ -11,8 +11,8 @@ class USTEnemyStatusComponent;
 class AProjectileBase;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyDied, AActor*, DiedEnemy);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyStateAdd, FGameplayTag, AddedState);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyStateRemove, FGameplayTag, RemovedState);
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyStateAdd, FGameplayTag, AddedState);
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyStateRemove, FGameplayTag, RemovedState);
 
 UCLASS()
 class SENTINELS_LS_API ASTEnemyBase : public ASTPoolableCharacter
@@ -116,9 +116,6 @@ protected:
 
 	void ShowDamageIndicateWidget(float Damage, FLinearColor Color);
 
-	UFUNCTION(NetMulticast, Reliable)
-	void UpdateEnemyStateWidget_Multicast(FGameplayTag StateTag, bool bShow);
-
 /*
 	Die
 */
@@ -200,11 +197,11 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnEnemyDied Delegate_OnEnemyDied;
 
-	UPROPERTY(BlueprintAssignable)
-	FOnEnemyStateAdd Delegate_OnEnemyStateAdd;
+	//UPROPERTY(BlueprintAssignable)
+	//FOnEnemyStateAdd Delegate_OnEnemyStateAdd;
 
-	UPROPERTY(BlueprintAssignable)
-	FOnEnemyStateRemove Delegate_OnEnemyStateRemove;
+	//UPROPERTY(BlueprintAssignable)
+	//FOnEnemyStateRemove Delegate_OnEnemyStateRemove;
 
 private:
 	int LastNormalAttackMontageIndex;

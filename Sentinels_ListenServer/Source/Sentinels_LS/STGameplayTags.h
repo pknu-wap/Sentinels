@@ -39,6 +39,7 @@ public:
 	FGameplayTag Widget_Lobby_WeaponSelect;
 	FGameplayTag Widget_Lobby_LevelSelect;
 	FGameplayTag Widget_Lobby_Customize;
+	FGameplayTag Widget_LoadScreen;
 	FGameplayTag Widget_InGame;
 	FGameplayTag Widget_InGame_Map;
 	FGameplayTag Widget_InGame_Minimap;

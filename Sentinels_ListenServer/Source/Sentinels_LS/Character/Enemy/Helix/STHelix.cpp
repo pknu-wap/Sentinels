@@ -83,7 +83,7 @@ float ASTHelix::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AContr
 			if (KatanaDamageType)
 			{
 				AddTag(FSTGameplayTags::Get().Character_State_Bleed);
-				Delegate_OnEnemyStateAdd.Broadcast(FSTGameplayTags::Get().Character_State_Bleed);
+				Delegate_OnStateAdd.Broadcast(FSTGameplayTags::Get().Character_State_Bleed);
 				UE_LOG(LogTemp, Display, TEXT("Katana Damage Type ! ! !"));
 			}
 
