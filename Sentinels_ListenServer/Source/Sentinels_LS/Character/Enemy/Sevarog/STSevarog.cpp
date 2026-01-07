@@ -58,8 +58,7 @@ void ASTSevarog::StartSoulSiphon()
 		{
 			SoulSiphonCount = 0;
 
-			FTimerHandle handle;
-			GetWorldTimerManager().SetTimer(handle, this, &ASTSevarog::ApplySoulSiphonDamage, 0.1f, true);
+			GetWorldTimerManager().SetTimer(SoulSiphonHandle, this, &ASTSevarog::ApplySoulSiphonDamage, 0.1f, true);
 		}
 	}
 }
@@ -111,7 +110,7 @@ void ASTSevarog::SpawnAOE()
 			FVector unitVector = UKismetMathLibrary::RandomUnitVector(); unitVector.Z = 0;
 			unitVector.Normalize();
 			GetWorld()->SpawnActor<AActor>(AOEActorClass,
-				GetActorLocation() + unitVector * 500 - GetCapsuleComponent()->GetScaledCapsuleHalfHeight(), FRotator::ZeroRotator, spawnParam);
+				GetActorLocation() + unitVector * 500 - FVector(0, 0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight()), FRotator::ZeroRotator, spawnParam);
 		}
 	}
 }

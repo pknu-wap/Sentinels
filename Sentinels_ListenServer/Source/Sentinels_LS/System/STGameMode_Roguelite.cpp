@@ -171,15 +171,18 @@ void ASTGameMode_Roguelite::OnEliteBossCleared(AActor* DiedEnemy)
 	// Teleport All Players to Next Section
 	TeleportToNextSection();
 
-	// Activate Next Section
-	ActivateNextSection();
-
-	// Despawn All Section Enemys && Set Timer for EliteBoss
+	// Despawn All Section Enemys
 	if (CurrentSection)
 	{
 		CurrentSection->MissionDeactivated();
 		CurrentSection->DespawnAllEnemys();
+	}
 
+	// Activate Next Section && Set Timer for EliteBoss
+	ActivateNextSection();
+
+	if (CurrentSection)
+	{
 		FTimerHandle handle;
 		GetWorldTimerManager().SetTimer(handle, CurrentSection, &ASTMissionSection::SpawnEliteBoss,
 			SectionTimeLimit, false);
