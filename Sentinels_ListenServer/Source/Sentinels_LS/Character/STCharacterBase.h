@@ -14,6 +14,9 @@
 	- All Characters should be Subclass of this.
 */
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStateAdd, FGameplayTag, AddedState);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStateRemove, FGameplayTag, RemovedState);
+
 UCLASS()
 class SENTINELS_LS_API ASTCharacterBase : public ACharacter
 {
@@ -134,7 +137,18 @@ public:
 		return -1;
 	}
 
+	UFUNCTION(NetMulticast, Reliable)
+	void UpdateEnemyStateWidget_Multicast(FGameplayTag StateTag, bool bShow);
+
+public:
+	UPROPERTY(BlueprintAssignable)
+	FOnStateAdd Delegate_OnStateAdd;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnStateRemove Delegate_OnStateRemove;
+
 protected:
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly)
 	TArray<FStatusEntry> TagContainer;
+
 };

@@ -285,6 +285,7 @@ void ASTDummyPlayer::OnRep_PlayerID()
 			return;
 
 		pc->GetUIComponent()->UpdatePlayerAvatarLayer();
+		OnRep_CurrentClass();
 
 	}, 0.5f, false);
 }

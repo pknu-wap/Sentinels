@@ -58,6 +58,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "WBP")
 	TSubclassOf<UUserWidget> Widget_LevelSelectClass;
 
+	UPROPERTY(EditAnywhere, Category = "WBP")
+	TSubclassOf<UUserWidget> Widget_LoadScreen;
+
 	/*
 		Level Info
 	*/

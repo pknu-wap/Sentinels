@@ -10,6 +10,7 @@
 #include "STGameplayTags.h"
 #include "SubSystem/STProjectilePoolingSubSystem.h"
 #include "Components/STPlayerStatusComponent.h"
+#include "Character/Enemy/STEnemyBase.h"
 
 void ASTPlayerCharacter_Katana::BeginPlay()
 {
@@ -124,6 +125,7 @@ void ASTPlayerCharacter_Katana::ApplyPassiveDamage()
 
 				// Clear Bleed Tag
 				character->ClearTag(FSTGameplayTags::Get().Character_State_Bleed);
+				character->Delegate_OnStateRemove.Broadcast(FSTGameplayTags::Get().Character_State_Bleed);
 			}
 		}
 	}

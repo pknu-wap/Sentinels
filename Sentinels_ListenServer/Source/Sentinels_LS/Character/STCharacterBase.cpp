@@ -64,3 +64,11 @@ void ASTCharacterBase::OnCharacterLanded(const FHitResult& Hit)
 	ClearTag(FSTGameplayTags::Get().Character_State_Jump);
 }
 
+void ASTCharacterBase::UpdateEnemyStateWidget_Multicast_Implementation(FGameplayTag StateTag, bool bShow)
+{
+	if (bShow)
+		Delegate_OnStateAdd.Broadcast(StateTag);
+	else
+		Delegate_OnStateRemove.Broadcast(StateTag);
+}
+
