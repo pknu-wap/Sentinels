@@ -41,6 +41,9 @@ struct SENTINELS_LS_API FEnhancementInfo : public FTableRowBase
 	FGameplayTag EnhancementTag;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<class UEnhancementObject> EnhancmenetClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int Quantity = 1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

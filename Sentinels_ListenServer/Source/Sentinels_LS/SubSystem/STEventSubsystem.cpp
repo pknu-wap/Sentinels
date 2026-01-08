@@ -21,3 +21,8 @@ void USTEventSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
     }
 }
+
+void USTEventSubsystem::EventOccured(FGameplayTag InEventTag)
+{
+    Delegate_EventOccur.Broadcast(InEventTag);
+}

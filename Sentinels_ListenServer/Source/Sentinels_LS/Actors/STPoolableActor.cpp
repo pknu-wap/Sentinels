@@ -20,6 +20,8 @@ void ASTPoolableActor::Activate(const FVector ActivateLocation, const FRotator A
 	SetActorLocation(ActivateLocation);
 	SetActorRotation(ActivateRotation);
 
+	SetActorTickEnabled(true);
+
 	TSet<UActorComponent*> components = GetComponents();
 	for (UActorComponent* component : components)
 	{
@@ -32,6 +34,8 @@ void ASTPoolableActor::Deactivate()
 	bIsActivated = false;
 
 	SetHidden(true);
+
+	SetActorTickEnabled(false);
 
 	TSet<UActorComponent*> components = GetComponents();
 	for (UActorComponent* component : components)
