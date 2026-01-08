@@ -29,18 +29,34 @@ public:
 	FString GetLevelName(const FGameplayTag LevelTag) { return LevelMap.Find(LevelTag)->GetAssetName(); }
 
 protected:
+	/*
+		Interact
+	*/
 	virtual void Interact_Implementation(UInteractComponent* InteractingComponent) override;
 	virtual void Interact_Finish_Implementation(UInteractComponent* InteractingComponent) override;
 	virtual void ShowInteractiveUI_Implementation(UInteractComponent* InteractingComponent) override;
 	virtual void HideInteractiveUI_Implementation(UInteractComponent* InteractingComponent) override;
+
+	/*
+		DummyPlayer
+	*/
+	void RegisterPlayerIDToDummyPlayer(class ASTPlayerController* PlayerController);
 
 private:
 	UFUNCTION()
 	void HandleAllPlayerIsReady(FGameplayTag NewGameLevel);
 
 protected:
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class USkeletalMeshComponent> SKMesh;
+
+	/*
+		DummyPlayer
+	*/
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Setup")
+	TArray<class ASTDummyPlayer*> DummyPlayers;
+
 
 	/*
 		Widget
@@ -60,6 +76,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "WBP")
 	TSubclassOf<UUserWidget> Widget_LoadScreen;
+
 
 	/*
 		Level Info

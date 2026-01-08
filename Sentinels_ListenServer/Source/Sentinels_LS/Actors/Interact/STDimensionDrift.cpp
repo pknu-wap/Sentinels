@@ -4,7 +4,6 @@
 #include "Actors/Interact/STDimensionDrift.h"
 #include "Net/UnrealNetwork.h"
 #include "Components/SkeletalMeshComponent.h"
-#include "Blueprint/UserWidget.h"
 #include "Subsystem/STUISubSystem.h"
 #include "Player/STPlayerController.h"
 #include "Kismet/GameplayStatics.h"
@@ -16,6 +15,8 @@
 #include "Misc/PackageName.h"
 #include "Sentinels_LS.h"
 #include "System/STGameState.h"
+#include "Player/Dummy/STDummyPlayer.h"
+#include "EngineUtils.h"
 
 ASTDimensionDrift::ASTDimensionDrift()
 {
@@ -25,7 +26,6 @@ ASTDimensionDrift::ASTDimensionDrift()
 	RootComponent = SKMesh;
 
 	bReplicates = true;
-	SKMesh->SetIsReplicated(true);
 }
 
 void ASTDimensionDrift::BeginPlay()
@@ -38,8 +38,6 @@ void ASTDimensionDrift::BeginPlay()
 void ASTDimensionDrift::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(ASTDimensionDrift, SKMesh);
 }
 
 void ASTDimensionDrift::Interact_Implementation(UInteractComponent* InteractingComponent)
@@ -54,27 +52,41 @@ void ASTDimensionDrift::Interact_Implementation(UInteractComponent* InteractingC
 	FGameplayTag levelSelectTag = FSTGameplayTags::Get().Widget_Lobby_LevelSelect;
 	FGameplayTag loadscreenTag = FSTGameplayTags::Get().Widget_LoadScreen;
 
-	uiComponent->AddPlayerID(pc->PlayerState->GetUniqueId());
+	RegisterPlayerIDToDummyPlayer(pc);
 
-	uiComponent->ServerRPCRegisterWidget(loadoutTag, Widget_LoadoutClass);
-	uiComponent->ServerRPCRegisterWidget(weaponSelectTag, Widget_WeaponSelectClass);
-	uiComponent->ServerRPCRegisterWidget(customizeTag, Widget_CustomizeClass);
-	uiComponent->ServerRPCRegisterWidget(levelSelectTag, Widget_LevelSelectClass);
-	uiComponent->ServerRPCRegisterWidget(loadscreenTag, Widget_LoadScreen);
-
-	if (pc->IsLocalController())
+	// Server
+	if (pc == Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0)))
 	{
+		uiComponent->CreateAndRegisterWidget(loadoutTag, Widget_LoadoutClass);
+		uiComponent->CreateAndRegisterWidget(weaponSelectTag, Widget_WeaponSelectClass);
+		uiComponent->CreateAndRegisterWidget(customizeTag, Widget_CustomizeClass);
+		uiComponent->CreateAndRegisterWidget(levelSelectTag, Widget_LevelSelectClass);
+		uiComponent->CreateAndRegisterWidget(loadscreenTag, Widget_LoadScreen);
+
 		uiComponent->AddToViewport(loadoutTag);
 	}
-	else
+	else // Client
 	{
+		uiComponent->ClientRPCRegisterWidget(loadoutTag, Widget_LoadoutClass);
+		uiComponent->ClientRPCRegisterWidget(weaponSelectTag, Widget_WeaponSelectClass);
+		uiComponent->ClientRPCRegisterWidget(customizeTag, Widget_CustomizeClass);
+		uiComponent->ClientRPCRegisterWidget(levelSelectTag, Widget_LevelSelectClass);
+		uiComponent->ClientRPCRegisterWidget(loadscreenTag, Widget_LoadScreen);
+
 		uiComponent->ClientRPCAddToViewport(loadoutTag);
 	}
 
 	pc->SetInputMode(FInputModeUIOnly());
 	pc->SetShowMouseCursor(true);
 
-	uiComponent->ServerRPCUpdateUI(loadoutTag);
+	// All(Local)
+	FTimerHandle timerHandle;
+	GetWorld()->GetTimerManager().SetTimer(timerHandle, [this, loadoutTag]() {
+		for (ASTPlayerController* playerController : TActorRange<ASTPlayerController>(GetWorld()))
+		{
+			playerController->GetUIComponent()->ClientRPCUpdateUI(loadoutTag);
+		}
+	}, 1.0f, false);
 }
 
 void ASTDimensionDrift::Interact_Finish_Implementation(UInteractComponent* InteractingComponent)
@@ -88,6 +100,24 @@ void ASTDimensionDrift::ShowInteractiveUI_Implementation(UInteractComponent* Int
 
 void ASTDimensionDrift::HideInteractiveUI_Implementation(UInteractComponent* InteractingComponent)
 {
+}
+
+void ASTDimensionDrift::RegisterPlayerIDToDummyPlayer(ASTPlayerController* PlayerController)
+{
+	for (ASTDummyPlayer* dummyPlayer : DummyPlayers)
+	{
+		if (dummyPlayer->GetPlayerID() == PlayerController->PlayerState->GetUniqueId())
+			return;
+
+		if (dummyPlayer->GetPlayerID().IsValid())
+			continue;
+
+		dummyPlayer->SetOwner(PlayerController);
+		dummyPlayer->SetPlayerName(PlayerController->PlayerState->GetPlayerName());
+		dummyPlayer->SetPlayerID(PlayerController->PlayerState->GetUniqueId());
+
+		break;
+	}
 }
 
 void ASTDimensionDrift::HandleAllPlayerIsReady(FGameplayTag NewGameLevel)

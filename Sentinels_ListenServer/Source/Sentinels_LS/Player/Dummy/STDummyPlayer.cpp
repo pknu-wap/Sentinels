@@ -20,7 +20,6 @@
 
 // Sets default values
 ASTDummyPlayer::ASTDummyPlayer() :
-	bIsShow(false),
 	CurrentClass(ESTClassType::GreatSword),
 	Name_Head("0"),
 	Name_Hood("0"),
@@ -99,6 +98,7 @@ void ASTDummyPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ASTDummyPlayer, PlayerID);
+	DOREPLIFETIME(ASTDummyPlayer, PlayerName);
 	DOREPLIFETIME(ASTDummyPlayer, CurrentClass);
 	DOREPLIFETIME(ASTDummyPlayer, Name_Head);
 	DOREPLIFETIME(ASTDummyPlayer, Name_Hood);
@@ -217,6 +217,11 @@ void ASTDummyPlayer::ChangeSKMeshName(ESKParts Part, FName SKMeshRowName)
 	OnRep_SKName();
 }
 
+void ASTDummyPlayer::OnRep_PlayerNames()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Name: %s"), *PlayerName);
+}
+
 UTextureRenderTarget2D* ASTDummyPlayer::GetTextureRenderTarget2D()
 {
 	return CaptureComponent->TextureTarget;
@@ -259,22 +264,6 @@ USkeletalMeshComponent* ASTDummyPlayer::GetSKMeshComponent(ESKParts Part)
 	}
 }
 
-ASTDummyPlayer* ASTDummyPlayer::FindByID(UObject* WorldContextObject, FUniqueNetIdRepl ID)
-{
-	if (!WorldContextObject)
-	{
-		return nullptr;
-	}
-
-	for (ASTDummyPlayer* dummyPlayer : TActorRange<ASTDummyPlayer>(WorldContextObject->GetWorld()))
-	{
-		if (*dummyPlayer->PlayerID == ID)
-			return dummyPlayer;
-	}
-
-	return nullptr;
-}
-
 void ASTDummyPlayer::OnRep_PlayerID()
 {
 	FTimerHandle timerHandle;
@@ -284,7 +273,7 @@ void ASTDummyPlayer::OnRep_PlayerID()
 		if (!pc || !pc->GetLocalPlayer())
 			return;
 
-		pc->GetUIComponent()->UpdatePlayerAvatarLayer();
+		pc->GetUIComponent()->UpdateUI(FSTGameplayTags::Get().Widget_Lobby_Loadout);
 		OnRep_CurrentClass();
 
 	}, 0.5f, false);
