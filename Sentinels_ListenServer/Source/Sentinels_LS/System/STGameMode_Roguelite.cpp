@@ -9,6 +9,7 @@
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/Character.h"
+#include "Player/STPlayerCharacter.h"
 #include "STGameplayTags.h"
 #include "Character/Enemy/STEliteBase.h"
 
@@ -107,10 +108,11 @@ void ASTGameMode_Roguelite::TeleportPlayersToPlayerStarts(const TArray<APlayerSt
 
 	for (int i = 0; i < inPlayerStarts.Num(); i++)
 	{
-		ACharacter* player = UGameplayStatics::GetPlayerCharacter(this, i);
+		ASTPlayerCharacter* player = Cast< ASTPlayerCharacter>(UGameplayStatics::GetPlayerCharacter(this, i));
 		if (player)
 		{
-			player->SetActorTransform(inPlayerStarts[i]->GetTransform());
+			player->TeleportWithDissolve(inPlayerStarts[i]->GetTransform());
+			// player->SetActorTransform(inPlayerStarts[i]->GetTransform());
 		}
 	}
 
@@ -121,10 +123,11 @@ void ASTGameMode_Roguelite::TeleportPlayersToPlayerStarts(const TArray<APlayerSt
 		int startIdx = playerCount - inPlayerStarts.Num();
 		for (int idx = startIdx; idx < playerCount; idx++)
 		{
-			ACharacter* player = UGameplayStatics::GetPlayerCharacter(this, idx);
+			ASTPlayerCharacter* player = Cast< ASTPlayerCharacter>(UGameplayStatics::GetPlayerCharacter(this, idx));
 			if (player)
 			{
-				player->SetActorTransform(inPlayerStarts.Last()->GetTransform() + FTransform(FVector(100.f * idx, 0, 0)));
+				player->TeleportWithDissolve(inPlayerStarts.Last()->GetTransform() + FTransform(FVector(100.f * idx, 0, 0)));
+				// player->SetActorTransform(inPlayerStarts.Last()->GetTransform() + FTransform(FVector(100.f * idx, 0, 0)));
 			}
 		}
 	}
@@ -160,6 +163,12 @@ void ASTGameMode_Roguelite::OnMissionCleared()
 
 void ASTGameMode_Roguelite::EliteBossSpawned(ASTEliteBase* InElite)
 {
+	ASTGameState* gameState = Cast<ASTGameState>(UGameplayStatics::GetGameState(this));
+	if (gameState)
+	{
+		gameState->OnEventOccur(FSTGameplayTags::Get().Event_EliteBossSpawned);
+	}
+
 	if (InElite)
 	{
 		InElite->Delegate_OnEnemyDied.AddDynamic(this, &ASTGameMode_Roguelite::OnEliteBossCleared);
@@ -168,23 +177,34 @@ void ASTGameMode_Roguelite::EliteBossSpawned(ASTEliteBase* InElite)
 
 void ASTGameMode_Roguelite::OnEliteBossCleared(AActor* DiedEnemy)
 {
-	// Teleport All Players to Next Section
-	TeleportToNextSection();
-
-	// Despawn All Section Enemys
-	if (CurrentSection)
+	ASTGameState* gameState = Cast<ASTGameState>(UGameplayStatics::GetGameState(this));
+	if (gameState)
 	{
-		CurrentSection->MissionDeactivated();
-		CurrentSection->DespawnAllEnemys();
+		gameState->OnEventOccur(FSTGameplayTags::Get().Event_EliteBossCleared);
+		gameState->OnEventOccur(FSTGameplayTags::Get().Event_WaitForTeleport);
 	}
 
-	// Activate Next Section && Set Timer for EliteBoss
-	ActivateNextSection();
+	FTimerHandle handle;
+	GetWorldTimerManager().SetTimer(handle, [&]()
+		{
+			// Teleport All Players to Next Section
+			TeleportToNextSection();
 
-	if (CurrentSection)
-	{
-		FTimerHandle handle;
-		GetWorldTimerManager().SetTimer(handle, CurrentSection, &ASTMissionSection::SpawnEliteBoss,
-			SectionTimeLimit, false);
-	}
+			// Despawn All Section Enemys
+			if (CurrentSection)
+			{
+				CurrentSection->MissionDeactivated();
+				CurrentSection->DespawnAllEnemys();
+			}
+
+			// Activate Next Section && Set Timer for EliteBoss
+			ActivateNextSection();
+
+			if (CurrentSection)
+			{
+				FTimerHandle handle;
+				GetWorldTimerManager().SetTimer(handle, CurrentSection, &ASTMissionSection::SpawnEliteBoss,
+					SectionTimeLimit, false);
+			}
+		}, 10.f, false);
 }

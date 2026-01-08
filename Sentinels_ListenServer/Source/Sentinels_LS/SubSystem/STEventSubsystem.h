@@ -21,6 +21,10 @@ protected:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
 public:
+	UFUNCTION(BlueprintCallable)
+	void EventOccured(FGameplayTag InEventTag);
+
+public:
 	UPROPERTY(BlueprintCallable, BlueprintAssignable)
 	FOnEventOccur Delegate_EventOccur;
 

@@ -67,6 +67,16 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
+
+	/*
+		Event
+	*/
+public:
+	void OnEventOccur(FGameplayTag EventTag);
+
+protected:
+	UFUNCTION(NetMulticast, Reliable)
+	void OnEventOccured_Multicast(FGameplayTag EventTag);
 	
 	/*
 		Main Mission

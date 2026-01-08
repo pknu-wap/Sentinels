@@ -10,6 +10,7 @@
 #include "Actors/Section/STMissionSection.h"
 #include "Kismet/GameplayStatics.h"
 #include "SubSystem/STGameTravelDataSubsystem.h"
+#include "SubSystem/STEventSubsystem.h"
 
 ASTGameState::ASTGameState() :
     LevelTag(FSTGameplayTags::Get().Level_Lobby)
@@ -36,6 +37,17 @@ void ASTGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
     DOREPLIFETIME(ASTGameState, ActivatedMissions);
     DOREPLIFETIME(ASTGameState, SubMissions);
     DOREPLIFETIME(ASTGameState, LevelTag);
+}
+
+void ASTGameState::OnEventOccur(FGameplayTag InEventTag)
+{
+    OnEventOccured_Multicast(InEventTag);
+}
+
+void ASTGameState::OnEventOccured_Multicast_Implementation(FGameplayTag InEventTag)
+{
+    USTEventSubsystem* EventSubsystem = GetWorld()->GetSubsystem<USTEventSubsystem>();
+    EventSubsystem->EventOccured(InEventTag);
 }
 
 int ASTGameState::GetClearedMissionNum() const
@@ -196,7 +208,7 @@ void ASTGameState::OnMissionEnded(USTMissionBase* InMission, bool IsCleared)
     // Mission Clear On Client
     OnMissionEnded_Multicast(InMission, IsCleared);
 
-    for (int i = 0; i < Missions.Num(); i++)
+    /*for (int i = 0; i < Missions.Num(); i++)
     {
         if (Missions[i].Mission == InMission)
         {
@@ -208,7 +220,7 @@ void ASTGameState::OnMissionEnded(USTMissionBase* InMission, bool IsCleared)
             
             break;
         }
-    }
+    }*/
 
     // Start Next Random Mission
     // ActivateRandomMission();

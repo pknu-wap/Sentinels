@@ -232,9 +232,8 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 				}
 				else
 				{
-					if (!HasTag(FSTGameplayTags::Get().Character_State_Bleed))
-						UpdateEnemyStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Bleed, true);
 					AddTag(FSTGameplayTags::Get().Character_State_Bleed);
+					UpdateEnemyStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Bleed, true);
 				}
 				UE_LOG(LogTemp, Display, TEXT("Katana Damage Type ! ! !"));
 			}
@@ -254,6 +253,13 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 				}, 5.f, false);
 
 			PlayDiedMontage_Multicast();
+
+			// Delete Tag
+			UpdateEnemyStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Bleed, false);
+			UpdateEnemyStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Stunned, false);
+
+			ClearTag(FSTGameplayTags::Get().Character_State_Bleed);
+			ClearTag(FSTGameplayTags::Get().Character_State_Stunned);
 			
 			// Stop Behavior Tree
 			AAIController* AIController = Cast<AAIController>(GetController());
@@ -276,13 +282,13 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 		/*
 			Play Knockback Montage
 		*/
-		if (Montage_Knockback)
+		if (bShouldStopMontageWhenKnockback)
 		{
-			PlayKnockbackMontage_Multicast();
-		}
-		else
-		{
-			if (bShouldStopMontageWhenKnockback)
+			if (Montage_Knockback)
+			{
+				PlayKnockbackMontage_Multicast();
+			}
+			else
 			{
 				StopCurrentAnimMontage_Multicast();
 				FVector LaunchDir = (GetActorLocation() - DamageCauser->GetActorLocation()).GetSafeNormal2D();
@@ -311,9 +317,6 @@ void ASTEnemyBase::Activate(const FVector ActivateLocation, const FRotator Activ
 void ASTEnemyBase::Deactivate()
 {
 	Super::Deactivate();
-
-	// Delegate Broadcast
-	Delegate_OnEnemyDied.Broadcast(this);
 
 	// Delete Tag
 	UpdateEnemyStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Bleed, false);
@@ -503,6 +506,9 @@ void ASTEnemyBase::DissolveReverseEnded()
 void ASTEnemyBase::PlayDiedMontage_Multicast_Implementation()
 {
 	PlayDiedMontage();
+
+	// Delegate Broadcast
+	Delegate_OnEnemyDied.Broadcast(this);
 }
 
 void ASTEnemyBase::PlayDiedMontage()

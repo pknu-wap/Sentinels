@@ -95,6 +95,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void BindDefaultThirdPersonInput();
 
+public:
+	UFUNCTION(BlueprintImplementableEvent)
+	void TeleportWithDissolve(const FTransform& InTransform);
+
 protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);

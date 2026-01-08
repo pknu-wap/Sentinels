@@ -87,6 +87,11 @@ public:
 	FGameplayTag Level_MilitaryAirport_Event_Destroy_Vehicle;
 	FGameplayTag Level_MilitaryAirport_Event_Destroy_ControlTower;
 
+	FGameplayTag Event_EliteBossSpawned;
+	FGameplayTag Event_EliteBossCleared;
+	FGameplayTag Event_WaitForTeleport;
+	FGameplayTag Event_StartTeleport;
+
 private:
 	static FSTGameplayTags GameplayTags;
 };

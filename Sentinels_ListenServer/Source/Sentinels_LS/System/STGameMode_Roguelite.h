@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Sentinels_LSGameMode.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "STGameMode_Roguelite.generated.h"
 
 class ASTMissionSection;
@@ -62,7 +63,7 @@ template<typename T>
 void ShuffleTArray(TArray<T>& Array)
 {
     float CurrentTime = UGameplayStatics::GetRealTimeSeconds(nullptr);
-    int32 Seed = FMath::FloorToInt(CurrentTime * 1000.0f);
+    int32 Seed = UKismetMathLibrary::RandomIntegerInRange(0, 10000);
 
     FMath::RandInit(Seed);
 

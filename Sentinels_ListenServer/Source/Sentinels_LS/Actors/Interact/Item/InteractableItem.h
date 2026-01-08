@@ -15,6 +15,7 @@ class SENTINELS_LS_API AInteractableItem : public AInteractableActor
 	
 protected:
 	virtual void BeginPlay() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
 	virtual void Interact_Implementation(UInteractComponent* InteractingComponent) override;
@@ -31,6 +32,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
 	FDataTableRowHandle ItemHandle_DataRow;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item")
 	int ItemID;
 };

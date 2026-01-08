@@ -9,6 +9,7 @@
 #include "UI/Widget/STWidget_Interactive.h"
 #include "STGameplayTags.h"
 #include "SubSystem/STUISubSystem.h"
+#include "Net/UnrealNetwork.h"
 
 void AInteractableItem::BeginPlay()
 {
@@ -31,6 +32,13 @@ void AInteractableItem::BeginPlay()
 	{
 		SetItemID();
 	}
+}
+
+void AInteractableItem::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AInteractableItem, ItemID);
 }
 
 void AInteractableItem::Interact_Implementation(UInteractComponent* InteractingComponent)
