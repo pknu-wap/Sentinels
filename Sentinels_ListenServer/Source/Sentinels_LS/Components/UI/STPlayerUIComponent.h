@@ -36,8 +36,8 @@ public:
 		Debug
 	*/
 
-	UFUNCTION(BlueprintCallable)
-	FString GetPlayerIDString(const FUniqueNetIdRepl& ID) { return *ID.ToString(); }
+	//UFUNCTION(BlueprintCallable)
+	//FString GetPlayerIDString(const FUniqueNetIdRepl& ID) { return *ID.ToString(); }
 
 	/*
 		Blueprint Function
@@ -49,15 +49,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	const bool GetbIsReady() const { return bIsReady; }
 
-	UFUNCTION(BlueprintCallable)
-	const TArray<FUniqueNetIdRepl>& GetPlayerID() const { return PlayerID; }
+	//UFUNCTION(BlueprintCallable)
+	//const TArray<FUniqueNetIdRepl>& GetPlayerID() const { return PlayerID; }
 
 public:
 	/*
 		RPC
 	*/
-	UFUNCTION(Server, Reliable, BlueprintCallable)
-	void ServerRPCRegisterPlayerID(const FUniqueNetIdRepl& ID);
+	//UFUNCTION(Server, Reliable, BlueprintCallable)
+	//void ServerRPCRegisterPlayerName(const FString& Name);
 
 	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void ServerRPCRegisterWidget(FGameplayTag WidgetTag, TSubclassOf<UUserWidget> WidgetClass);
@@ -65,8 +65,8 @@ public:
 	UFUNCTION(Client, Reliable, BlueprintCallable)
 	void ClientRPCRegisterWidget(FGameplayTag WidgetTag, TSubclassOf<UUserWidget> WidgetClass);
 
-	UFUNCTION(Server, Reliable, BlueprintCallable)
-	void ServerRPCUnRegisterPlayerID(const FUniqueNetIdRepl& ID);
+	//UFUNCTION(Server, Reliable, BlueprintCallable)
+	//void ServerRPCUnRegisterPlayerName(const FString& Name);
 
 	UFUNCTION(Client, Reliable, BlueprintCallable)
 	void ClientRPCUnRegisterWidget(FGameplayTag WidgetTag);
@@ -100,26 +100,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UpdateUI(FGameplayTag WidgetTag);
 
-	UFUNCTION(BlueprintCallable)
-	void UpdatePlayerAvatarLayer();
-
-	UFUNCTION(BlueprintCallable)
-	void UpdateCurrentGameLevelLayer();
-
-	UFUNCTION(BlueprintCallable)
-	void UpdateCharacterSelectUI();
-
-	UFUNCTION(BlueprintCallable)
-	void UpdateMapUI();
-
-	UFUNCTION(BlueprintCallable)
-	void UpdateQuestUI();
-
-	UFUNCTION(BlueprintCallable)
-	void UpdateInventoryUI();
-
-	UFUNCTION(BlueprintCallable)
-	void UpdateTeamInfoUI();
+	//UFUNCTION(BlueprintCallable)
+	//void UpdateCharacterSelectUI();
 
 	UFUNCTION(BlueprintCallable)
 	void RegisterWidget(FGameplayTag WidgetTag, UUserWidget* Widget);
@@ -136,17 +118,17 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetVisibility(FGameplayTag WidgetTag, ESlateVisibility Visibility);
 
-	/*
-		Only Server
-	*/
-	UFUNCTION(BlueprintCallable)
-	void AddPlayerID(const FUniqueNetIdRepl& ID);
+	///*
+	//	Only Server
+	//*/
+	//UFUNCTION(BlueprintCallable)
+	//void AddPlayerID(const FUniqueNetIdRepl& ID);
 
-protected:
-	/*
-		Local
-	*/
-	void RegisterIDToDummyPlayer(const FUniqueNetIdRepl& ID);
+//protected:
+//	/*
+//		Local
+//	*/
+//	void RegisterIDToDummyPlayer(const FUniqueNetIdRepl& ID);
 
 	/*
 		Server
@@ -156,6 +138,6 @@ protected:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Lobby", meta = (AllowPrivateAccess = "true"))
 	bool bIsReady;
 
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Lobby", meta = (AllowPrivateAccess = "true"))
-	TArray<FUniqueNetIdRepl> PlayerID;
+	//UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Lobby", meta = (AllowPrivateAccess = "true"))
+	//TArray<FUniqueNetIdRepl> PlayerID;
 };

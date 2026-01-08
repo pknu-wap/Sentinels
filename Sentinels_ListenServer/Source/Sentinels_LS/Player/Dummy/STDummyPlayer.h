@@ -33,10 +33,8 @@ public:
 	const FUniqueNetIdRepl GetPlayerID() { return PlayerID; }
 	void SetPlayerID(const FUniqueNetIdRepl& ID) { PlayerID = ID; }
 
-	const bool GetbIsShow() { return bIsShow; }
-
-	UFUNCTION(BlueprintCallable)
-	void SetbIsShow(const bool value) { bIsShow = value; }
+	const FString GetPlayerName() { return PlayerName; }
+	void SetPlayerName(const FString& name) { PlayerName = name; }
 
 	UTextureRenderTarget2D* GetTextureRenderTarget2D();
 
@@ -44,10 +42,6 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	USkeletalMeshComponent* GetSKMeshComponent(ESKParts partName);
-
-public:
-	UFUNCTION(BlueprintCallable, Category = "Dummy Player")
-	static ASTDummyPlayer* FindByID(UObject* WorldContextObject, FUniqueNetIdRepl PlayerID);
 
 protected:
 	UFUNCTION()
@@ -77,7 +71,7 @@ protected:
 	TObjectPtr<USceneCaptureComponent2D> CaptureComponent;
 
 	/*
-		About SkeletalMesh
+		SkeletalMesh & Animation
 	*/
 
 	UPROPERTY(ReplicatedUsing = OnRep_PlayerID, EditAnywhere, BlueprintReadWrite, Category = "SK Component", meta = (AllowPrivateAccess = "true"))
@@ -159,15 +153,23 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimInstance", meta = (AllowPrivateAccess = "true"))
 	TMap<ESTClassType, TSubclassOf<UAnimInstance>> AIMap;
 
+
+	/*
+		ETC
+	*/
+
+	UFUNCTION()
+	void OnRep_PlayerNames();
+
 	UPROPERTY(ReplicatedUsing = OnRep_PlayerID, VisibleAnywhere, BlueprintReadOnly, Category = "PlayerID", meta = (AllowPrivateAccess = "true"))
 	FUniqueNetIdRepl PlayerID;
+
+	UPROPERTY(ReplicatedUsing = OnRep_PlayerNames, VisibleAnywhere, BlueprintReadOnly, Category = "PlayerID", meta = (AllowPrivateAccess = "true"))
+	FString PlayerName;
 
 	UPROPERTY(ReplicatedUsing = OnRep_CurrentClass, VisibleAnywhere, BlueprintReadOnly, Category = "PlayerID", meta = (AllowPrivateAccess = "true"))
 	ESTClassType CurrentClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Material", meta = (AllowPrivateAccess = "true"))
 	UMaterial* Material;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	bool bIsShow;
 };
