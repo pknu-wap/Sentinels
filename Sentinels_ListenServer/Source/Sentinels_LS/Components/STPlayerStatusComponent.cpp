@@ -361,7 +361,7 @@ void USTPlayerStatusComponent::CalculateStatus()
 		if (!InvComp || !InvSubSystem) return;
 
 		// Reset Status 
-		UpdateDefaultStatus();
+		InitializeDefaultStatus();
 
 		// ReCalculate Status (Item)
 		const TArray<FInvSlotStruct>& Inventory = InvComp->GetInventory();
@@ -495,9 +495,6 @@ void USTPlayerStatusComponent::GiveEnhancementSelections_Client_Implementation(c
 	{
 		widget->ShowSelections(enhancements);
 		widget->AddToViewport();
-
-		FInputModeUIOnly UIInputMode; 
-		PC->SetInputMode(UIInputMode);
 	}
 }
 
@@ -531,12 +528,15 @@ void USTPlayerStatusComponent::EnhancementSelected_Server_Implementation(FGamepl
 		}
 	}
 
-	NotSelectedEnhancements[SelectedEnhancement] = NotSelectedEnhancements[SelectedEnhancement] - 1;
-	if (NotSelectedEnhancements[SelectedEnhancement] == 0)
+	if (NotSelectedEnhancements.Contains(SelectedEnhancement))
 	{
-		NotSelectedEnhancements.Remove(SelectedEnhancement);
+		NotSelectedEnhancements[SelectedEnhancement] = NotSelectedEnhancements[SelectedEnhancement] - 1;
+		if (NotSelectedEnhancements[SelectedEnhancement] == 0)
+		{
+			NotSelectedEnhancements.Remove(SelectedEnhancement);
+		}
 	}
-
+	
 	CalculateStatus();
 }
 
