@@ -8,6 +8,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "SubSystem/InventorySubsystem.h"
 #include "Sentinels_LS.h"
+#include "Blueprint/UserWidget.h"
+#include "UI/Widget/STWidget_SelectItem.h"
 
 // Sets default values for this component's properties
 UInventoryComponent::UInventoryComponent()
@@ -111,6 +113,20 @@ void UInventoryComponent::AddItem_Server_Implementation(int InItemID)
 	}
 
 	OnRep_Inventory();
+}
+
+void UInventoryComponent::GiveItemSelections_Client_Implementation(const TArray<int>& itemIDArray)
+{
+	if (WidgetClass_ItemSelection)
+	{
+		APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
+		USTWidget_SelectItem* widget = CreateWidget<USTWidget_SelectItem>(PC, WidgetClass_ItemSelection);
+		if (widget)
+		{
+			widget->ShowSelections(itemIDArray);
+			widget->AddToViewport();
+		}
+	}
 }
 
 void UInventoryComponent::OnRep_Inventory()
