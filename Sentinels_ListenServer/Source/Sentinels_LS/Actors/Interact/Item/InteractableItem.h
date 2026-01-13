@@ -17,6 +17,8 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason);
+
 public:
 	virtual void Interact_Implementation(UInteractComponent* InteractingComponent) override;
 	virtual void ShowInteractiveUI_Implementation(UInteractComponent* InteractingComponent) override;
