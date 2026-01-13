@@ -46,6 +46,18 @@ protected:
 
 	FInvSlotStruct EmptySlot;
 
+/*
+	Item Selection
+*/
+public:
+	UFUNCTION(Client, Reliable, BlueprintCallable)
+	void GiveItemSelections_Client(const TArray<int>& itemIDArray);
+
+protected:
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UUserWidget> WidgetClass_ItemSelection;
+
+
 
 /*
 	Debug
