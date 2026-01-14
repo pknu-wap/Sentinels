@@ -9,6 +9,7 @@
 #include "UI/Widget/STWidget_Interactive.h"
 #include "STGameplayTags.h"
 #include "SubSystem/STUISubSystem.h"
+#include "Net/UnrealNetwork.h"
 
 void AInteractableItem::BeginPlay()
 {
@@ -33,6 +34,27 @@ void AInteractableItem::BeginPlay()
 	}
 }
 
+void AInteractableItem::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AInteractableItem, ItemID);
+}
+
+void AInteractableItem::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	USTUISubSystem* UISubSystem = GetGameInstance()->GetSubsystem<USTUISubSystem>();
+
+	USTWidget_Interactive* widget = Cast<USTWidget_Interactive>(UISubSystem->GetWidget(FSTGameplayTags::Get().Widget_InGame_Interactive));
+	if (widget)
+	{
+		widget->SetVisibility(ESlateVisibility::Collapsed);
+		widget->ClearInteractiveUI();
+	}
+
+	Super::EndPlay(EndPlayReason);
+}
+
 void AInteractableItem::Interact_Implementation(UInteractComponent* InteractingComponent)
 {
 	Super::Interact_Implementation(InteractingComponent);
@@ -49,6 +71,9 @@ void AInteractableItem::Interact_Implementation(UInteractComponent* InteractingC
 		// bIsInteractable = false;
 		InvComp->AddItem_Server(ItemID);
 		UE_LOG(LogTemp, Display, TEXT(" AInteractableItem::Interact - Item ID : %d"), ItemID);
+
+		// Request hide all client's interactive ui
+
 
 		Destroy();
 	}

@@ -68,13 +68,13 @@ float ASTHelix::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AContr
 
 					// Apply Stun to Character (Animation)
 					if (!HasTag(FSTGameplayTags::Get().Character_State_Stunned))
-						UpdateEnemyStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Stunned, true);
+						UpdateStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Stunned, true);
 
 					AddTag(FSTGameplayTags::Get().Character_State_Stunned);
 					GetWorldTimerManager().SetTimer(Handle_Stunned,
 						[&]() {
 							ClearTag(FSTGameplayTags::Get().Character_State_Stunned);
-							UpdateEnemyStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Stunned, false);
+							UpdateStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Stunned, false);
 						},
 						STDamageType->StunnedTime, false);
 				}

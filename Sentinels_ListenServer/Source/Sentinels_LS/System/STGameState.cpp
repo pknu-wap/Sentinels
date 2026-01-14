@@ -10,6 +10,10 @@
 #include "Actors/Section/STMissionSection.h"
 #include "Kismet/GameplayStatics.h"
 #include "SubSystem/STGameTravelDataSubsystem.h"
+#include "SubSystem/STEventSubsystem.h"
+#include "SubSystem/InventorySubsystem.h"
+#include "GameFramework/PlayerState.h"
+#include "Components/InventoryComponent.h"
 
 ASTGameState::ASTGameState() :
     LevelTag(FSTGameplayTags::Get().Level_Lobby)
@@ -36,6 +40,17 @@ void ASTGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
     DOREPLIFETIME(ASTGameState, ActivatedMissions);
     DOREPLIFETIME(ASTGameState, SubMissions);
     DOREPLIFETIME(ASTGameState, LevelTag);
+}
+
+void ASTGameState::OnEventOccur(FGameplayTag InEventTag)
+{
+    OnEventOccured_Multicast(InEventTag);
+}
+
+void ASTGameState::OnEventOccured_Multicast_Implementation(FGameplayTag InEventTag)
+{
+    USTEventSubsystem* EventSubsystem = GetWorld()->GetSubsystem<USTEventSubsystem>();
+    EventSubsystem->EventOccured(InEventTag);
 }
 
 int ASTGameState::GetClearedMissionNum() const
@@ -196,7 +211,7 @@ void ASTGameState::OnMissionEnded(USTMissionBase* InMission, bool IsCleared)
     // Mission Clear On Client
     OnMissionEnded_Multicast(InMission, IsCleared);
 
-    for (int i = 0; i < Missions.Num(); i++)
+    /*for (int i = 0; i < Missions.Num(); i++)
     {
         if (Missions[i].Mission == InMission)
         {
@@ -208,7 +223,7 @@ void ASTGameState::OnMissionEnded(USTMissionBase* InMission, bool IsCleared)
             
             break;
         }
-    }
+    }*/
 
     // Start Next Random Mission
     // ActivateRandomMission();
@@ -225,6 +240,33 @@ void ASTGameState::OnMissionEnded_Multicast_Implementation(USTMissionBase* InMis
         else
         {
             ST_LOG(LogSTNetwork, Log, TEXT(" %s Mission Failed!"), *InMission->GetName());
+        }
+    }
+
+    if (HasAuthority() && IsCleared)
+    {
+        UInventorySubsystem* inventorySubsystem = GetGameInstance()->GetSubsystem<UInventorySubsystem>();
+
+        for (APlayerState* PS : PlayerArray)
+        {
+            APawn* pawn = PS->GetPawn();
+            if (pawn)
+            {
+                // Get Random Item Set
+                TSet<int> selectedSet;
+                for (int i = 0; i < 1000; i++)
+                {
+                    selectedSet.Add(inventorySubsystem->GetRandomUniqueItemID());
+                    if (selectedSet.Num() >= 3)
+                        break;
+                }
+
+                // Give Item Selection To Client
+                if (UInventoryComponent* inventoryComp = pawn->GetComponentByClass<UInventoryComponent>())
+                {
+                    inventoryComp->GiveItemSelections_Client(selectedSet.Array());
+                }
+            }
         }
     }
 }

@@ -16,6 +16,8 @@
 #include "Blueprint/UserWidget.h"
 #include "UI/Widget/STWidget_SelectEnhancement.h"
 #include "Kismet/GameplayStatics.h"
+#include "Player/Enhancement/EnhancementObject.h"
+#include "SubSystem/EnhancementSubsystem.h"
 
 // Sets default values for this component's properties
 USTPlayerStatusComponent::USTPlayerStatusComponent()
@@ -51,6 +53,8 @@ void USTPlayerStatusComponent::BeginPlay()
 	InitializeDefaultStatus();
 	ApplyStatus();
 
+	InitializeEnhancement();
+
 	HP = MaxHP;
 	OnRep_HPUpdated();
 
@@ -76,6 +80,8 @@ void USTPlayerStatusComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 	DOREPLIFETIME(USTPlayerStatusComponent, MaxAttackSpeed);
 	DOREPLIFETIME(USTPlayerStatusComponent, AttackSpeed);
 	DOREPLIFETIME(USTPlayerStatusComponent, BaseAttackSpeed);
+
+	DOREPLIFETIME(USTPlayerStatusComponent, SelectedEnhancements);
 
 	/*
 		Replicate to Only for Owner
@@ -123,10 +129,12 @@ void USTPlayerStatusComponent::AddExp(float InExp)
 			Level++;
 			Exp -= MaxExp;
 
-			OnRep_LevelUpdated();
+			OnRep_LevelUpdated(); 
 
 			CalculateStatus();
 		}
+
+		OnRep_ExpUpdated();
 	}
 }
 
@@ -353,7 +361,7 @@ void USTPlayerStatusComponent::CalculateStatus()
 		if (!InvComp || !InvSubSystem) return;
 
 		// Reset Status 
-		UpdateDefaultStatus();
+		InitializeDefaultStatus();
 
 		// ReCalculate Status (Item)
 		const TArray<FInvSlotStruct>& Inventory = InvComp->GetInventory();
@@ -366,12 +374,12 @@ void USTPlayerStatusComponent::CalculateStatus()
 		}
 
 		// ReCalculate Status (Enhancement)
-		// Maybe 
-		TArray<TPair<FGameplayTag, int>> enhancements = SelectedEnhancements.Array();
-		for (TPair<FGameplayTag, int>& pair : SelectedEnhancements)
+		for (UEnhancementObject* object : SelectedEnhancements)
 		{
-			FGameplayTag tag = pair.Key; int quan = pair.Value;
-
+			if (object)
+			{
+				object->CalculateStatus(GetOwner());
+			}
 		}
 
 		// ReCalculate Status (Buff)
@@ -439,6 +447,7 @@ void USTPlayerStatusComponent::OnRep_LevelUpdated()
 	if (ExpCurve)
 	{
 		MaxExp = ExpCurve->GetFloatValue(Level);
+		OnEXPUpdatedDelegate.Broadcast(Exp, MaxExp);
 	}
 
 	if (GetOwner()->HasAuthority())
@@ -465,7 +474,11 @@ void USTPlayerStatusComponent::OnRep_LevelUpdated()
 
 void USTPlayerStatusComponent::OnRep_ExpUpdated()
 {
+	OnEXPUpdatedDelegate.Broadcast(Exp, MaxExp);
+}
 
+void USTPlayerStatusComponent::OnRep_SelectedEnhancements()
+{
 }
 
 void USTPlayerStatusComponent::RegenHP()
@@ -487,14 +500,43 @@ void USTPlayerStatusComponent::GiveEnhancementSelections_Client_Implementation(c
 
 void USTPlayerStatusComponent::EnhancementSelected_Server_Implementation(FGameplayTag SelectedEnhancement)
 {
-	SelectedEnhancements[SelectedEnhancement] = SelectedEnhancements[SelectedEnhancement] + 1;
-
-	NotSelectedEnhancements[SelectedEnhancement] = NotSelectedEnhancements[SelectedEnhancement] - 1;
-	if (NotSelectedEnhancements[SelectedEnhancement] == 0)
+	bool bShouldCreateNewObject = true;
+	for (UEnhancementObject* object : SelectedEnhancements)
 	{
-		NotSelectedEnhancements.Remove(SelectedEnhancement);
+		if (object && object->GetEnhancementTag() == SelectedEnhancement)
+		{
+			object->AddQuantity(1);
+
+			bShouldCreateNewObject = false;
+			break;
+		}
 	}
 
+	if (bShouldCreateNewObject)
+	{
+		UEnhancementSubsystem* enhanceSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UEnhancementSubsystem>();
+		const FEnhancementInfo* info = enhanceSubsystem->GetEnhancementInfo(SelectedEnhancement);
+		if (info)
+		{
+			UEnhancementObject* newEnhancement = NewObject<UEnhancementObject>(this, info->EnhancmenetClass);
+			if (newEnhancement)
+			{
+				AddReplicatedSubObject(newEnhancement);
+				SelectedEnhancements.Add(newEnhancement);
+				OnRep_SelectedEnhancements();
+			}
+		}
+	}
+
+	if (NotSelectedEnhancements.Contains(SelectedEnhancement))
+	{
+		NotSelectedEnhancements[SelectedEnhancement] = NotSelectedEnhancements[SelectedEnhancement] - 1;
+		if (NotSelectedEnhancements[SelectedEnhancement] == 0)
+		{
+			NotSelectedEnhancements.Remove(SelectedEnhancement);
+		}
+	}
+	
 	CalculateStatus();
 }
 

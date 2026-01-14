@@ -10,6 +10,7 @@
 #include "STPlayerStatusComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHPDelegate, float, Current, float, Max);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnEXPUpdatedDelegate, float, Current, float, Max);
 
 USTRUCT(BlueprintType)
 struct SENTINELS_LS_API FSTBuffStruct : public FTableRowBase
@@ -47,6 +48,7 @@ struct SENTINELS_LS_API FSTDamageInfo
 };
 
 class UUserWidget;
+class UEnhancementObject;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SENTINELS_LS_API USTPlayerStatusComponent : public UActorComponent
@@ -130,6 +132,9 @@ public:
 	UFUNCTION()
 	void OnRep_ExpUpdated();
 
+	UFUNCTION()
+	void OnRep_SelectedEnhancements();
+
 protected:
 	void RegenHP();
 
@@ -164,8 +169,8 @@ public:
 	UPROPERTY(Category = "Enhancement", EditAnywhere, BlueprintReadOnly)
 	UDataTable* DB_Enhancement;
 
-	UPROPERTY()
-	TMap<FGameplayTag, int> SelectedEnhancements;
+	UPROPERTY(ReplicatedUsing = OnRep_SelectedEnhancements)
+	TArray<UEnhancementObject*> SelectedEnhancements;
 
 	UPROPERTY()
 	TMap<FGameplayTag, int> NotSelectedEnhancements;
@@ -300,4 +305,7 @@ public:
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnHPDelegate OnHPDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnEXPUpdatedDelegate OnEXPUpdatedDelegate;
 };

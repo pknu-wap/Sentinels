@@ -292,4 +292,24 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 		FName("Level.MilitaryAirport.Event.Destroy.ControlTower"),
 		FString("MilitaryAirport Event : Destroy ControlTower")
 	);
+
+	GameplayTags.Event_EliteBossSpawned = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Event.EliteBossSpawned"),
+		FString("Event : EliteBossSpawned")
+	);
+
+	GameplayTags.Event_EliteBossCleared = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Event.EliteBossCleared"),
+		FString("Event : EliteBossCleared")
+	);
+
+	GameplayTags.Event_StartTeleport = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Event.StartTeleport"),
+		FString("Event : StartTeleport")
+	);
+
+	GameplayTags.Event_WaitForTeleport = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Event.WaitForTeleport"),
+		FString("Event : WaitForTeleport")
+	);
 }

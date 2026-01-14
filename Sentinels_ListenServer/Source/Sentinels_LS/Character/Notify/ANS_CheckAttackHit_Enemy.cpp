@@ -9,6 +9,7 @@
 #include "Perception/AISense_Damage.h"
 #include "Character/Enemy/STEnemyBase.h"
 #include "Components/STEnemyStatusComponent.h"
+#include "Components/CapsuleComponent.h"
 
 void UANS_CheckAttackHit_Enemy::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
@@ -40,7 +41,17 @@ void UANS_CheckAttackHit_Enemy::NotifyTick(USkeletalMeshComponent* MeshComp, UAn
     TArray<AActor*> ignore;
     ignore.Emplace(MeshComp->GetOwner());
 
-    UKismetSystemLibrary::SphereTraceMultiForObjects(MeshComp, Start, End, Radius, objectType,
+    float radiusMultiplier = 1.f;
+    if (AActor* owner = MeshComp->GetOwner())
+    {
+        if (UCapsuleComponent* capsuleComp = owner->GetComponentByClass<UCapsuleComponent>())
+        {
+            radiusMultiplier = capsuleComp->GetComponentScale().Z;
+            radiusMultiplier *= MeshComp->GetComponentScale().Z;
+        }
+    }
+
+    UKismetSystemLibrary::SphereTraceMultiForObjects(MeshComp, Start, End, Radius * radiusMultiplier, objectType,
         false, ignore, DebugType.GetValue(), hitResults, true);
 
     for (FHitResult hit : hitResults)
