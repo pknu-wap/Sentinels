@@ -361,11 +361,6 @@ USTMissionBase* ASTGameState::GetSubMission(FGameplayTag InMissionTag)
     return nullptr;
 }
 
-void ASTGameState::TryServerTravel()
-{
-    OnServerTravelReady.Broadcast(LevelTag);
-}
-
 void ASTGameState::SetLevelTag(FGameplayTag NewLevelTag)
 {
     LevelTag = NewLevelTag;

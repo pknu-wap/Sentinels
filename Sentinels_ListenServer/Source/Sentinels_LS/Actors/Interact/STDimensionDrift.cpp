@@ -2,21 +2,23 @@
 
 
 #include "Actors/Interact/STDimensionDrift.h"
-#include "Net/UnrealNetwork.h"
-#include "Components/SkeletalMeshComponent.h"
-#include "Subsystem/STUISubSystem.h"
-#include "Player/STPlayerController.h"
-#include "Kismet/GameplayStatics.h"
+
+#include "Sentinels_LS.h"
 #include "STGameplayTags.h"
+#include "System/STGameState.h"
+#include "Player/STPlayerController.h"
+#include "Player/Dummy/STDummyPlayer.h"
 #include "Components/InteractComponent.h"
 #include "Components/UI/STPlayerUIComponent.h"
+#include "Subsystem/STUISubSystem.h"
+#include "SubSystem/STGameTravelDataSubsystem.h"
+
+#include "EngineUtils.h"
+#include "Net/UnrealNetwork.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerState.h"
 #include "Engine/Level.h"
-#include "Misc/PackageName.h"
-#include "Sentinels_LS.h"
-#include "System/STGameState.h"
-#include "Player/Dummy/STDummyPlayer.h"
-#include "EngineUtils.h"
 
 ASTDimensionDrift::ASTDimensionDrift()
 {
@@ -31,13 +33,13 @@ ASTDimensionDrift::ASTDimensionDrift()
 void ASTDimensionDrift::BeginPlay()
 {
 	Super::BeginPlay();
-
-	GetWorld()->GetGameState<ASTGameState>()->OnServerTravelReady.AddDynamic(this, &ASTDimensionDrift::HandleAllPlayerIsReady);
 }
 
 void ASTDimensionDrift::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	DOREPLIFETIME(ASTDimensionDrift, CurrentLevelTag);
 }
 
 void ASTDimensionDrift::Interact_Implementation(UInteractComponent* InteractingComponent)
@@ -120,7 +122,44 @@ void ASTDimensionDrift::RegisterPlayerIDToDummyPlayer(ASTPlayerController* Playe
 	}
 }
 
-void ASTDimensionDrift::HandleAllPlayerIsReady(FGameplayTag NewGameLevel)
+ASTDummyPlayer* ASTDimensionDrift::GetDummyPlayer(FUniqueNetIdRepl PlayerID)
 {
-	GetWorld()->ServerTravel(GetLevelName(NewGameLevel));
+	for (auto dummyPlayer : DummyPlayers)
+	{
+		if (dummyPlayer->GetPlayerID() == PlayerID)
+			return dummyPlayer;
+	}
+
+	return nullptr;
+}
+
+void ASTDimensionDrift::CheckAllPlayerReady()
+{
+	for (auto dummyPlayer : DummyPlayers)
+	{
+		if (!dummyPlayer->GetbIsReady() && !dummyPlayer->GetPlayerName().IsEmpty())
+			return;
+	}
+
+	for (ASTPlayerController* playerController : TActorRange<ASTPlayerController>(GetWorld()))
+	{
+		//Server
+		if (playerController == Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0)))
+		{
+			USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
+			UUserWidget* widget = UISubSystem->GetWidget(FSTGameplayTags::Get().Widget_LoadScreen);
+			widget->AddToViewport();
+		}
+		else // Client
+		{
+			playerController->GetUIComponent()->ClientRPCAddToViewport(FSTGameplayTags::Get().Widget_LoadScreen);
+		}
+		playerController->SetInputMode(FInputModeGameOnly());
+		playerController->SetShowMouseCursor(false);
+	}
+
+	USTGameTravelDataSubsystem* gameTravelDataSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
+	gameTravelDataSubsystem->SetCurrentLevelTag(CurrentLevelTag);
+
+	GetWorld()->ServerTravel(GetLevelName(CurrentLevelTag));
 }

@@ -36,6 +36,8 @@ public:
 	const FString GetPlayerName() { return PlayerName; }
 	void SetPlayerName(const FString& name) { PlayerName = name; }
 
+	const bool GetbIsReady() { return bIsReady; }
+
 	UTextureRenderTarget2D* GetTextureRenderTarget2D();
 
 	UMaterial* GetMaterial() { return Material; }
@@ -61,6 +63,9 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void ChangeSKMeshName(ESKParts Part, FName SKMeshRowName);
+
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void ServerRPC_SetbIsReady(bool isReady);
 
 protected:
 	/*
@@ -172,4 +177,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Material", meta = (AllowPrivateAccess = "true"))
 	UMaterial* Material;
+
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	bool bIsReady;
 };

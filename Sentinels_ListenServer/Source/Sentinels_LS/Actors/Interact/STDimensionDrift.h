@@ -28,6 +28,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FString GetLevelName(const FGameplayTag LevelTag) { return LevelMap.Find(LevelTag)->GetAssetName(); }
 
+	UFUNCTION(BlueprintCallable)
+	class ASTDummyPlayer* GetDummyPlayer(FUniqueNetIdRepl PlayerID);
+
 protected:
 	/*
 		Interact
@@ -42,9 +45,11 @@ protected:
 	*/
 	void RegisterPlayerIDToDummyPlayer(class ASTPlayerController* PlayerController);
 
-private:
-	UFUNCTION()
-	void HandleAllPlayerIsReady(FGameplayTag NewGameLevel);
+	/*
+		Travel
+	*/
+	UFUNCTION(BlueprintCallable, meta = (AllowPrivateAccess = "true"))
+	void CheckAllPlayerReady();
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -81,6 +86,9 @@ protected:
 	/*
 		Level Info
 	*/
+
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Level", meta = (AllowPrivateAccess = "true"))
+	FGameplayTag CurrentLevelTag;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level", meta = (AllowPrivateAccess = "true"))
 	TMap<FGameplayTag, TSoftObjectPtr<UWorld>> LevelMap;

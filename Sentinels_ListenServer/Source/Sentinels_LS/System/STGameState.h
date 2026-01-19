@@ -8,7 +8,6 @@
 #include "STStructs.h"
 #include "STGameState.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnServerTravelReady, FGameplayTag, LevelTag);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRepActivatedMission);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRepSubMissions);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRegisterMission);
@@ -169,14 +168,6 @@ protected:
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_SubMissions, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TArray<FSubMissionInfo> SubMissions;
-
-public:
-	UFUNCTION(BlueprintCallable)
-	void TryServerTravel();
-
-public:
-	UPROPERTY(BlueprintAssignable)
-	FOnServerTravelReady OnServerTravelReady;
 
 protected:
 	UPROPERTY(Replicated)
