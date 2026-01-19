@@ -226,15 +226,12 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 
 			if (KatanaDamageType)
 			{
-				if (GetNumOfTag(FSTGameplayTags::Get().Character_State_Bleed) > 5)
+				if (GetNumOfTag(FSTGameplayTags::Get().Character_State_Bleed) < 5)
 				{
-					
-				}
-				else
-				{
-					UpdateStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Bleed, true);
 					AddTag(FSTGameplayTags::Get().Character_State_Bleed);
+					UpdateStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Bleed, true);
 				}
+
 				UE_LOG(LogTemp, Display, TEXT("Katana Damage Type ! ! !"));
 			}
 		}
