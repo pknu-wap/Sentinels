@@ -64,7 +64,17 @@ void ASTCharacterBase::OnCharacterLanded(const FHitResult& Hit)
 	ClearTag(FSTGameplayTags::Get().Character_State_Jump);
 }
 
-void ASTCharacterBase::UpdateEnemyStateWidget_Multicast_Implementation(FGameplayTag StateTag, bool bShow)
+void ASTCharacterBase::ClearTag_Server_Implementation(const FGameplayTag& TagToRemove)
+{
+	ClearTag(TagToRemove);
+}
+
+void ASTCharacterBase::UpdateStateWidget_Server_Implementation(FGameplayTag StateTag, bool bShow)
+{
+	UpdateStateWidget_Multicast(StateTag, bShow);
+}
+
+void ASTCharacterBase::UpdateStateWidget_Multicast_Implementation(FGameplayTag StateTag, bool bShow)
 {
 	if (bShow)
 		Delegate_OnStateAdd.Broadcast(StateTag);

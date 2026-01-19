@@ -212,13 +212,13 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 
 					// Apply Stun to Character (Animation)
 					if (!HasTag(FSTGameplayTags::Get().Character_State_Stunned))
-						UpdateEnemyStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Stunned, true);
+						UpdateStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Stunned, true);
 
 					AddTag(FSTGameplayTags::Get().Character_State_Stunned);
 					GetWorldTimerManager().SetTimer(Handle_Stunned,
 						[&]() {
 							ClearTag(FSTGameplayTags::Get().Character_State_Stunned);
-							UpdateEnemyStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Stunned, false);
+							UpdateStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Stunned, false);
 						},
 						STDamageType->StunnedTime, false);
 				}
@@ -226,14 +226,14 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 
 			if (KatanaDamageType)
 			{
-				if (GetNumOfTag(FSTGameplayTags::Get().Character_State_Bleed) >= 5)
+				if (GetNumOfTag(FSTGameplayTags::Get().Character_State_Bleed) > 5)
 				{
-					//UpdateEnemyStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Bleed, true);
+					
 				}
 				else
 				{
+					UpdateStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Bleed, true);
 					AddTag(FSTGameplayTags::Get().Character_State_Bleed);
-					UpdateEnemyStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Bleed, true);
 				}
 				UE_LOG(LogTemp, Display, TEXT("Katana Damage Type ! ! !"));
 			}
@@ -255,8 +255,8 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 			PlayDiedMontage_Multicast();
 
 			// Delete Tag
-			UpdateEnemyStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Bleed, false);
-			UpdateEnemyStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Stunned, false);
+			UpdateStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Bleed, false);
+			UpdateStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Stunned, false);
 
 			ClearTag(FSTGameplayTags::Get().Character_State_Bleed);
 			ClearTag(FSTGameplayTags::Get().Character_State_Stunned);
@@ -319,8 +319,8 @@ void ASTEnemyBase::Deactivate()
 	Super::Deactivate();
 
 	// Delete Tag
-	UpdateEnemyStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Bleed, false);
-	UpdateEnemyStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Stunned, false);
+	UpdateStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Bleed, false);
+	UpdateStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Stunned, false);
 
 	ClearTag(FSTGameplayTags::Get().Character_State_Bleed);
 	ClearTag(FSTGameplayTags::Get().Character_State_Stunned);

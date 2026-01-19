@@ -2,20 +2,23 @@
 
 
 #include "Actors/Interact/STDimensionDrift.h"
-#include "Net/UnrealNetwork.h"
-#include "Components/SkeletalMeshComponent.h"
-#include "Blueprint/UserWidget.h"
-#include "Subsystem/STUISubSystem.h"
-#include "Player/STPlayerController.h"
-#include "Kismet/GameplayStatics.h"
+
+#include "Sentinels_LS.h"
 #include "STGameplayTags.h"
+#include "System/STGameState.h"
+#include "Player/STPlayerController.h"
+#include "Player/Dummy/STDummyPlayer.h"
 #include "Components/InteractComponent.h"
 #include "Components/UI/STPlayerUIComponent.h"
+#include "Subsystem/STUISubSystem.h"
+#include "SubSystem/STGameTravelDataSubsystem.h"
+
+#include "EngineUtils.h"
+#include "Net/UnrealNetwork.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerState.h"
 #include "Engine/Level.h"
-#include "Misc/PackageName.h"
-#include "Sentinels_LS.h"
-#include "System/STGameState.h"
 
 ASTDimensionDrift::ASTDimensionDrift()
 {
@@ -25,21 +28,18 @@ ASTDimensionDrift::ASTDimensionDrift()
 	RootComponent = SKMesh;
 
 	bReplicates = true;
-	SKMesh->SetIsReplicated(true);
 }
 
 void ASTDimensionDrift::BeginPlay()
 {
 	Super::BeginPlay();
-
-	GetWorld()->GetGameState<ASTGameState>()->OnServerTravelReady.AddDynamic(this, &ASTDimensionDrift::HandleAllPlayerIsReady);
 }
 
 void ASTDimensionDrift::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(ASTDimensionDrift, SKMesh);
+	
+	DOREPLIFETIME(ASTDimensionDrift, CurrentLevelTag);
 }
 
 void ASTDimensionDrift::Interact_Implementation(UInteractComponent* InteractingComponent)
@@ -54,27 +54,41 @@ void ASTDimensionDrift::Interact_Implementation(UInteractComponent* InteractingC
 	FGameplayTag levelSelectTag = FSTGameplayTags::Get().Widget_Lobby_LevelSelect;
 	FGameplayTag loadscreenTag = FSTGameplayTags::Get().Widget_LoadScreen;
 
-	uiComponent->AddPlayerID(pc->PlayerState->GetUniqueId());
+	RegisterPlayerIDToDummyPlayer(pc);
 
-	uiComponent->ServerRPCRegisterWidget(loadoutTag, Widget_LoadoutClass);
-	uiComponent->ServerRPCRegisterWidget(weaponSelectTag, Widget_WeaponSelectClass);
-	uiComponent->ServerRPCRegisterWidget(customizeTag, Widget_CustomizeClass);
-	uiComponent->ServerRPCRegisterWidget(levelSelectTag, Widget_LevelSelectClass);
-	uiComponent->ServerRPCRegisterWidget(loadscreenTag, Widget_LoadScreen);
-
-	if (pc->IsLocalController())
+	// Server
+	if (pc == Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0)))
 	{
+		uiComponent->CreateAndRegisterWidget(loadoutTag, Widget_LoadoutClass);
+		uiComponent->CreateAndRegisterWidget(weaponSelectTag, Widget_WeaponSelectClass);
+		uiComponent->CreateAndRegisterWidget(customizeTag, Widget_CustomizeClass);
+		uiComponent->CreateAndRegisterWidget(levelSelectTag, Widget_LevelSelectClass);
+		uiComponent->CreateAndRegisterWidget(loadscreenTag, Widget_LoadScreen);
+
 		uiComponent->AddToViewport(loadoutTag);
 	}
-	else
+	else // Client
 	{
+		uiComponent->ClientRPCRegisterWidget(loadoutTag, Widget_LoadoutClass);
+		uiComponent->ClientRPCRegisterWidget(weaponSelectTag, Widget_WeaponSelectClass);
+		uiComponent->ClientRPCRegisterWidget(customizeTag, Widget_CustomizeClass);
+		uiComponent->ClientRPCRegisterWidget(levelSelectTag, Widget_LevelSelectClass);
+		uiComponent->ClientRPCRegisterWidget(loadscreenTag, Widget_LoadScreen);
+
 		uiComponent->ClientRPCAddToViewport(loadoutTag);
 	}
 
 	pc->SetInputMode(FInputModeUIOnly());
 	pc->SetShowMouseCursor(true);
 
-	uiComponent->ServerRPCUpdateUI(loadoutTag);
+	// All(Local)
+	FTimerHandle timerHandle;
+	GetWorld()->GetTimerManager().SetTimer(timerHandle, [this, loadoutTag]() {
+		for (ASTPlayerController* playerController : TActorRange<ASTPlayerController>(GetWorld()))
+		{
+			playerController->GetUIComponent()->ClientRPCUpdateUI(loadoutTag);
+		}
+	}, 1.0f, false);
 }
 
 void ASTDimensionDrift::Interact_Finish_Implementation(UInteractComponent* InteractingComponent)
@@ -90,7 +104,62 @@ void ASTDimensionDrift::HideInteractiveUI_Implementation(UInteractComponent* Int
 {
 }
 
-void ASTDimensionDrift::HandleAllPlayerIsReady(FGameplayTag NewGameLevel)
+void ASTDimensionDrift::RegisterPlayerIDToDummyPlayer(ASTPlayerController* PlayerController)
 {
-	GetWorld()->ServerTravel(GetLevelName(NewGameLevel));
+	for (ASTDummyPlayer* dummyPlayer : DummyPlayers)
+	{
+		if (dummyPlayer->GetPlayerID() == PlayerController->PlayerState->GetUniqueId())
+			return;
+
+		if (dummyPlayer->GetPlayerID().IsValid())
+			continue;
+
+		dummyPlayer->SetOwner(PlayerController);
+		dummyPlayer->SetPlayerName(PlayerController->PlayerState->GetPlayerName());
+		dummyPlayer->SetPlayerID(PlayerController->PlayerState->GetUniqueId());
+
+		break;
+	}
+}
+
+ASTDummyPlayer* ASTDimensionDrift::GetDummyPlayer(FUniqueNetIdRepl PlayerID)
+{
+	for (auto dummyPlayer : DummyPlayers)
+	{
+		if (dummyPlayer->GetPlayerID() == PlayerID)
+			return dummyPlayer;
+	}
+
+	return nullptr;
+}
+
+void ASTDimensionDrift::CheckAllPlayerReady()
+{
+	for (auto dummyPlayer : DummyPlayers)
+	{
+		if (!dummyPlayer->GetbIsReady() && !dummyPlayer->GetPlayerName().IsEmpty())
+			return;
+	}
+
+	for (ASTPlayerController* playerController : TActorRange<ASTPlayerController>(GetWorld()))
+	{
+		//Server
+		if (playerController == Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0)))
+		{
+			USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
+			UUserWidget* widget = UISubSystem->GetWidget(FSTGameplayTags::Get().Widget_LoadScreen);
+			widget->AddToViewport();
+		}
+		else // Client
+		{
+			playerController->GetUIComponent()->ClientRPCAddToViewport(FSTGameplayTags::Get().Widget_LoadScreen);
+		}
+		playerController->SetInputMode(FInputModeGameOnly());
+		playerController->SetShowMouseCursor(false);
+	}
+
+	USTGameTravelDataSubsystem* gameTravelDataSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
+	gameTravelDataSubsystem->SetCurrentLevelTag(CurrentLevelTag);
+
+	GetWorld()->ServerTravel(GetLevelName(CurrentLevelTag));
 }

@@ -84,6 +84,9 @@ public:
 		}
 	}
 
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void ClearTag_Server(const FGameplayTag& TagToRemove);
+
 	UFUNCTION(BlueprintCallable)
 	void RemoveTag(const FGameplayTag& TagToRemove, int NumToRemove)
 	{
@@ -137,8 +140,11 @@ public:
 		return -1;
 	}
 
+	UFUNCTION(Server, Reliable)
+	void UpdateStateWidget_Server(FGameplayTag StateTag, bool bShow);
+
 	UFUNCTION(NetMulticast, Reliable)
-	void UpdateEnemyStateWidget_Multicast(FGameplayTag StateTag, bool bShow);
+	void UpdateStateWidget_Multicast(FGameplayTag StateTag, bool bShow);
 
 public:
 	UPROPERTY(BlueprintAssignable)

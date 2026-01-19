@@ -2,25 +2,27 @@
 
 
 #include "Player/Dummy/STDummyPlayer.h"
-#include "Net/UnrealNetwork.h"
+
 #include "Sentinels_LS.h"
+#include "STStructs.h"
 #include "Player/STPlayerController.h"
-#include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerState.h"
+#include "Components/UI/STPlayerUIComponent.h"
+#include "SubSystem/STGameTravelDataSubsystem.h"
+
+#include "Components/SkeletalMeshComponent.h"
 #include "Components/SceneCaptureComponent2D.h"
+#include "Materials/Material.h"
+
 #include "EngineUtils.h"
 #include "Engine/Engine.h"
-#include "Components/UI/STPlayerUIComponent.h"
-#include "Materials/Material.h"
+#include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 #include "TimerManager.h"
-#include "Sentinels_LS.h"
-#include "Components/SkeletalMeshComponent.h"
-#include "SubSystem/STGameTravelDataSubsystem.h"
-#include "STStructs.h"
+
 
 // Sets default values
 ASTDummyPlayer::ASTDummyPlayer() :
-	bIsShow(false),
 	CurrentClass(ESTClassType::GreatSword),
 	Name_Head("0"),
 	Name_Hood("0"),
@@ -35,7 +37,8 @@ ASTDummyPlayer::ASTDummyPlayer() :
 	Name_GreatSword("0"),
 	Name_Katana("0"),
 	Name_Blade_L("0"),
-	Name_Blade_R("0")
+	Name_Blade_R("0"),
+	PlayerName(FString())
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -99,6 +102,7 @@ void ASTDummyPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ASTDummyPlayer, PlayerID);
+	DOREPLIFETIME(ASTDummyPlayer, PlayerName);
 	DOREPLIFETIME(ASTDummyPlayer, CurrentClass);
 	DOREPLIFETIME(ASTDummyPlayer, Name_Head);
 	DOREPLIFETIME(ASTDummyPlayer, Name_Hood);
@@ -114,6 +118,7 @@ void ASTDummyPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME(ASTDummyPlayer, Name_Katana);
 	DOREPLIFETIME(ASTDummyPlayer, Name_Blade_L);
 	DOREPLIFETIME(ASTDummyPlayer, Name_Blade_R);
+	DOREPLIFETIME(ASTDummyPlayer, bIsReady);
 }
 
 void ASTDummyPlayer::ServerRPCChangeCurrentClass_Implementation(ESTClassType InClass)
@@ -217,6 +222,16 @@ void ASTDummyPlayer::ChangeSKMeshName(ESKParts Part, FName SKMeshRowName)
 	OnRep_SKName();
 }
 
+void ASTDummyPlayer::ServerRPC_SetbIsReady_Implementation(bool isReady)
+{
+	bIsReady = isReady;
+}
+
+void ASTDummyPlayer::OnRep_PlayerNames()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Name: %s"), *PlayerName);
+}
+
 UTextureRenderTarget2D* ASTDummyPlayer::GetTextureRenderTarget2D()
 {
 	return CaptureComponent->TextureTarget;
@@ -259,22 +274,6 @@ USkeletalMeshComponent* ASTDummyPlayer::GetSKMeshComponent(ESKParts Part)
 	}
 }
 
-ASTDummyPlayer* ASTDummyPlayer::FindByID(UObject* WorldContextObject, FUniqueNetIdRepl ID)
-{
-	if (!WorldContextObject)
-	{
-		return nullptr;
-	}
-
-	for (ASTDummyPlayer* dummyPlayer : TActorRange<ASTDummyPlayer>(WorldContextObject->GetWorld()))
-	{
-		if (*dummyPlayer->PlayerID == ID)
-			return dummyPlayer;
-	}
-
-	return nullptr;
-}
-
 void ASTDummyPlayer::OnRep_PlayerID()
 {
 	FTimerHandle timerHandle;
@@ -284,7 +283,7 @@ void ASTDummyPlayer::OnRep_PlayerID()
 		if (!pc || !pc->GetLocalPlayer())
 			return;
 
-		pc->GetUIComponent()->UpdatePlayerAvatarLayer();
+		pc->GetUIComponent()->UpdateUI(FSTGameplayTags::Get().Widget_Lobby_Loadout);
 		OnRep_CurrentClass();
 
 	}, 0.5f, false);

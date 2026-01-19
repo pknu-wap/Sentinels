@@ -28,19 +28,40 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FString GetLevelName(const FGameplayTag LevelTag) { return LevelMap.Find(LevelTag)->GetAssetName(); }
 
+	UFUNCTION(BlueprintCallable)
+	class ASTDummyPlayer* GetDummyPlayer(FUniqueNetIdRepl PlayerID);
+
 protected:
+	/*
+		Interact
+	*/
 	virtual void Interact_Implementation(UInteractComponent* InteractingComponent) override;
 	virtual void Interact_Finish_Implementation(UInteractComponent* InteractingComponent) override;
 	virtual void ShowInteractiveUI_Implementation(UInteractComponent* InteractingComponent) override;
 	virtual void HideInteractiveUI_Implementation(UInteractComponent* InteractingComponent) override;
 
-private:
-	UFUNCTION()
-	void HandleAllPlayerIsReady(FGameplayTag NewGameLevel);
+	/*
+		DummyPlayer
+	*/
+	void RegisterPlayerIDToDummyPlayer(class ASTPlayerController* PlayerController);
+
+	/*
+		Travel
+	*/
+	UFUNCTION(BlueprintCallable, meta = (AllowPrivateAccess = "true"))
+	void CheckAllPlayerReady();
 
 protected:
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class USkeletalMeshComponent> SKMesh;
+
+	/*
+		DummyPlayer
+	*/
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Setup")
+	TArray<class ASTDummyPlayer*> DummyPlayers;
+
 
 	/*
 		Widget
@@ -61,9 +82,13 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "WBP")
 	TSubclassOf<UUserWidget> Widget_LoadScreen;
 
+
 	/*
 		Level Info
 	*/
+
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Level", meta = (AllowPrivateAccess = "true"))
+	FGameplayTag CurrentLevelTag;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level", meta = (AllowPrivateAccess = "true"))
 	TMap<FGameplayTag, TSoftObjectPtr<UWorld>> LevelMap;

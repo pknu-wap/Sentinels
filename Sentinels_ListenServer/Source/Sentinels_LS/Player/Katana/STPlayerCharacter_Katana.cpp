@@ -124,8 +124,8 @@ void ASTPlayerCharacter_Katana::ApplyPassiveDamage()
 				UGameplayStatics::ApplyDamage(actor, StatusComponent->ATK * 0.5 * numOfTag, GetController(), this, UDamageType::StaticClass());
 
 				// Clear Bleed Tag
-				character->ClearTag(FSTGameplayTags::Get().Character_State_Bleed);
-				character->Delegate_OnStateRemove.Broadcast(FSTGameplayTags::Get().Character_State_Bleed);
+				character->ClearTag_Server(FSTGameplayTags::Get().Character_State_Bleed);
+				character->UpdateStateWidget_Server(FSTGameplayTags::Get().Character_State_Bleed, false);
 			}
 		}
 	}
