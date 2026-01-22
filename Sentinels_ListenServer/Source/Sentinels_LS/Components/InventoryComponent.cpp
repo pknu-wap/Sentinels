@@ -52,6 +52,13 @@ float UInventoryComponent::AdjustFinalDamage(float DamageAmount, FDamageEvent co
 	return DamageAmount;
 }
 
+void UInventoryComponent::SetInventory(const TArray<FInvSlotStruct>& InArray)
+{
+	Inventory = InArray;
+
+	OnRep_Inventory();
+}
+
 const FInvSlotStruct& UInventoryComponent::GetItem(int InItemID) const
 {
 	for (auto& slot : Inventory)

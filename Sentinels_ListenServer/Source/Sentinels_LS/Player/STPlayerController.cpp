@@ -26,6 +26,7 @@
 #include "SubSystem/STWorldSpawnSubsystem.h"
 #include "System/STGameState.h"
 #include "SubSystem/STUISubSystem.h"
+#include "Player/STPlayerState.h"
 
 ASTPlayerController::ASTPlayerController()
 {
@@ -137,6 +138,11 @@ void ASTPlayerController::UpdatePlayerClass_Implementation(ESTClassType InClass)
 		break;
 	default:
 		break;
+	}
+
+	if (ASTPlayerState* PS = Cast<ASTPlayerState>(PlayerState))
+	{
+		PS->UpdatePlayerClass(InClass);
 	}
 
 	AController* PC = this;

@@ -27,6 +27,7 @@
 #include "MotionWarpingComponent.h"
 #include "SubSystem/STGameTravelDataSubsystem.h"
 #include "GameFramework/PlayerState.h"
+#include "Player/STPlayerState.h"
 
 ASTPlayerCharacter::ASTPlayerCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<USTCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
@@ -66,13 +67,34 @@ ASTPlayerCharacter::ASTPlayerCharacter(const FObjectInitializer& ObjectInitializ
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 
-	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComp"));
+	/*InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComp"));
 	InventoryComponent->SetIsReplicated(true);
 
 	StatusComponent = CreateDefaultSubobject<USTPlayerStatusComponent>(TEXT("StatusComp"));
-	StatusComponent->SetIsReplicated(true);
+	StatusComponent->SetIsReplicated(true);*/
 
 	CameraManager = CreateDefaultSubobject<UCameraModeManagerComponent>(TEXT("CameraManager"));
+}
+
+UActorComponent* ASTPlayerCharacter::FindComponentByClass(const TSubclassOf<UActorComponent> ComponentClass) const
+{
+	UActorComponent* component = Super::FindComponentByClass(ComponentClass);
+	if (component)
+	{
+		return component;
+	}
+	else
+	{
+		if (!GetController())
+			return nullptr;
+
+		if (APlayerState* PS = GetController()->GetPlayerState<APlayerState>())
+		{
+			return PS->FindComponentByClass(ComponentClass);
+		}
+	}
+
+	return nullptr;
 }
 
 void ASTPlayerCharacter::BeginPlay()
@@ -302,6 +324,12 @@ void ASTPlayerCharacter::PossessedBy(AController* NewController)
 
 		FPlayerSKMeshesRowName sKMeshesRowName = gameTravelDataSubsystem->LoadPlayerInfo(GetController()->PlayerState->GetUniqueId()).PlayerSKMeshesRowName;
 		ConvertRowNametoPartsName(sKMeshesRowName);
+
+		if (ASTPlayerState* PS = NewController->GetPlayerState<ASTPlayerState>())
+		{
+			InventoryComponent = PS->GetComponentByClass<UInventoryComponent>();
+			StatusComponent = PS->GetComponentByClass<USTPlayerStatusComponent>();
+		}
 	}
 
 	OnRep_SKMeshPartsName();
