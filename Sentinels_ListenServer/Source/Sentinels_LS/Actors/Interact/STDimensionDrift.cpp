@@ -20,7 +20,9 @@
 #include "GameFramework/PlayerState.h"
 #include "Engine/Level.h"
 
-ASTDimensionDrift::ASTDimensionDrift()
+ASTDimensionDrift::ASTDimensionDrift() :
+	AllPlayerCount(0),
+	CurrentLevelTag(FSTGameplayTags::Get().Level_Lobby)
 {
 	PrimaryActorTick.bCanEverTick = false;
 
@@ -147,12 +149,15 @@ void ASTDimensionDrift::CheckAllPlayerReady()
 		if (playerController == Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0)))
 		{
 			USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
-			UUserWidget* widget = UISubSystem->GetWidget(FSTGameplayTags::Get().Widget_LoadScreen);
-			widget->AddToViewport();
+			//UUserWidget* widget = UISubSystem->GetWidget(FSTGameplayTags::Get().Widget_LoadScreen);
+			//widget->AddToViewport();
+			UUserWidget* widget = UISubSystem->GetWidget(FSTGameplayTags::Get().Widget_Lobby_Loadout);
+			widget->RemoveFromParent();
 		}
 		else // Client
 		{
-			playerController->GetUIComponent()->ClientRPCAddToViewport(FSTGameplayTags::Get().Widget_LoadScreen);
+			//playerController->GetUIComponent()->ClientRPCAddToViewport(FSTGameplayTags::Get().Widget_LoadScreen);
+			playerController->GetUIComponent()->ClientRPCRemoveFromParent(FSTGameplayTags::Get().Widget_Lobby_Loadout);
 		}
 		playerController->SetInputMode(FInputModeGameOnly());
 		playerController->SetShowMouseCursor(false);
