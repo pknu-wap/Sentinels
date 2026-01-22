@@ -49,6 +49,7 @@ struct SENTINELS_LS_API FSTDamageInfo
 
 class UUserWidget;
 class UEnhancementObject;
+class UClassStatusDataAsset;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SENTINELS_LS_API USTPlayerStatusComponent : public UActorComponent
@@ -68,12 +69,28 @@ public:
 	// Return HP after damaged
 	float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser);
 
+public:
+	void InitializeStatus(ESTClassType InClassType);
+	void CopyProperties(USTPlayerStatusComponent* InStatusComponent);
+
+protected:
+	void InitializeStatusWithAsset(UClassStatusDataAsset* InDataAsset);
+
 protected:
 	UPROPERTY()
 	class ASTPlayerCharacter* CachedPlayer;
 
 	UPROPERTY()
 	class UInventoryComponent* CachedInventory;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UClassStatusDataAsset* GreatSwordDataAsset;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UClassStatusDataAsset* KatanaDataAsset;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UClassStatusDataAsset* DualBaldeDataAsset;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<UDamageType> BaseDamageType;

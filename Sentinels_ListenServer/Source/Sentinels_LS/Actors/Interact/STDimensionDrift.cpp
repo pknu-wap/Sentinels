@@ -142,7 +142,7 @@ void ASTDimensionDrift::CheckAllPlayerReady()
 		if (!dummyPlayer->GetbIsReady() && !dummyPlayer->GetPlayerName().IsEmpty())
 			return;
 	}
-
+	
 	for (ASTPlayerController* playerController : TActorRange<ASTPlayerController>(GetWorld()))
 	{
 		//Server
@@ -166,5 +166,8 @@ void ASTDimensionDrift::CheckAllPlayerReady()
 	USTGameTravelDataSubsystem* gameTravelDataSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
 	gameTravelDataSubsystem->SetCurrentLevelTag(CurrentLevelTag);
 
-	GetWorld()->ServerTravel(GetLevelName(CurrentLevelTag));
+	if (CurrentLevelTag.IsValid())
+	{
+		GetWorld()->ServerTravel(GetLevelName(CurrentLevelTag));
+	}
 }

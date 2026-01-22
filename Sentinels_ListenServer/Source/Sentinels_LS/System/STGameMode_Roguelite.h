@@ -25,7 +25,7 @@ protected:
 
 public:
 	void TeleportPlayersToPlayerStarts(const TArray<APlayerStart*>& inPlayerStarts);
-	void TeleportToNextSection();
+	bool TeleportToNextSection();
 	bool ActivateNextSection();
 
 /*
@@ -43,6 +43,9 @@ public:
 protected:
 	UFUNCTION()
 	void OnEliteBossCleared(AActor* DiedEnemy);
+
+	UFUNCTION()
+	void OnEliteBossClearCallback();
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

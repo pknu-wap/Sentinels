@@ -88,12 +88,15 @@ void ASTGameMode_Roguelite::BeginPlay()
 
 }
 
-void ASTGameMode_Roguelite::TeleportToNextSection()
+bool ASTGameMode_Roguelite::TeleportToNextSection()
 {
 	if (CachedSections.IsValidIndex(CurrentSectionIdx + 1))
 	{
 		TeleportPlayersToPlayerStarts(CachedSections[CurrentSectionIdx + 1]->PlayerStarts);
+		return true;
 	}
+
+	return false;
 }
 
 void ASTGameMode_Roguelite::TeleportPlayersToPlayerStarts(const TArray<APlayerStart*>& inPlayerStarts)
@@ -187,24 +190,38 @@ void ASTGameMode_Roguelite::OnEliteBossCleared(AActor* DiedEnemy)
 	FTimerHandle handle;
 	GetWorldTimerManager().SetTimer(handle, [&]()
 		{
-			// Teleport All Players to Next Section
-			TeleportToNextSection();
-
-			// Despawn All Section Enemys
-			if (CurrentSection)
-			{
-				CurrentSection->MissionDeactivated();
-				CurrentSection->DespawnAllEnemys();
-			}
-
-			// Activate Next Section && Set Timer for EliteBoss
-			ActivateNextSection();
-
-			if (CurrentSection)
-			{
-				FTimerHandle handle;
-				GetWorldTimerManager().SetTimer(handle, CurrentSection, &ASTMissionSection::SpawnEliteBoss,
-					SectionTimeLimit, false);
-			}
+			OnEliteBossClearCallback();
 		}, 10.f, false);
+}
+
+void ASTGameMode_Roguelite::OnEliteBossClearCallback()
+{
+	// Teleport All Players to Next Section
+	bool bIsTeleportSuccess = TeleportToNextSection();
+
+	// Next Section
+	if (bIsTeleportSuccess)
+	{
+		// Despawn All Section Enemys
+		if (CurrentSection)
+		{
+			CurrentSection->MissionDeactivated();
+			CurrentSection->DespawnAllEnemys();
+		}
+
+		// Activate Next Section && Set Timer for EliteBoss
+		ActivateNextSection();
+
+		if (CurrentSection)
+		{
+			FTimerHandle handle;
+			GetWorldTimerManager().SetTimer(handle, CurrentSection, &ASTMissionSection::SpawnEliteBoss,
+				SectionTimeLimit, false);
+		}
+	}
+	// Boss Map
+	else
+	{
+		GetWorld()->ServerTravel(FName("LV_Develop_AI").ToString());
+	}
 }

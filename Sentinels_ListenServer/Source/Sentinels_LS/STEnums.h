@@ -7,6 +7,7 @@
 UENUM(BlueprintType)
 enum class ESTClassType : uint8
 {
+	None,
 	GreatSword,
 	Katana,
 	DualBlade,

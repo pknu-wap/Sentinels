@@ -29,6 +29,9 @@ public:
 	float AdjustFinalDamage(float DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void SetInventory(const TArray<FInvSlotStruct>& InArray);
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	TArray<FInvSlotStruct> GetInventoryCopy() const { return Inventory; }
 
 	FORCEINLINE const TArray<FInvSlotStruct>& GetInventory() const { return Inventory; }

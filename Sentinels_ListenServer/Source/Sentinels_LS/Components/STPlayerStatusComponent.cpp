@@ -18,6 +18,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Player/Enhancement/EnhancementObject.h"
 #include "SubSystem/EnhancementSubsystem.h"
+#include "GameFramework/PlayerState.h"
+#include "Player/DataAsset/ClassStatusDataAsset.h"
 
 // Sets default values for this component's properties
 USTPlayerStatusComponent::USTPlayerStatusComponent()
@@ -42,12 +44,16 @@ void USTPlayerStatusComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	CachedPlayer = Cast<ASTPlayerCharacter>(GetOwner());
-	if (CachedPlayer)
+	if (APlayerState* PS = Cast<APlayerState>(GetOwner()))
 	{
-		CachedInventory = GetOwner()->GetComponentByClass<UInventoryComponent>();
-		BaseDamageType = CachedPlayer->BaseDamageType;
-		CriticalDamageType = CachedPlayer->CriticalDamageType;
+		CachedPlayer = Cast<ASTPlayerCharacter>(PS->GetPawn());
+		CachedInventory = PS->GetComponentByClass<UInventoryComponent>();
+
+		if (CachedPlayer)
+		{
+			BaseDamageType = CachedPlayer->BaseDamageType;
+			CriticalDamageType = CachedPlayer->CriticalDamageType;
+		}
 	}
 
 	InitializeDefaultStatus();
@@ -116,6 +122,118 @@ float USTPlayerStatusComponent::TakeDamage(float DamageAmount, FDamageEvent cons
 	OnRep_HPUpdated();
 
 	return HP;
+}
+
+void USTPlayerStatusComponent::InitializeStatus(ESTClassType InClassType)
+{
+	switch (InClassType)
+	{
+	case ESTClassType::GreatSword:
+	{
+		InitializeStatusWithAsset(GreatSwordDataAsset);
+	}
+	case ESTClassType::Katana:
+	{
+		InitializeStatusWithAsset(KatanaDataAsset);
+	}
+	case ESTClassType::DualBlade:
+	{
+		InitializeStatusWithAsset(DualBaldeDataAsset);
+	}
+	}
+}
+
+void USTPlayerStatusComponent::CopyProperties(USTPlayerStatusComponent* InStatusComponent)
+{
+	if (!InStatusComponent) return;
+
+	Level = InStatusComponent->Level;
+	MaxExp = InStatusComponent->MaxExp;
+	Exp = InStatusComponent->Exp;
+
+	SelectedEnhancements = InStatusComponent->SelectedEnhancements;
+	NotSelectedEnhancements = InStatusComponent->NotSelectedEnhancements;
+
+	BaseMaxHP = InStatusComponent->BaseMaxHP;
+	MaxHP = InStatusComponent->MaxHP;
+	HP = InStatusComponent->HP;
+
+	BaseMaxHPRegen = InStatusComponent->BaseMaxHPRegen;
+	MaxHPRegen = InStatusComponent->MaxHPRegen;
+	BaseHPRegen = InStatusComponent->BaseHPRegen;
+	HPRegen = InStatusComponent->HPRegen;
+
+	ATK = InStatusComponent->ATK;
+	BaseATK = InStatusComponent->BaseATK;
+	DEF = InStatusComponent->DEF;
+	BaseDEF = InStatusComponent->BaseDEF;
+
+	MaxMovementSpeed = InStatusComponent->MaxMovementSpeed;
+	MovementSpeed = InStatusComponent->MovementSpeed;
+	BaseMovementSpeed = InStatusComponent->BaseMovementSpeed;
+
+	MaxAttackSpeed = InStatusComponent->MaxAttackSpeed;
+	AttackSpeed = InStatusComponent->AttackSpeed;
+	BaseAttackSpeed = InStatusComponent->BaseAttackSpeed;
+
+	MaxDamageIncreaseRate = InStatusComponent->MaxDamageIncreaseRate;
+	DamageIncreaseRate = InStatusComponent->DamageIncreaseRate;
+
+	MaxCDR = InStatusComponent->MaxCDR;
+	CDR = InStatusComponent->CDR;
+
+	MaxCriticalDamagePercent = InStatusComponent->MaxCriticalDamagePercent;
+	CriticalDamagePercent = InStatusComponent->CriticalDamagePercent;
+	BaseCriticalDamagePercent = InStatusComponent->BaseCriticalDamagePercent;
+
+	MaxCriticalRate = InStatusComponent->MaxCriticalRate;
+	CriticalRate = InStatusComponent->CriticalRate;
+	BaseCriticalRate = InStatusComponent->BaseCriticalRate;
+}
+
+void USTPlayerStatusComponent::InitializeStatusWithAsset(UClassStatusDataAsset* InDataAsset)
+{
+	if (!InDataAsset) return;
+
+	DB_Enhancement = InDataAsset->DB_Enhancement;
+	InitializeEnhancement();
+
+	BaseDamageType = InDataAsset->BaseDamageType;
+	CriticalDamageType = InDataAsset->CriticalDamageType;
+
+	BaseMaxHP = InDataAsset->BaseMaxHP;
+	MaxHP = InDataAsset->MaxHP;
+	HP = MaxHP;
+
+	BaseMaxHPRegen = InDataAsset->BaseMaxHPRegen;
+	MaxHPRegen = InDataAsset->MaxHPRegen;
+	BaseHPRegen = InDataAsset->BaseHPRegen;
+	HPRegen = BaseHPRegen;
+
+	BaseATK = InDataAsset->BaseATK;
+	ATK = BaseATK;
+	BaseDEF = InDataAsset->BaseDEF;
+	DEF = BaseDEF;
+
+	MaxMovementSpeed = InDataAsset->MaxMovementSpeed;
+	BaseMovementSpeed = InDataAsset->BaseMovementSpeed;
+	MovementSpeed = BaseMovementSpeed;
+
+	MaxAttackSpeed = InDataAsset->MaxAttackSpeed;
+	BaseAttackSpeed = InDataAsset->BaseAttackSpeed;
+	AttackSpeed = BaseAttackSpeed;
+
+	MaxDamageIncreaseRate = InDataAsset->MaxDamageIncreaseRate;
+
+	MaxCDR = InDataAsset->MaxCDR;
+
+	MaxCriticalDamagePercent = InDataAsset->MaxCriticalDamagePercent;
+	BaseCriticalDamagePercent = InDataAsset->BaseCriticalDamagePercent;
+	CriticalDamagePercent = BaseCriticalDamagePercent;
+
+	MaxCriticalRate = InDataAsset->MaxCriticalRate;
+	BaseCriticalRate = InDataAsset->BaseCriticalRate;
+	CriticalRate = BaseCriticalRate;
 }
 
 void USTPlayerStatusComponent::AddExp(float InExp)
