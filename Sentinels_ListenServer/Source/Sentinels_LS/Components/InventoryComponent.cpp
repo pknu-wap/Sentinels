@@ -56,6 +56,12 @@ void UInventoryComponent::SetInventory(const TArray<FInvSlotStruct>& InArray)
 {
 	Inventory = InArray;
 
+	for (auto& slot : Inventory)
+	{
+		if (slot.ItemObject)
+			slot.ItemObject->Rename(nullptr, this);
+	}
+
 	OnRep_Inventory();
 }
 

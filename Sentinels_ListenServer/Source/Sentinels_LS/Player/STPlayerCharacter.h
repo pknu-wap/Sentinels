@@ -45,6 +45,7 @@ struct FPlayerSKMeshesPartsName
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPassiveSkillReadyStateChanged, bool, IsReady);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTeleportEnded);
 
 UCLASS()
 class SENTINELS_LS_API ASTPlayerCharacter : public ASTCharacterBase
@@ -97,16 +98,30 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void BindDefaultThirdPersonInput();
 
-public:
-	UFUNCTION(BlueprintImplementableEvent)
-	void TeleportWithDissolve(const FTransform& InTransform);
-
 protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
+
+	/*
+		Teleport & Dissolve
+	*/
+public:
+	UFUNCTION(BlueprintImplementableEvent)
+	void TeleportWithDissolve(const FTransform& InTransform);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void DissolveStart_Multicast();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void ReverseDissolveStart_Multicast();
+
+public:
+	UPROPERTY(BlueprintCallable)
+	FOnTeleportEnded Delegate_TeleportEnded;
 
 
 	/*

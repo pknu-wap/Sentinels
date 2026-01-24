@@ -28,6 +28,10 @@ public:
 	bool TeleportToNextSection();
 	bool ActivateNextSection();
 
+protected:
+	UFUNCTION()
+	void OnTeleportEnded();
+
 /*
 	Mission
 */
@@ -60,6 +64,12 @@ protected:
 	UPROPERTY()
 	int CurrentSectionIdx = -1;
 
+/*
+	Next Map
+*/
+protected:
+	UPROPERTY(EditAnywhere)
+	FName NextMapName;
 };
 
 template<typename T>

@@ -109,13 +109,21 @@ void ASTGameMode_Roguelite::TeleportPlayersToPlayerStarts(const TArray<APlayerSt
 		return;
 	}
 
+	bool bShouldBindFunc = true;
 	for (int i = 0; i < inPlayerStarts.Num(); i++)
 	{
 		ASTPlayerCharacter* player = Cast< ASTPlayerCharacter>(UGameplayStatics::GetPlayerCharacter(this, i));
 		if (player)
 		{
 			player->TeleportWithDissolve(inPlayerStarts[i]->GetTransform());
-			// player->SetActorTransform(inPlayerStarts[i]->GetTransform());
+
+			if (bShouldBindFunc)
+			{
+				bShouldBindFunc = false;
+
+				player->Delegate_TeleportEnded.RemoveAll(this);
+				player->Delegate_TeleportEnded.AddDynamic(this, &ASTGameMode_Roguelite::OnTeleportEnded);
+			}
 		}
 	}
 
@@ -159,6 +167,19 @@ bool ASTGameMode_Roguelite::ActivateNextSection()
 	return false;
 }
 
+void ASTGameMode_Roguelite::OnTeleportEnded()
+{
+	// Activate Next Section && Set Timer for EliteBoss
+	ActivateNextSection();
+
+	if (CurrentSection)
+	{
+		FTimerHandle handle;
+		GetWorldTimerManager().SetTimer(handle, CurrentSection, &ASTMissionSection::SpawnEliteBoss,
+			SectionTimeLimit, false);
+	}
+}
+
 void ASTGameMode_Roguelite::OnMissionCleared()
 {
 
@@ -199,7 +220,6 @@ void ASTGameMode_Roguelite::OnEliteBossClearCallback()
 	// Teleport All Players to Next Section
 	bool bIsTeleportSuccess = TeleportToNextSection();
 
-	// Next Section
 	if (bIsTeleportSuccess)
 	{
 		// Despawn All Section Enemys
@@ -209,19 +229,11 @@ void ASTGameMode_Roguelite::OnEliteBossClearCallback()
 			CurrentSection->DespawnAllEnemys();
 		}
 
-		// Activate Next Section && Set Timer for EliteBoss
-		ActivateNextSection();
-
-		if (CurrentSection)
-		{
-			FTimerHandle handle;
-			GetWorldTimerManager().SetTimer(handle, CurrentSection, &ASTMissionSection::SpawnEliteBoss,
-				SectionTimeLimit, false);
-		}
+		// Activate Next Section at ASTGameMode_Reguelite::OnTeleportEnded ! ! !
 	}
 	// Boss Map
 	else
 	{
-		GetWorld()->ServerTravel(FName("LV_Develop_AI").ToString());
+		GetWorld()->ServerTravel(NextMapName.ToString());
 	}
 }

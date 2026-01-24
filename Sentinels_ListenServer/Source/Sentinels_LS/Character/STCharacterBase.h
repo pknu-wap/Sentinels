@@ -87,6 +87,9 @@ public:
 	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void ClearTag_Server(const FGameplayTag& TagToRemove);
 
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void ClearAllTag_Server();
+
 	UFUNCTION(BlueprintCallable)
 	void RemoveTag(const FGameplayTag& TagToRemove, int NumToRemove)
 	{

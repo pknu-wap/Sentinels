@@ -106,6 +106,11 @@ void ASTPlayerCharacter::BeginPlay()
 	{
 		PAnimInst->Delegate_SetWarpTarget_Step.AddUObject(this, &ASTPlayerCharacter::SetWarpTarget_Step);
 	}
+
+	if (HasAuthority())
+	{
+		Delegate_TeleportEnded.AddDynamic(this, &ASTPlayerCharacter::ClearAllTag_Server);
+	}
 }
 
 void ASTPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
