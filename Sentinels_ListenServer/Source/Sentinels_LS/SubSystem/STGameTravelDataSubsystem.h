@@ -70,6 +70,9 @@ public:
 	void UnRegisterPlayerInfo(FUniqueNetIdRepl PlayerID);
 
 	UFUNCTION(BlueprintCallable)
+	void ClearPlayerInfo() { PlayerInfos.Empty(); }
+
+	UFUNCTION(BlueprintCallable)
 	const FPlayerInfo& LoadPlayerInfo(FUniqueNetIdRepl PlayerID);
 
 	UFUNCTION(BlueprintCallable)
