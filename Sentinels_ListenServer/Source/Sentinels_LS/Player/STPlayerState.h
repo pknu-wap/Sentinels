@@ -27,6 +27,7 @@ protected:
 	virtual void CopyProperties(APlayerState* PlayerState) override;
 
 public:
+	void ClearAllState();
 	void UpdatePlayerClass(ESTClassType InClassType);
 
 public:

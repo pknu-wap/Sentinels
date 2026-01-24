@@ -69,6 +69,11 @@ void ASTCharacterBase::ClearTag_Server_Implementation(const FGameplayTag& TagToR
 	ClearTag(TagToRemove);
 }
 
+void ASTCharacterBase::ClearAllTag_Server_Implementation()
+{
+	TagContainer.Empty();
+}
+
 void ASTCharacterBase::UpdateStateWidget_Server_Implementation(FGameplayTag StateTag, bool bShow)
 {
 	UpdateStateWidget_Multicast(StateTag, bShow);

@@ -56,6 +56,12 @@ void ASTPlayerState::CopyProperties(APlayerState* PlayerState)
 	}
 }
 
+void ASTPlayerState::ClearAllState()
+{
+	bIsInitialized = false;
+	InventoryComponent->SetInventory(TArray<FInvSlotStruct>());
+}
+
 void ASTPlayerState::UpdatePlayerClass(ESTClassType InClassType)
 {
 	// Should Check Player is in InGame!
