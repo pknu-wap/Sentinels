@@ -153,6 +153,13 @@ void USTPlayerStatusComponent::CopyProperties(USTPlayerStatusComponent* InStatus
 
 	SelectedEnhancements = InStatusComponent->SelectedEnhancements;
 	NotSelectedEnhancements = InStatusComponent->NotSelectedEnhancements;
+	for (UEnhancementObject* enhancement : SelectedEnhancements)
+	{
+		if (enhancement)
+		{
+			enhancement->Rename(nullptr, this);
+		}
+	}
 
 	BaseMaxHP = InStatusComponent->BaseMaxHP;
 	MaxHP = InStatusComponent->MaxHP;
