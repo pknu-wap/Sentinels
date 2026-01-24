@@ -21,7 +21,6 @@
 #include "Engine/Level.h"
 
 ASTDimensionDrift::ASTDimensionDrift() :
-	AllPlayerCount(0),
 	CurrentLevelTag(FSTGameplayTags::Get().Level_Lobby)
 {
 	PrimaryActorTick.bCanEverTick = false;
@@ -137,11 +136,22 @@ ASTDummyPlayer* ASTDimensionDrift::GetDummyPlayer(FUniqueNetIdRepl PlayerID)
 
 void ASTDimensionDrift::CheckAllPlayerReady()
 {
-	for (auto dummyPlayer : DummyPlayers)
+	int readyPlayerNums = 0;
+	for (ASTDummyPlayer* dummyPlayer : TActorRange<ASTDummyPlayer>(GetWorld()))
 	{
-		if (!dummyPlayer->GetbIsReady() && !dummyPlayer->GetPlayerName().IsEmpty())
-			return;
+		if (dummyPlayer->GetbIsReady())
+			readyPlayerNums++;
 	}
+
+	int playerNums = 0;
+	for (ASTPlayerController* playerController : TActorRange<ASTPlayerController>(GetWorld()))
+	{
+		if (playerController != Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0)))
+			playerNums++;
+	}
+
+	if (readyPlayerNums != playerNums)
+		return;
 	
 	for (ASTPlayerController* playerController : TActorRange<ASTPlayerController>(GetWorld()))
 	{
