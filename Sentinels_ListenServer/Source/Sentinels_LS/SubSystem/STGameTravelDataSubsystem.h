@@ -85,17 +85,17 @@ public:
 	void SavePlayerSKMeshes(FUniqueNetIdRepl PlayerID, FPlayerSKMeshesRowName& SKMeshesRowName);
 
 	UFUNCTION(BlueprintCallable)
-	void SetCurrentLevelTag(FGameplayTag LevelTag) { CurrentLevelTag = LevelTag; }
+	void SetLevelTag(FGameplayTag CurrentLevelTag) { LevelTag = CurrentLevelTag; }
 
 	UFUNCTION(BlueprintCallable)
-	FGameplayTag GetCurrentLevelTag() { return CurrentLevelTag; }
+	FGameplayTag GetLevelTag() { return LevelTag; }
 
 protected:
 	UPROPERTY()
 	TMap<FUniqueNetIdRepl, FPlayerInfo> PlayerInfos;
 
 	UPROPERTY()
-	FGameplayTag CurrentLevelTag;
+	FGameplayTag LevelTag;
 
 	UDataTable* DT_Head;
 	UDataTable* DT_Hood;

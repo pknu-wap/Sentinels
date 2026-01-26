@@ -174,7 +174,7 @@ void ASTDimensionDrift::CheckAllPlayerReady()
 	}
 
 	USTGameTravelDataSubsystem* gameTravelDataSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
-	gameTravelDataSubsystem->SetCurrentLevelTag(CurrentLevelTag);
+	gameTravelDataSubsystem->SetLevelTag(CurrentLevelTag);
 
 	if (CurrentLevelTag.IsValid())
 	{
