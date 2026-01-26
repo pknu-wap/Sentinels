@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Actors/MissionObject/Interactable/InteractableMissionObject.h"
+#include "Components/SpawnEnemyComponent.h"
 #include "EscortObject.generated.h"
 
 class ASplineRouteActor;
@@ -81,8 +82,32 @@ private:
     /*
         Spawn Enemy
     */
+protected:
+    void SpawnWave();
+
+    UFUNCTION()
+    void OnEnemyDied(AActor* DiedEnemy);
+
+    bool IsInFrontalCone(const FVector& locationToCheck, const FVector& originLocation, const FVector& forwardVector, float angleDeg) const;
+    bool GetSpawnNavLocationForPlayer(int playerIdx, int infoIdx, FNavLocation& OutLocation) const;
+    
 
 protected:
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    USceneComponent* SpawnLocationSceneComponent;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
+    float WavePeriod = 10.f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wave")
+    TArray<FSpawnInfo> SpawnInfos;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    TArray<AActor*> Players;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
     TObjectPtr<USpawnEnemyComponent> SpawnEnemyComp;
+
+private:
+    FTimerHandle Handle_SpawnWave;
 };
