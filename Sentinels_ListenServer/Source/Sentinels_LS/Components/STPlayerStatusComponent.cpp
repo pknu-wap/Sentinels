@@ -20,6 +20,7 @@
 #include "SubSystem/EnhancementSubsystem.h"
 #include "GameFramework/PlayerState.h"
 #include "Player/DataAsset/ClassStatusDataAsset.h"
+#include "Player/STPlayerState.h"
 
 // Sets default values for this component's properties
 USTPlayerStatusComponent::USTPlayerStatusComponent()
@@ -44,30 +45,18 @@ void USTPlayerStatusComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (APlayerState* PS = Cast<APlayerState>(GetOwner()))
+	if (ASTPlayerState* PS = Cast<ASTPlayerState>(GetOwner()))
 	{
-		CachedPlayer = Cast<ASTPlayerCharacter>(PS->GetPawn());
+		CachedPS = PS;
 		CachedInventory = PS->GetComponentByClass<UInventoryComponent>();
 
-		if (CachedPlayer)
-		{
-			BaseDamageType = CachedPlayer->BaseDamageType;
-			CriticalDamageType = CachedPlayer->CriticalDamageType;
-		}
+		PS->OnPawnSet.AddDynamic(this, &USTPlayerStatusComponent::OnPawnPossessed);
 	}
-
-	InitializeDefaultStatus();
-	ApplyStatus();
-
-	InitializeEnhancement();
-
-	HP = MaxHP;
-	OnRep_HPUpdated();
 
 	if (GetOwner() && GetOwner()->HasAuthority())
 	{
 		FTimerHandle HPRegenHandle;
-		GetWorld()->GetTimerManager().SetTimer(HPRegenHandle, 
+		GetWorld()->GetTimerManager().SetTimer(HPRegenHandle,
 			this, &USTPlayerStatusComponent::RegenHP,
 			1.f, true);
 	}
@@ -122,6 +111,30 @@ float USTPlayerStatusComponent::TakeDamage(float DamageAmount, FDamageEvent cons
 	OnRep_HPUpdated();
 
 	return HP;
+}
+
+void USTPlayerStatusComponent::OnPawnPossessed(APlayerState* Player, APawn* NewPawn, APawn* OldPawn)
+{
+	if (!Player || !NewPawn) return;
+
+	CachedPlayer = Cast<ASTPlayerCharacter>(NewPawn);
+	if (CachedPlayer)
+	{
+		BaseDamageType = CachedPlayer->BaseDamageType;
+		CriticalDamageType = CachedPlayer->CriticalDamageType;
+	}
+
+	// Restart || New Level
+	if (CachedPS && !CachedPS->bIsInitialized)
+	{
+		InitializeDefaultStatus();
+		InitializeEnhancement();
+	}
+	
+	ApplyStatus();
+
+	HP = MaxHP;
+	OnRep_HPUpdated();
 }
 
 void USTPlayerStatusComponent::InitializeStatus(ESTClassType InClassType)
@@ -241,6 +254,9 @@ void USTPlayerStatusComponent::InitializeStatusWithAsset(UClassStatusDataAsset* 
 	MaxCriticalRate = InDataAsset->MaxCriticalRate;
 	BaseCriticalRate = InDataAsset->BaseCriticalRate;
 	CriticalRate = BaseCriticalRate;
+
+	InitializeDefaultStatus();
+	ApplyStatus();
 }
 
 void USTPlayerStatusComponent::AddExp(float InExp)
@@ -449,6 +465,7 @@ void USTPlayerStatusComponent::InitializeDefaultStatus()
 	CriticalRate = BaseCriticalRate;
 	DamageIncreaseRate = 0.f;
 	CDR = 0.f;
+	MovementSpeed = BaseMovementSpeed;
 
 	UpdateDefaultStatus();
 }
@@ -553,9 +570,18 @@ void USTPlayerStatusComponent::CalculateStatus()
 
 void USTPlayerStatusComponent::ApplyStatus()
 {
-	if (UCharacterMovementComponent* characterMovement = GetOwner()->GetComponentByClass<UCharacterMovementComponent>())
+	UCharacterMovementComponent* characterMovement = GetOwner()->GetComponentByClass<UCharacterMovementComponent>();
+	if (characterMovement)
 	{
 		characterMovement->MaxWalkSpeed = MovementSpeed;
+	}
+	else if(CachedPlayer)
+	{
+		characterMovement = CachedPlayer->GetComponentByClass<UCharacterMovementComponent>();
+		if (characterMovement)
+		{
+			characterMovement->MaxWalkSpeed = MovementSpeed;
+		}
 	}
 }
 
