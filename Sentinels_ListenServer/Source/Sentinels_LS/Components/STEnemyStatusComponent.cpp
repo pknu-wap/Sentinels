@@ -4,6 +4,7 @@
 #include "Components/STEnemyStatusComponent.h"
 #include "System/STGameState.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values for this component's properties
 USTEnemyStatusComponent::USTEnemyStatusComponent()
@@ -19,6 +20,8 @@ USTEnemyStatusComponent::USTEnemyStatusComponent()
 	StatusCurve_Time = OF_StatusCurve_Time.Object;
 	// StatusCurve_Mission = LoadObject<UCurveFloat>(this, TEXT("/Script/Engine.CurveFloat'/Game/Sentinels/Enemy/Curve/Curve_AI_Status_Mission.Curve_AI_Status_Mission'"));
 	// StatusCurve_Time = LoadObject<UCurveFloat>(this, TEXT("/Script/Engine.CurveFloat'/Game/Sentinels/Enemy/Curve/Curve_AI_Status_Time.Curve_AI_Status_Time'"));
+
+	bReplicateUsingRegisteredSubObjectList = true;
 }
 
 
@@ -35,6 +38,12 @@ void USTEnemyStatusComponent::BeginPlay()
 		30.f, true);
 
 	InitStatus();
+}
+
+void USTEnemyStatusComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	DOREPLIFETIME(USTEnemyStatusComponent, MaxHP);
+	DOREPLIFETIME(USTEnemyStatusComponent, CurrentHP);
 }
 
 void USTEnemyStatusComponent::InitStatus()

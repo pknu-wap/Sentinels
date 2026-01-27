@@ -7,11 +7,11 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerStart.h"
-#include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/Character.h"
 #include "Player/STPlayerCharacter.h"
 #include "STGameplayTags.h"
 #include "Character/Enemy/STEliteBase.h"
+#include "SubSystem/STGameTravelDataSubsystem.h"
 
 void ASTGameMode_Roguelite::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
@@ -234,6 +234,8 @@ void ASTGameMode_Roguelite::OnEliteBossClearCallback()
 	// Boss Map
 	else
 	{
-		GetWorld()->ServerTravel(NextMapName.ToString());
+		USTGameTravelDataSubsystem* gameTravelDataSubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
+		gameTravelDataSubSystem->SetLevelTag(FSTGameplayTags::Get().Level_Boss);
+		GetWorld()->ServerTravel(gameTravelDataSubSystem->GetBossLevelName());
 	}
 }
