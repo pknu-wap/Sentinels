@@ -81,6 +81,7 @@ public:
 	FGameplayTag Level_Lobby;
 	FGameplayTag Level_Boss;
 	FGameplayTag Level_MilitaryAirport;
+	FGameplayTag Level_Boss_Sevarog;
 
 	/////////  Event  /////////
 	FGameplayTag Level_MilitaryAirport_Event_Interact_ControlTower;

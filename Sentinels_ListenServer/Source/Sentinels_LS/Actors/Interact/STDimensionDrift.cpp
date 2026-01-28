@@ -20,7 +20,8 @@
 #include "GameFramework/PlayerState.h"
 #include "Engine/Level.h"
 
-ASTDimensionDrift::ASTDimensionDrift()
+ASTDimensionDrift::ASTDimensionDrift() :
+	CurrentLevelTag(FSTGameplayTags::Get().Level_Lobby)
 {
 	PrimaryActorTick.bCanEverTick = false;
 
@@ -135,34 +136,48 @@ ASTDummyPlayer* ASTDimensionDrift::GetDummyPlayer(FUniqueNetIdRepl PlayerID)
 
 void ASTDimensionDrift::CheckAllPlayerReady()
 {
-	for (auto dummyPlayer : DummyPlayers)
+	int readyPlayerNums = 0;
+	for (ASTDummyPlayer* dummyPlayer : TActorRange<ASTDummyPlayer>(GetWorld()))
 	{
-		if (!dummyPlayer->GetbIsReady() && !dummyPlayer->GetPlayerName().IsEmpty())
-			return;
+		if (dummyPlayer->GetbIsReady())
+			readyPlayerNums++;
 	}
 
-	//for (ASTPlayerController* playerController : TActorRange<ASTPlayerController>(GetWorld()))
-	//{
-	//	//Server
-	//	if (playerController == Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0)))
-	//	{
-	//		USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
-	//		UUserWidget* widget = UISubSystem->GetWidget(FSTGameplayTags::Get().Widget_LoadScreen);
-	//		widget->AddToViewport();
-	//	}
-	//	else // Client
-	//	{
-	//		playerController->GetUIComponent()->ClientRPCAddToViewport(FSTGameplayTags::Get().Widget_LoadScreen);
-	//	}
-	//	playerController->SetInputMode(FInputModeGameOnly());
-	//	playerController->SetShowMouseCursor(false);
-	//}
+	int playerNums = 0;
+	for (ASTPlayerController* playerController : TActorRange<ASTPlayerController>(GetWorld()))
+	{
+		if (playerController != Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0)))
+			playerNums++;
+	}
+
+	if (readyPlayerNums != playerNums)
+		return;
+	
+	for (ASTPlayerController* playerController : TActorRange<ASTPlayerController>(GetWorld()))
+	{
+		//Server
+		if (playerController == Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0)))
+		{
+			USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
+			//UUserWidget* widget = UISubSystem->GetWidget(FSTGameplayTags::Get().Widget_LoadScreen);
+			//widget->AddToViewport();
+			UUserWidget* widget = UISubSystem->GetWidget(FSTGameplayTags::Get().Widget_Lobby_Loadout);
+			widget->RemoveFromParent();
+		}
+		else // Client
+		{
+			//playerController->GetUIComponent()->ClientRPCAddToViewport(FSTGameplayTags::Get().Widget_LoadScreen);
+			playerController->GetUIComponent()->ClientRPCRemoveFromParent(FSTGameplayTags::Get().Widget_Lobby_Loadout);
+		}
+		playerController->SetInputMode(FInputModeGameOnly());
+		playerController->SetShowMouseCursor(false);
+	}
 
 	USTGameTravelDataSubsystem* gameTravelDataSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
-	gameTravelDataSubsystem->SetCurrentLevelTag(CurrentLevelTag);
+	gameTravelDataSubsystem->SetLevelTag(CurrentLevelTag);
 
 	if (CurrentLevelTag.IsValid())
 	{
 		GetWorld()->ServerTravel(GetLevelName(CurrentLevelTag));
-	}// UGameplayStatics::OpenLevel()
+	}
 }

@@ -265,14 +265,19 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 		FString("Lobby")
 	);
 
+	GameplayTags.Level_Boss = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Level.Boss"),
+		FString("Boss")
+	);
+
 	GameplayTags.Level_MilitaryAirport = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Level.MilitaryAirport"),
 		FString("MilitaryAirport")
 	);
 
-	GameplayTags.Level_Boss = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("Level.Boss"),
-		FString("Boss")
+	GameplayTags.Level_Boss_Sevarog = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Level.Boss.Sevarog"),
+		FString("Boss.Sevarog")
 	);
 
 	/*

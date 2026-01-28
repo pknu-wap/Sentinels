@@ -20,6 +20,8 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
+
 public:
 	void InitStatus();
 	
@@ -48,13 +50,13 @@ protected:
 	UPROPERTY(EditAnywhere)
 	UCurveFloat* StatusCurve_Mission;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
 	float MaxHP = 500.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float BaseMaxHP = 500.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
 	float CurrentHP;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

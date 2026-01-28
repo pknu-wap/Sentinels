@@ -4,7 +4,7 @@
 #include "SubSystem/STGameTravelDataSubsystem.h"
 
 USTGameTravelDataSubsystem::USTGameTravelDataSubsystem() :
-    CurrentLevelTag(FSTGameplayTags::Get().Level_Lobby)
+    LevelTag(FSTGameplayTags::Get().Level_Lobby)
 {
 	static ConstructorHelpers::FObjectFinder<UDataTable> DT_HEAD(TEXT("/Script/Engine.DataTable'/Game/Sentinels/Player/ETC/Customize/DataTable/DT_Head.DT_Head'"));
 	if (DT_HEAD.Succeeded())

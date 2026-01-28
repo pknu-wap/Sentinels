@@ -70,6 +70,9 @@ public:
 	void UnRegisterPlayerInfo(FUniqueNetIdRepl PlayerID);
 
 	UFUNCTION(BlueprintCallable)
+	void ClearPlayerInfo() { PlayerInfos.Empty(); }
+
+	UFUNCTION(BlueprintCallable)
 	const FPlayerInfo& LoadPlayerInfo(FUniqueNetIdRepl PlayerID);
 
 	UFUNCTION(BlueprintCallable)
@@ -82,17 +85,26 @@ public:
 	void SavePlayerSKMeshes(FUniqueNetIdRepl PlayerID, FPlayerSKMeshesRowName& SKMeshesRowName);
 
 	UFUNCTION(BlueprintCallable)
-	void SetCurrentLevelTag(FGameplayTag LevelTag) { CurrentLevelTag = LevelTag; }
+	void SetLevelTag(FGameplayTag CurrentLevelTag) { LevelTag = CurrentLevelTag; }
 
 	UFUNCTION(BlueprintCallable)
-	FGameplayTag GetCurrentLevelTag() { return CurrentLevelTag; }
+	FGameplayTag GetLevelTag() { return LevelTag; }
+
+	UFUNCTION(BlueprintCallable)
+	void SetBossLevelName(FString LevelName) { BossLevelName = LevelName; }
+
+	UFUNCTION(BlueprintCallable)
+	FString GetBossLevelName() { return BossLevelName; }
 
 protected:
 	UPROPERTY()
 	TMap<FUniqueNetIdRepl, FPlayerInfo> PlayerInfos;
 
 	UPROPERTY()
-	FGameplayTag CurrentLevelTag;
+	FGameplayTag LevelTag;
+
+	UPROPERTY()
+	FString BossLevelName;
 
 	UDataTable* DT_Head;
 	UDataTable* DT_Hood;

@@ -8,12 +8,10 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/DamageEvents.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Components/STEnemyStatusComponent.h"
 #include "Components/STPlayerStatusComponent.h"
 #include "Net/UnrealNetwork.h"
-#include "Character/Enemy/STEnemyBase_AIController.h"
 #include "SkeletalMeshComponentBudgeted.h"
 #include "IAnimationBudgetAllocator.h"
 #include "BrainComponent.h"
@@ -226,15 +224,12 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 
 			if (KatanaDamageType)
 			{
-				if (GetNumOfTag(FSTGameplayTags::Get().Character_State_Bleed) > 5)
+				if (GetNumOfTag(FSTGameplayTags::Get().Character_State_Bleed) < 5)
 				{
-					
-				}
-				else
-				{
-					UpdateStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Bleed, true);
 					AddTag(FSTGameplayTags::Get().Character_State_Bleed);
+					UpdateStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Bleed, true);
 				}
+
 				UE_LOG(LogTemp, Display, TEXT("Katana Damage Type ! ! !"));
 			}
 		}

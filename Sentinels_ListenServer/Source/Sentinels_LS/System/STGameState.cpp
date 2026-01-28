@@ -29,7 +29,7 @@ void ASTGameState::BeginPlay()
     if (HasAuthority())
     {
         USTGameTravelDataSubsystem* gameTravelDataSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<USTGameTravelDataSubsystem>();
-        LevelTag = gameTravelDataSubsystem->GetCurrentLevelTag();
+        LevelTag = gameTravelDataSubsystem->GetLevelTag();
     }
 }
 

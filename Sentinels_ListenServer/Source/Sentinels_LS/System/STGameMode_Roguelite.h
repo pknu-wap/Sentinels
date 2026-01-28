@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Sentinels_LSGameMode.h"
+#include "STGameplayTags.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "STGameMode_Roguelite.generated.h"
@@ -63,13 +64,6 @@ protected:
 
 	UPROPERTY()
 	int CurrentSectionIdx = -1;
-
-/*
-	Next Map
-*/
-protected:
-	UPROPERTY(EditAnywhere)
-	FName NextMapName;
 };
 
 template<typename T>
