@@ -135,6 +135,7 @@ void USTPlayerStatusComponent::OnPawnPossessed(APlayerState* Player, APawn* NewP
 
 	HP = MaxHP;
 	OnRep_HPUpdated();
+	OnRep_ExpUpdated();
 }
 
 void USTPlayerStatusComponent::InitializeStatus(ESTClassType InClassType)

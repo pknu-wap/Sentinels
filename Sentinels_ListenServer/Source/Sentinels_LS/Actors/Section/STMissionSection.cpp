@@ -308,6 +308,10 @@ void ASTMissionSection::SpawnEliteBoss()
 		ASTEliteBase* eliteBoss = Cast<ASTEliteBase>(
 			UAIBlueprintHelperLibrary::SpawnAIFromClass(this, EliteBossClass, nullptr,
 			spawnLocation, spawnRotation, true));
+		if (eliteBoss)
+		{
+			eliteBoss->Activate(spawnLocation, spawnRotation);
+		}
 
 		ASTGameMode_Roguelite* gameMode = Cast<ASTGameMode_Roguelite>(UGameplayStatics::GetGameMode(this));
 		if (eliteBoss && gameMode)
