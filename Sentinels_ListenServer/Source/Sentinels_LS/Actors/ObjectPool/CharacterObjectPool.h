@@ -39,7 +39,7 @@ public:
 		}
 
 		ASTPoolableCharacter* character = Cast<T>(UAIBlueprintHelperLibrary::SpawnAIFromClass(this, ObjectClass, nullptr,
-			FVector::ZeroVector, FRotator::ZeroRotator, true));
+			Location, Rotation, true));
 		if (character)
 		{
 			character->Activate(Location, Rotation);

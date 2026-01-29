@@ -70,6 +70,9 @@ public:
 	float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser);
 
 public:
+	UFUNCTION()
+	void OnPawnPossessed(APlayerState* Player, APawn* NewPawn, APawn* OldPawn);
+
 	void InitializeStatus(ESTClassType InClassType);
 	void CopyProperties(USTPlayerStatusComponent* InStatusComponent);
 
@@ -77,6 +80,9 @@ protected:
 	void InitializeStatusWithAsset(UClassStatusDataAsset* InDataAsset);
 
 protected:
+	UPROPERTY()
+	class ASTPlayerState* CachedPS;
+
 	UPROPERTY()
 	class ASTPlayerCharacter* CachedPlayer;
 

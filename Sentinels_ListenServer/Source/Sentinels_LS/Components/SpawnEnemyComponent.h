@@ -61,7 +61,7 @@ struct SENTINELS_LS_API FSpawnInfo
     UPROPERTY(VisibleAnywhere)
     int CurrentSpawned = 0;
 
-    UPROPERTY()
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spawn")
     TSet<ASTPoolableCharacter*> SpawnedCharacters;
 
     UPROPERTY()
