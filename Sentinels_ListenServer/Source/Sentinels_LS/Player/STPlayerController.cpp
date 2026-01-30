@@ -95,6 +95,7 @@ void ASTPlayerController::SetupInputComponent()
 
 		EnhancedInputComponent->BindAction(ShowTeamInfoUIAction, ETriggerEvent::Started, this, &ASTPlayerController::ShowTeamInfoUI_Pressed);
 		EnhancedInputComponent->BindAction(ShowTeamInfoUIAction, ETriggerEvent::Completed, this, &ASTPlayerController::ShowTeamInfoUI_Released);
+		EnhancedInputComponent->BindAction(ShowMapUIAction, ETriggerEvent::Completed, this, &ASTPlayerController::ShowMapUI_Pressed);
 	}
 }
 
@@ -241,6 +242,31 @@ void ASTPlayerController::ShowTeamInfoUI_Released()
 	{
 		widget->SetVisibility(ESlateVisibility::Collapsed);
 	}
+}
+
+void ASTPlayerController::ShowMapUI_Pressed()
+{
+	USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
+	UWidget* miniMapWidget = UISubSystem->GetWidget(FSTGameplayTags::Get().Widget_InGame_Minimap);
+	UWidget* gameMapWidget = UISubSystem->GetWidget(FSTGameplayTags::Get().Widget_InGame_GameMap);
+
+	if (!miniMapWidget || !gameMapWidget)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Error : miniMap & gameMap Widget don't exist"));
+		return;
+	}
+
+	if (gameMapWidget->GetVisibility() == ESlateVisibility::Collapsed)
+	{
+		gameMapWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
+		UIComponent->UpdateUI(FSTGameplayTags::Get().Widget_InGame_GameMap);
+	}
+	else
+	{
+		gameMapWidget->SetVisibility(ESlateVisibility::Collapsed);
+		UIComponent->UpdateUI(FSTGameplayTags::Get().Widget_InGame_Minimap);
+	}
+		
 }
 
 void ASTPlayerController::Interact_Pressed()

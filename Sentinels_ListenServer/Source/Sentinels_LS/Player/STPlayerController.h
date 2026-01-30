@@ -75,6 +75,8 @@ public:
 	void ShowTeamInfoUI_Pressed();
 	void ShowTeamInfoUI_Released();
 
+	void ShowMapUI_Pressed();
+
 /*
 	Interact
 */
@@ -112,6 +114,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* ShowTeamInfoUIAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* ShowMapUIAction;
 
 /*
 	Movement

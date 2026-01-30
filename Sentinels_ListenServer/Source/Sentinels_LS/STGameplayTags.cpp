@@ -56,6 +56,11 @@ void FSTGameplayTags::InitializeNativeGameplayTags()
 		FString("Minimap")
 	);
 
+	GameplayTags.Widget_InGame_GameMap = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Widget.InGame.GameMap"),
+		FString("GameMap")
+	);
+
 	GameplayTags.Widget_InGame_PlayerSkill = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Widget.InGame.PlayerSkill"),
 		FString("Player Skill")

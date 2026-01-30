@@ -43,6 +43,7 @@ public:
 	FGameplayTag Widget_InGame;
 	FGameplayTag Widget_InGame_Map;
 	FGameplayTag Widget_InGame_Minimap;
+	FGameplayTag Widget_InGame_GameMap;
 	FGameplayTag Widget_InGame_PlayerSkill;
 	FGameplayTag Widget_InGame_PlayerState;
 	FGameplayTag Widget_InGame_Quest;
