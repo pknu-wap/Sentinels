@@ -46,6 +46,7 @@ struct FPlayerSKMeshesPartsName
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPassiveSkillReadyStateChanged, bool, IsReady);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTeleportEnded);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerDied);
 
 UCLASS()
 class SENTINELS_LS_API ASTPlayerCharacter : public ASTCharacterBase
@@ -246,6 +247,9 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	virtual void Skill_Passive_Pressed_Multicast();
 
+	UFUNCTION(NetMulticast, Reliable)
+	void PlayDiedMontage_Multicast(int MontageIdx);
+
 protected:
 	UPROPERTY(BlueprintAssignable)
 	FOnPassiveSkillReadyStateChanged OnPassiveSkillReadyStateChanged;
@@ -260,12 +264,27 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void AdjustFinalDamage(float& DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor);
 
+	UFUNCTION()
+	void DeathResolveStart();
+
+	UFUNCTION()
+	void RestartPlayer();
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<UDamageType> BaseDamageType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<UDamageType> CriticalDamageType;
+
+	UPROPERTY(Replicated)
+	bool bIsDied = false;
+
+	UPROPERTY()
+	APlayerController* CachedPC;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnPlayerDied Delegate_OnPlayerDied;
 	
 	/*
 		On Attack Success 
@@ -406,6 +425,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* Montage_Skill_Passive;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
+	TArray<UAnimMontage*> Montages_Death;
 
 
 	/*

@@ -11,6 +11,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/PlayerController.h"
 #include "NavigationSystem.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
@@ -28,6 +29,7 @@
 #include "SubSystem/STGameTravelDataSubsystem.h"
 #include "GameFramework/PlayerState.h"
 #include "Player/STPlayerState.h"
+#include "GameFramework/GameModeBase.h"
 
 ASTPlayerCharacter::ASTPlayerCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<USTCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
@@ -105,6 +107,7 @@ void ASTPlayerCharacter::BeginPlay()
 	if (USTPlayerAnimInstance* PAnimInst = Cast<USTPlayerAnimInstance>(GetMesh()->GetAnimInstance()))
 	{
 		PAnimInst->Delegate_SetWarpTarget_Step.AddUObject(this, &ASTPlayerCharacter::SetWarpTarget_Step);
+		PAnimInst->Delegate_DeathResolveStart.AddUObject(this, &ASTPlayerCharacter::DeathResolveStart);
 	}
 
 	if (HasAuthority())
@@ -175,6 +178,8 @@ void ASTPlayerCharacter::BindDefaultThirdPersonInput()
 
 void ASTPlayerCharacter::Move(const FInputActionValue& Value)
 {
+	if (bIsDied) return;
+
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
@@ -250,6 +255,7 @@ void ASTPlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	DOREPLIFETIME(ASTPlayerCharacter, InventoryComponent);
 	DOREPLIFETIME(ASTPlayerCharacter, StatusComponent);
 	DOREPLIFETIME(ASTPlayerCharacter, SKMeshPartsName);
+	DOREPLIFETIME(ASTPlayerCharacter, bIsDied);
 }
 
 float ASTPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -288,12 +294,21 @@ float ASTPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 		if (StatusComponent)
 		{
 			float HP = StatusComponent->TakeDamage(actualDamage, DamageEvent, EventInstigator, DamageCauser);
-			if (HP <= 0)
+			if (HP <= 0 && !bIsDied)
 			{
-				if (APlayerController* PC = Cast<APlayerController>(GetController()))
+				bIsDied = true; 
+				Delegate_OnPlayerDied.Broadcast();
+
+				StatusComponent->EnableHPRegen(false);
+
+				CachedPC = Cast<APlayerController>(GetController());
+				if (CachedPC)
 				{
-					PC->ServerRestartPlayer();
+					CachedPC->UnPossess();
 				}
+
+				int rand = UKismetMathLibrary::RandomIntegerInRange(0, Montages_Death.Num() - 1);
+				PlayDiedMontage_Multicast(rand);
 			}
 		}
 
@@ -343,7 +358,8 @@ void ASTPlayerCharacter::PossessedBy(AController* NewController)
 void ASTPlayerCharacter::Jump()
 {
 	if (HasTag(FSTGameplayTags::Get().Character_State_Attack) 
-		|| HasTag(FSTGameplayTags::Get().Character_State_Skill)) return;
+		|| HasTag(FSTGameplayTags::Get().Character_State_Skill)
+		|| bIsDied) return;
 
 	Super::Jump();
 }
@@ -383,9 +399,10 @@ void ASTPlayerCharacter::BindAttackDelegate()
 
 bool ASTPlayerCharacter::CanDoAttack() const
 {
-	if (HasTag(FSTGameplayTags::Get().Character_State_Skill) 
+	if (HasTag(FSTGameplayTags::Get().Character_State_Skill)
 		|| HasTag(FSTGameplayTags::Get().Character_State_Jump)
-		|| HasTag(FSTGameplayTags::Get().Character_State_Step))
+		|| HasTag(FSTGameplayTags::Get().Character_State_Step)
+		|| bIsDied)
 		return false;
 
 	return true;
@@ -517,7 +534,8 @@ bool ASTPlayerCharacter::CanDoStep() const
 	|| HasTag(FSTGameplayTags::Get().Character_State_Attack)*/
 
 	if (HasTag(FSTGameplayTags::Get().Character_State_Step)
-		|| HasTag(FSTGameplayTags::Get().Character_State_Jump))
+		|| HasTag(FSTGameplayTags::Get().Character_State_Jump)
+		|| bIsDied)
 		return false;
 
 	return true;
@@ -579,7 +597,8 @@ bool ASTPlayerCharacter::CanDoSkill() const
 {
 	if (HasTag(FSTGameplayTags::Get().Character_State_Skill)
 		|| HasTag(FSTGameplayTags::Get().Character_State_Jump)
-		|| HasTag(FSTGameplayTags::Get().Character_State_Step))
+		|| HasTag(FSTGameplayTags::Get().Character_State_Step)
+		|| bIsDied)
 		return false;
 
 	return true;
@@ -755,6 +774,15 @@ void ASTPlayerCharacter::PlayMontage_Skill_Passive()
 	}
 }
 
+void ASTPlayerCharacter::PlayDiedMontage_Multicast_Implementation(int MontageIdx)
+{
+	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+	if (AnimInst && Montages_Death.IsValidIndex(MontageIdx))
+	{
+		AnimInst->Montage_Play(Montages_Death[MontageIdx]);
+	}
+}
+
 void ASTPlayerCharacter::Skill_Passive_Pressed_Server_Implementation()
 {
 }
@@ -789,6 +817,34 @@ void ASTPlayerCharacter::ApplyDamageToActor(float DamagePercent, TSubclassOf<UDa
 void ASTPlayerCharacter::AdjustFinalDamage(float& DamageAmount, FDamageEvent const& DamageEvent, AActor* DamagedActor)
 {
 	if (!HasAuthority()) return;
+}
+
+void ASTPlayerCharacter::DeathResolveStart()
+{
+	if (HasAuthority())
+	{
+		DissolveStart_Multicast();
+
+		FTimerHandle RestartHandle;
+		GetWorldTimerManager().SetTimer(RestartHandle, this, &ASTPlayerCharacter::RestartPlayer, 5.f, false);
+	}
+}
+
+void ASTPlayerCharacter::RestartPlayer()
+{
+	if (HasAuthority())
+	{
+		if (CachedPC)
+		{
+			AGameModeBase* gameMode = UGameplayStatics::GetGameMode(this);
+			if (gameMode)
+			{
+				gameMode->RestartPlayer(CachedPC);
+			}
+		}
+
+		Destroy();
+	}
 }
 
 void ASTPlayerCharacter::OnRep_SKMeshPartsName()

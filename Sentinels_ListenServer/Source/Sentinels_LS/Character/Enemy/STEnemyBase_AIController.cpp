@@ -136,12 +136,45 @@ void ASTEnemyBase_AIController::SetTarget(AActor* InTarget)
 	// Set Target
 	UE_LOG(LogTemp, Display, TEXT("%s Set Target as %s"), *(GetName()), *(InTarget->GetName()));
 	Blackboard->SetValueAsObject(BBKey_Target, InTarget);
+	CurrentTarget = InTarget;
+
+	if (ASTPlayerCharacter* player = Cast<ASTPlayerCharacter>(CurrentTarget))
+	{
+		player->Delegate_OnPlayerDied.AddDynamic(this, &ASTEnemyBase_AIController::OnTargetDied);
+	}
 }
 
 void ASTEnemyBase_AIController::RestoreTarget()
 {
 	if(IsValid(StoredTarget) && IsValid(Blackboard))
 		Blackboard->SetValueAsObject(BBKey_Target, StoredTarget);
+}
+
+void ASTEnemyBase_AIController::OnTargetDied()
+{
+	if (!IsValid(Blackboard))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ASTEnemyBase_AIController : Blackboard is not valid."));
+		return;
+	}
+
+	StoredTarget = CurrentTarget;
+	Blackboard->SetValueAsObject(BBKey_Target, nullptr);
+
+	int numOfPlayers = UGameplayStatics::GetNumPlayerControllers(this);
+
+	// Get All Players except before target!
+	/*ACharacter* nearestPlayer;
+	UGameplayStatics::GetPlayerCharacter(this, 0);
+	for (int i = 0; i < numOfPlayers; i++)
+	{
+		ACharacter* player = UGameplayStatics::GetPlayerCharacter(this, 0);
+		if (player && player != StoredTarget)
+		{
+		}
+	}*/
+
+	// Set Nearest Target
 }
 
 void ASTEnemyBase_AIController::ApplyStun(float StunTime)

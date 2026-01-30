@@ -42,3 +42,8 @@ void USTPlayerAnimInstance::AnimNotify_SetWarpTarget_Step()
 {
 	Delegate_SetWarpTarget_Step.Broadcast();
 }
+
+void USTPlayerAnimInstance::AnimNotify_DeathResolveStart()
+{
+	Delegate_DeathResolveStart.Broadcast();
+}

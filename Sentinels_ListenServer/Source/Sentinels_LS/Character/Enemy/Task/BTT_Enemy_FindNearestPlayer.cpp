@@ -6,6 +6,7 @@
 #include "AIController.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/STPlayerCharacter.h"
+#include "Character/Enemy/STEnemyBase_AIController.h"
 
 UBTT_Enemy_FindNearestPlayer::UBTT_Enemy_FindNearestPlayer()
 {
@@ -25,29 +26,31 @@ EBTNodeResult::Type UBTT_Enemy_FindNearestPlayer::ExecuteTask(UBehaviorTreeCompo
 
 	AActor* CurrentTarget = Cast<AActor>(blackBoard->GetValueAsObject(FName("Target")));
 
-	TArray<AActor*> Players;
-	UGameplayStatics::GetAllActorsOfClass(Enemy, ASTPlayerCharacter::StaticClass(), Players);
-	if(Players.IsEmpty()) return EBTNodeResult::Failed;
+	int numOfPlayers = UGameplayStatics::GetNumPlayerControllers(Enemy);
 
 	float MinDist = 100000;
-	AActor* NearestPlayer = nullptr;
-	for (auto player : Players)
+	ASTPlayerCharacter* NearestPlayer = nullptr;
+	for (int i = 0; i < numOfPlayers; i++)
 	{
+		ASTPlayerCharacter* player = Cast<ASTPlayerCharacter>(UGameplayStatics::GetPlayerCharacter(this, i));
+
 		if (player == CurrentTarget) continue;
 
-	 	float Dist = FVector::Dist(Enemy->GetActorLocation(), player->GetActorLocation());
-		if (Dist < MinDist)
+		if (player && !player->bIsDied)
 		{
-			MinDist = Dist;
-			NearestPlayer = player;
+			float Dist = FVector::Dist(Enemy->GetActorLocation(), player->GetActorLocation());
+			if (NearestPlayer == nullptr || Dist < MinDist)
+			{
+				MinDist = Dist;
+				NearestPlayer = player;
+			}
 		}
 	}
 
-	if (blackBoard && NearestPlayer)
+	ASTEnemyBase_AIController* controller = Cast<ASTEnemyBase_AIController>(Enemy->GetController());
+	if (controller && NearestPlayer)
 	{
-		blackBoard->SetValueAsObject(FName("Target"), NearestPlayer);
-		blackBoard->SetValueAsVector(FName("TargetLocation"), NearestPlayer->GetActorLocation());
-		blackBoard->SetValueAsBool(FName("IsStucked"), false);
+		controller->SetTarget(NearestPlayer);
 	}
 
 	return EBTNodeResult::Succeeded;

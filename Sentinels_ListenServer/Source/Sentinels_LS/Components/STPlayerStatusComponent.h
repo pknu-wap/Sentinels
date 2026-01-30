@@ -76,6 +76,8 @@ public:
 	void InitializeStatus(ESTClassType InClassType);
 	void CopyProperties(USTPlayerStatusComponent* InStatusComponent);
 
+	void EnableHPRegen(bool bEnable);
+
 protected:
 	void InitializeStatusWithAsset(UClassStatusDataAsset* InDataAsset);
 
@@ -103,6 +105,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<UDamageType> CriticalDamageType;
+
+	FTimerHandle HPRegenHandle;
 
 public:
 	UFUNCTION(BlueprintCallable)

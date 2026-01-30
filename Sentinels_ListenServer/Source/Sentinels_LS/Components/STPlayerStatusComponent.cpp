@@ -55,10 +55,7 @@ void USTPlayerStatusComponent::BeginPlay()
 
 	if (GetOwner() && GetOwner()->HasAuthority())
 	{
-		FTimerHandle HPRegenHandle;
-		GetWorld()->GetTimerManager().SetTimer(HPRegenHandle,
-			this, &USTPlayerStatusComponent::RegenHP,
-			1.f, true);
+		EnableHPRegen(true);
 	}
 }
 
@@ -124,36 +121,63 @@ void USTPlayerStatusComponent::OnPawnPossessed(APlayerState* Player, APawn* NewP
 		CriticalDamageType = CachedPlayer->CriticalDamageType;
 	}
 
-	// Restart || New Level
-	if (CachedPS && !CachedPS->bIsInitialized)
+	if (GetOwner() && GetOwner()->HasAuthority())
 	{
-		InitializeDefaultStatus();
-		InitializeEnhancement();
-	}
-	
-	ApplyStatus();
+		// Restart || New Level
+		if (CachedPS && !CachedPS->bIsInitialized)
+		{
+			InitializeDefaultStatus();
+			InitializeEnhancement();
+		}
 
-	HP = MaxHP;
-	OnRep_HPUpdated();
-	OnRep_ExpUpdated();
+		ApplyStatus();
+
+		HP = MaxHP;
+		OnRep_HPUpdated();
+		OnRep_ExpUpdated();
+	}
 }
+
+void USTPlayerStatusComponent::EnableHPRegen(bool bEnable)
+{
+	if (GetOwner() && GetOwner()->HasAuthority())
+	{
+		if (bEnable)
+		{
+			GetWorld()->GetTimerManager().SetTimer(HPRegenHandle,
+				this, &USTPlayerStatusComponent::RegenHP,
+				1.f, true);
+		}
+		else
+		{
+			GetWorld()->GetTimerManager().ClearTimer(HPRegenHandle);
+		}
+	}
+}
+
 
 void USTPlayerStatusComponent::InitializeStatus(ESTClassType InClassType)
 {
-	switch (InClassType)
+	if (GetOwner() && GetOwner()->HasAuthority())
 	{
-	case ESTClassType::GreatSword:
-	{
-		InitializeStatusWithAsset(GreatSwordDataAsset);
-	}
-	case ESTClassType::Katana:
-	{
-		InitializeStatusWithAsset(KatanaDataAsset);
-	}
-	case ESTClassType::DualBlade:
-	{
-		InitializeStatusWithAsset(DualBaldeDataAsset);
-	}
+		switch (InClassType)
+		{
+		case ESTClassType::GreatSword:
+		{
+			InitializeStatusWithAsset(GreatSwordDataAsset);
+			break;
+		}
+		case ESTClassType::Katana:
+		{
+			InitializeStatusWithAsset(KatanaDataAsset);
+			break;
+		}
+		case ESTClassType::DualBlade:
+		{
+			InitializeStatusWithAsset(DualBaldeDataAsset);
+			break;
+		}
+		}
 	}
 }
 
@@ -161,103 +185,109 @@ void USTPlayerStatusComponent::CopyProperties(USTPlayerStatusComponent* InStatus
 {
 	if (!InStatusComponent) return;
 
-	Level = InStatusComponent->Level;
-	MaxExp = InStatusComponent->MaxExp;
-	Exp = InStatusComponent->Exp;
-
-	SelectedEnhancements = InStatusComponent->SelectedEnhancements;
-	NotSelectedEnhancements = InStatusComponent->NotSelectedEnhancements;
-	for (UEnhancementObject* enhancement : SelectedEnhancements)
+	if (GetOwner() && GetOwner()->HasAuthority())
 	{
-		if (enhancement)
+		Level = InStatusComponent->Level;
+		MaxExp = InStatusComponent->MaxExp;
+		Exp = InStatusComponent->Exp;
+
+		SelectedEnhancements = InStatusComponent->SelectedEnhancements;
+		NotSelectedEnhancements = InStatusComponent->NotSelectedEnhancements;
+		for (UEnhancementObject* enhancement : SelectedEnhancements)
 		{
-			enhancement->Rename(nullptr, this);
+			if (enhancement)
+			{
+				enhancement->Rename(nullptr, this);
+			}
 		}
+
+		BaseMaxHP = InStatusComponent->BaseMaxHP;
+		MaxHP = InStatusComponent->MaxHP;
+		HP = InStatusComponent->HP;
+
+		BaseMaxHPRegen = InStatusComponent->BaseMaxHPRegen;
+		MaxHPRegen = InStatusComponent->MaxHPRegen;
+		BaseHPRegen = InStatusComponent->BaseHPRegen;
+		HPRegen = InStatusComponent->HPRegen;
+
+		ATK = InStatusComponent->ATK;
+		BaseATK = InStatusComponent->BaseATK;
+		DEF = InStatusComponent->DEF;
+		BaseDEF = InStatusComponent->BaseDEF;
+
+		MaxMovementSpeed = InStatusComponent->MaxMovementSpeed;
+		MovementSpeed = InStatusComponent->MovementSpeed;
+		BaseMovementSpeed = InStatusComponent->BaseMovementSpeed;
+
+		MaxAttackSpeed = InStatusComponent->MaxAttackSpeed;
+		AttackSpeed = InStatusComponent->AttackSpeed;
+		BaseAttackSpeed = InStatusComponent->BaseAttackSpeed;
+
+		MaxDamageIncreaseRate = InStatusComponent->MaxDamageIncreaseRate;
+		DamageIncreaseRate = InStatusComponent->DamageIncreaseRate;
+
+		MaxCDR = InStatusComponent->MaxCDR;
+		CDR = InStatusComponent->CDR;
+
+		MaxCriticalDamagePercent = InStatusComponent->MaxCriticalDamagePercent;
+		CriticalDamagePercent = InStatusComponent->CriticalDamagePercent;
+		BaseCriticalDamagePercent = InStatusComponent->BaseCriticalDamagePercent;
+
+		MaxCriticalRate = InStatusComponent->MaxCriticalRate;
+		CriticalRate = InStatusComponent->CriticalRate;
+		BaseCriticalRate = InStatusComponent->BaseCriticalRate;
 	}
-
-	BaseMaxHP = InStatusComponent->BaseMaxHP;
-	MaxHP = InStatusComponent->MaxHP;
-	HP = InStatusComponent->HP;
-
-	BaseMaxHPRegen = InStatusComponent->BaseMaxHPRegen;
-	MaxHPRegen = InStatusComponent->MaxHPRegen;
-	BaseHPRegen = InStatusComponent->BaseHPRegen;
-	HPRegen = InStatusComponent->HPRegen;
-
-	ATK = InStatusComponent->ATK;
-	BaseATK = InStatusComponent->BaseATK;
-	DEF = InStatusComponent->DEF;
-	BaseDEF = InStatusComponent->BaseDEF;
-
-	MaxMovementSpeed = InStatusComponent->MaxMovementSpeed;
-	MovementSpeed = InStatusComponent->MovementSpeed;
-	BaseMovementSpeed = InStatusComponent->BaseMovementSpeed;
-
-	MaxAttackSpeed = InStatusComponent->MaxAttackSpeed;
-	AttackSpeed = InStatusComponent->AttackSpeed;
-	BaseAttackSpeed = InStatusComponent->BaseAttackSpeed;
-
-	MaxDamageIncreaseRate = InStatusComponent->MaxDamageIncreaseRate;
-	DamageIncreaseRate = InStatusComponent->DamageIncreaseRate;
-
-	MaxCDR = InStatusComponent->MaxCDR;
-	CDR = InStatusComponent->CDR;
-
-	MaxCriticalDamagePercent = InStatusComponent->MaxCriticalDamagePercent;
-	CriticalDamagePercent = InStatusComponent->CriticalDamagePercent;
-	BaseCriticalDamagePercent = InStatusComponent->BaseCriticalDamagePercent;
-
-	MaxCriticalRate = InStatusComponent->MaxCriticalRate;
-	CriticalRate = InStatusComponent->CriticalRate;
-	BaseCriticalRate = InStatusComponent->BaseCriticalRate;
 }
 
 void USTPlayerStatusComponent::InitializeStatusWithAsset(UClassStatusDataAsset* InDataAsset)
 {
 	if (!InDataAsset) return;
 
-	DB_Enhancement = InDataAsset->DB_Enhancement;
-	InitializeEnhancement();
+	if (GetOwner() && GetOwner()->HasAuthority())
+	{
+		DB_Enhancement = InDataAsset->DB_Enhancement;
+		InitializeEnhancement();
 
-	BaseDamageType = InDataAsset->BaseDamageType;
-	CriticalDamageType = InDataAsset->CriticalDamageType;
+		BaseDamageType = InDataAsset->BaseDamageType;
+		CriticalDamageType = InDataAsset->CriticalDamageType;
 
-	BaseMaxHP = InDataAsset->BaseMaxHP;
-	MaxHP = InDataAsset->MaxHP;
-	HP = MaxHP;
+		BaseMaxHP = InDataAsset->BaseMaxHP;
+		MaxHP = InDataAsset->MaxHP;
+		HP = MaxHP;
 
-	BaseMaxHPRegen = InDataAsset->BaseMaxHPRegen;
-	MaxHPRegen = InDataAsset->MaxHPRegen;
-	BaseHPRegen = InDataAsset->BaseHPRegen;
-	HPRegen = BaseHPRegen;
+		BaseMaxHPRegen = InDataAsset->BaseMaxHPRegen;
+		MaxHPRegen = InDataAsset->MaxHPRegen;
+		BaseHPRegen = InDataAsset->BaseHPRegen;
+		HPRegen = BaseHPRegen;
 
-	BaseATK = InDataAsset->BaseATK;
-	ATK = BaseATK;
-	BaseDEF = InDataAsset->BaseDEF;
-	DEF = BaseDEF;
+		BaseATK = InDataAsset->BaseATK;
+		ATK = BaseATK;
+		BaseDEF = InDataAsset->BaseDEF;
+		DEF = BaseDEF;
 
-	MaxMovementSpeed = InDataAsset->MaxMovementSpeed;
-	BaseMovementSpeed = InDataAsset->BaseMovementSpeed;
-	MovementSpeed = BaseMovementSpeed;
+		MaxMovementSpeed = InDataAsset->MaxMovementSpeed;
+		BaseMovementSpeed = InDataAsset->BaseMovementSpeed;
+		MovementSpeed = BaseMovementSpeed;
 
-	MaxAttackSpeed = InDataAsset->MaxAttackSpeed;
-	BaseAttackSpeed = InDataAsset->BaseAttackSpeed;
-	AttackSpeed = BaseAttackSpeed;
+		MaxAttackSpeed = InDataAsset->MaxAttackSpeed;
+		BaseAttackSpeed = InDataAsset->BaseAttackSpeed;
+		AttackSpeed = BaseAttackSpeed;
 
-	MaxDamageIncreaseRate = InDataAsset->MaxDamageIncreaseRate;
+		MaxDamageIncreaseRate = InDataAsset->MaxDamageIncreaseRate;
 
-	MaxCDR = InDataAsset->MaxCDR;
+		MaxCDR = InDataAsset->MaxCDR;
 
-	MaxCriticalDamagePercent = InDataAsset->MaxCriticalDamagePercent;
-	BaseCriticalDamagePercent = InDataAsset->BaseCriticalDamagePercent;
-	CriticalDamagePercent = BaseCriticalDamagePercent;
+		MaxCriticalDamagePercent = InDataAsset->MaxCriticalDamagePercent;
+		BaseCriticalDamagePercent = InDataAsset->BaseCriticalDamagePercent;
+		CriticalDamagePercent = BaseCriticalDamagePercent;
 
-	MaxCriticalRate = InDataAsset->MaxCriticalRate;
-	BaseCriticalRate = InDataAsset->BaseCriticalRate;
-	CriticalRate = BaseCriticalRate;
+		MaxCriticalRate = InDataAsset->MaxCriticalRate;
+		BaseCriticalRate = InDataAsset->BaseCriticalRate;
+		CriticalRate = BaseCriticalRate;
 
-	InitializeDefaultStatus();
-	ApplyStatus();
+		InitializeDefaultStatus();
+		ApplyStatus();
+	}
 }
 
 void USTPlayerStatusComponent::AddExp(float InExp)
@@ -461,14 +491,17 @@ void USTPlayerStatusComponent::InitializeEnhancement()
 
 void USTPlayerStatusComponent::InitializeDefaultStatus()
 {
-	Level = 1;
-	CriticalDamagePercent = BaseCriticalDamagePercent;
-	CriticalRate = BaseCriticalRate;
-	DamageIncreaseRate = 0.f;
-	CDR = 0.f;
-	MovementSpeed = BaseMovementSpeed;
+	if (GetOwner() && GetOwner()->HasAuthority())
+	{
+		Level = 1;
+		CriticalDamagePercent = BaseCriticalDamagePercent;
+		CriticalRate = BaseCriticalRate;
+		DamageIncreaseRate = 0.f;
+		CDR = 0.f;
+		MovementSpeed = BaseMovementSpeed;
 
-	UpdateDefaultStatus();
+		UpdateDefaultStatus();
+	}
 }
 
 void USTPlayerStatusComponent::UpdateDefaultStatus()
@@ -571,17 +604,20 @@ void USTPlayerStatusComponent::CalculateStatus()
 
 void USTPlayerStatusComponent::ApplyStatus()
 {
-	UCharacterMovementComponent* characterMovement = GetOwner()->GetComponentByClass<UCharacterMovementComponent>();
-	if (characterMovement)
+	if (GetOwner() && GetOwner()->HasAuthority())
 	{
-		characterMovement->MaxWalkSpeed = MovementSpeed;
-	}
-	else if(CachedPlayer)
-	{
-		characterMovement = CachedPlayer->GetComponentByClass<UCharacterMovementComponent>();
+		UCharacterMovementComponent* characterMovement = GetOwner()->GetComponentByClass<UCharacterMovementComponent>();
 		if (characterMovement)
 		{
 			characterMovement->MaxWalkSpeed = MovementSpeed;
+		}
+		else if (CachedPlayer)
+		{
+			characterMovement = CachedPlayer->GetComponentByClass<UCharacterMovementComponent>();
+			if (characterMovement)
+			{
+				characterMovement->MaxWalkSpeed = MovementSpeed;
+			}
 		}
 	}
 }

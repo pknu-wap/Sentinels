@@ -58,11 +58,17 @@ public:
 
 	void RestoreTarget();
 
+	UFUNCTION()
+	void OnTargetDied();
+
 	// Stunned
 	void ApplyStun(float StunTime);
 
 protected:
 	FTimerHandle StoreTargetHandle;
+
+	UPROPERTY()
+	AActor* CurrentTarget;
 
 	UPROPERTY()
 	AActor* StoredTarget;
