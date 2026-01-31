@@ -77,6 +77,8 @@ public:
 
 	void ShowMapUI_Pressed();
 
+	void ShowSystemUI_Pressed();
+
 /*
 	Interact
 */
@@ -117,6 +119,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* ShowMapUIAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* ShowSystemUIAction;
 
 /*
 	Movement

@@ -96,6 +96,7 @@ void ASTPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(ShowTeamInfoUIAction, ETriggerEvent::Started, this, &ASTPlayerController::ShowTeamInfoUI_Pressed);
 		EnhancedInputComponent->BindAction(ShowTeamInfoUIAction, ETriggerEvent::Completed, this, &ASTPlayerController::ShowTeamInfoUI_Released);
 		EnhancedInputComponent->BindAction(ShowMapUIAction, ETriggerEvent::Completed, this, &ASTPlayerController::ShowMapUI_Pressed);
+		EnhancedInputComponent->BindAction(ShowSystemUIAction, ETriggerEvent::Completed, this, &ASTPlayerController::ShowSystemUI_Pressed);
 	}
 }
 
@@ -266,7 +267,28 @@ void ASTPlayerController::ShowMapUI_Pressed()
 		gameMapWidget->SetVisibility(ESlateVisibility::Collapsed);
 		UIComponent->UpdateUI(FSTGameplayTags::Get().Widget_InGame_Minimap);
 	}
-		
+}
+
+void ASTPlayerController::ShowSystemUI_Pressed()
+{
+	USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
+	UUserWidget* systemWidget = UISubSystem->GetWidget(FSTGameplayTags::Get().Widget_OutGame_System);
+
+	if (!systemWidget)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Error : systemWidget don't exist"));
+		return;
+	}
+
+	if (!systemWidget->IsInViewport())
+	{
+		systemWidget->AddToViewport();
+	}
+	else
+	{
+		SetInputMode(FInputModeGameOnly());
+		systemWidget->RemoveFromParent();
+	}
 }
 
 void ASTPlayerController::Interact_Pressed()
