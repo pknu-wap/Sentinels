@@ -117,8 +117,11 @@ public:
 protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void ShowDamageIndicateWidget_Multicast(float Damage, FLinearColor Color);
-
 	void ShowDamageIndicateWidget(float Damage, FLinearColor Color);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void ClearDamageIndicateWidget_Multicast();
+	void ClearDamageIndicateWidget();
 
 /*
 	Die
