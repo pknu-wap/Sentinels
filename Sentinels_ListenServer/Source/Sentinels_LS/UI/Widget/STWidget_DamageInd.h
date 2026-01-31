@@ -18,6 +18,8 @@ protected:
 	virtual void NativeConstruct() override;
 
 public:
+	void ClearDamageInd();
+
 	void SetDamage(float Damage);
 	void SetDamageTextColor(FSlateColor& InColor);
 

@@ -14,6 +14,13 @@ void USTWidget_DamageInd::NativeConstruct()
 	TB_Damage.Add(TB_Damage_2);
 }
 
+void USTWidget_DamageInd::ClearDamageInd()
+{
+	TB_Damage_0->SetText(FText::GetEmpty());
+	TB_Damage_1->SetText(FText::GetEmpty());
+	TB_Damage_2->SetText(FText::GetEmpty());
+}
+
 void USTWidget_DamageInd::SetDamage(float Damage)
 {
 	if (TB_Damage[CurrentIdx])

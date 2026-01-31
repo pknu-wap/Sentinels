@@ -250,12 +250,15 @@ float ASTEnemyBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 			PlayDiedMontage_Multicast();
 
 			// Delete Tag
+			ClearTag(FSTGameplayTags::Get().Character_State_Bleed);
+			ClearTag(FSTGameplayTags::Get().Character_State_Stunned);
+
+			// Update UI
 			UpdateStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Bleed, false);
 			UpdateStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Stunned, false);
 
-			ClearTag(FSTGameplayTags::Get().Character_State_Bleed);
-			ClearTag(FSTGameplayTags::Get().Character_State_Stunned);
-			
+			ClearDamageIndicateWidget_Multicast();
+
 			// Stop Behavior Tree
 			AAIController* AIController = Cast<AAIController>(GetController());
 			if (AIController && AIController->GetBrainComponent())
@@ -314,11 +317,14 @@ void ASTEnemyBase::Deactivate()
 	Super::Deactivate();
 
 	// Delete Tag
+	ClearTag(FSTGameplayTags::Get().Character_State_Bleed);
+	ClearTag(FSTGameplayTags::Get().Character_State_Stunned);
+
+	// Clear UI
 	UpdateStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Bleed, false);
 	UpdateStateWidget_Multicast(FSTGameplayTags::Get().Character_State_Stunned, false);
 
-	ClearTag(FSTGameplayTags::Get().Character_State_Bleed);
-	ClearTag(FSTGameplayTags::Get().Character_State_Stunned);
+	ClearDamageIndicateWidget_Multicast();
 }
 
 bool ASTEnemyBase::IsNormalAttackMontage(UAnimMontage* InMontage)
@@ -411,13 +417,26 @@ void ASTEnemyBase::ShowDamageIndicateWidget(float Damage, FLinearColor Color)
 	}
 }
 
-//void ASTEnemyBase::UpdateEnemyStateWidget_Multicast_Implementation(FGameplayTag StateTag, bool bShow)
-//{
-//	if (bShow)
-//		Delegate_OnStateAdd.Broadcast(StateTag);
-//	else
-//		Delegate_OnStateRemove.Broadcast(StateTag);
-//}
+void ASTEnemyBase::ClearDamageIndicateWidget_Multicast_Implementation()
+{
+	ClearDamageIndicateWidget();
+}
+
+void ASTEnemyBase::ClearDamageIndicateWidget()
+{
+	if (WC_EnemyMain_Screen)
+	{
+		USTWidget_EnemyMain_Screen* wEnemyMain = Cast<USTWidget_EnemyMain_Screen>(WC_EnemyMain_Screen->GetWidget());
+		if (IsValid(wEnemyMain))
+		{
+			USTWidget_DamageInd* wDamageInd = Cast<USTWidget_DamageInd>(wEnemyMain->Overlay_DamageInd->GetChildAt(0));
+			if (IsValid(wDamageInd))
+			{
+				wDamageInd->ClearDamageInd();
+			}
+		}
+	}
+}
 
 void ASTEnemyBase::PrimaryFire()
 {
