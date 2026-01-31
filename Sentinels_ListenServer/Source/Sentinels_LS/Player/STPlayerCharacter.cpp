@@ -264,6 +264,9 @@ float ASTPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 
 	if (HasAuthority())
 	{
+		if (HasTag(FSTGameplayTags::Get().Character_State_Invincible))
+			return 0;
+
 		if (HasTag(FSTGameplayTags::Get().Character_Player_State_RescueHostage) || HasTag(FSTGameplayTags::Get().Character_Player_State_RepairRift))
 		{
 			// if damaged while Rescuing, Fail Interact

@@ -108,6 +108,11 @@ AActor* ASTEnemyBase_AIController::GetCurrentTarget() const
 	return nullptr;
 }
 
+AActor* ASTEnemyBase_AIController::GetStoredTarget() const
+{
+	return StoredTarget;
+}
+
 void ASTEnemyBase_AIController::SetTarget(AActor* InTarget)
 {
 	if (!IsValid(Blackboard))
@@ -140,6 +145,7 @@ void ASTEnemyBase_AIController::SetTarget(AActor* InTarget)
 
 	if (ASTPlayerCharacter* player = Cast<ASTPlayerCharacter>(CurrentTarget))
 	{
+		player->Delegate_OnPlayerDied.RemoveAll(this);
 		player->Delegate_OnPlayerDied.AddDynamic(this, &ASTEnemyBase_AIController::OnTargetDied);
 	}
 }
@@ -160,8 +166,6 @@ void ASTEnemyBase_AIController::OnTargetDied()
 
 	StoredTarget = CurrentTarget;
 	Blackboard->SetValueAsObject(BBKey_Target, nullptr);
-
-	int numOfPlayers = UGameplayStatics::GetNumPlayerControllers(this);
 
 	// Get All Players except before target!
 	/*ACharacter* nearestPlayer;

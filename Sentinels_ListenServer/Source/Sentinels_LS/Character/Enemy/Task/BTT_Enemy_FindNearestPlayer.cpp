@@ -20,9 +20,18 @@ EBTNodeResult::Type UBTT_Enemy_FindNearestPlayer::ExecuteTask(UBehaviorTreeCompo
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 
 	UBlackboardComponent* blackBoard = OwnerComp.GetBlackboardComponent();
-
 	APawn* Enemy = OwnerComp.GetAIOwner()->GetPawn();
 	if (!Enemy) return EBTNodeResult::Failed;
+
+	ASTEnemyBase_AIController* controller = Cast<ASTEnemyBase_AIController>(Enemy->GetController());
+	if (controller)
+	{
+		AActor* storedTarget = controller->GetStoredTarget();
+		if (!storedTarget)
+		{
+			return  EBTNodeResult::Succeeded;
+		}
+	}
 
 	AActor* CurrentTarget = Cast<AActor>(blackBoard->GetValueAsObject(FName("Target")));
 
@@ -47,7 +56,6 @@ EBTNodeResult::Type UBTT_Enemy_FindNearestPlayer::ExecuteTask(UBehaviorTreeCompo
 		}
 	}
 
-	ASTEnemyBase_AIController* controller = Cast<ASTEnemyBase_AIController>(Enemy->GetController());
 	if (controller && NearestPlayer)
 	{
 		controller->SetTarget(NearestPlayer);

@@ -121,11 +121,15 @@ void ASTPlayerCharacter_Katana::ApplyPassiveDamage()
 			{
 				// Applay Damage (ATK * 0.5 * NumOfTag)
 				int numOfTag = character->GetNumOfTag(FSTGameplayTags::Get().Character_State_Bleed);
-				UGameplayStatics::ApplyDamage(actor, StatusComponent->ATK * 0.5 * numOfTag, GetController(), this, UDamageType::StaticClass());
 
-				// Clear Bleed Tag
-				character->ClearTag_Server(FSTGameplayTags::Get().Character_State_Bleed);
-				character->UpdateStateWidget_Server(FSTGameplayTags::Get().Character_State_Bleed, false);
+				if (numOfTag > 0)
+				{
+					UGameplayStatics::ApplyDamage(actor, StatusComponent->ATK * 0.5 * numOfTag, GetController(), this, UDamageType::StaticClass());
+
+					// Clear Bleed Tag
+					character->ClearTag_Server(FSTGameplayTags::Get().Character_State_Bleed);
+					character->UpdateStateWidget_Server(FSTGameplayTags::Get().Character_State_Bleed, false);
+				}
 			}
 		}
 	}

@@ -52,6 +52,7 @@ public:
 
 	// Target
 	AActor* GetCurrentTarget() const;
+	AActor* GetStoredTarget() const;
 
 	UFUNCTION(BlueprintCallable)
 	void SetTarget(AActor* InTarget);
