@@ -159,15 +159,16 @@ void ASTDimensionDrift::CheckAllPlayerReady()
 		if (playerController == Cast<ASTPlayerController>(UGameplayStatics::GetPlayerController(this, 0)))
 		{
 			USTUISubSystem* UISubSystem = GetWorld()->GetGameInstance()->GetSubsystem<USTUISubSystem>();
-			//UUserWidget* widget = UISubSystem->GetWidget(FSTGameplayTags::Get().Widget_LoadScreen);
-			//widget->AddToViewport();
-			UUserWidget* widget = UISubSystem->GetWidget(FSTGameplayTags::Get().Widget_Lobby_Loadout);
-			widget->RemoveFromParent();
+			UUserWidget* loadoutWidget = UISubSystem->GetWidget(FSTGameplayTags::Get().Widget_Lobby_Loadout);
+			loadoutWidget->RemoveFromParent();
+			UUserWidget* loadScreenWidget = UISubSystem->GetWidget(FSTGameplayTags::Get().Widget_LoadScreen);
+			loadScreenWidget->AddToViewport();
+
 		}
 		else // Client
 		{
-			//playerController->GetUIComponent()->ClientRPCAddToViewport(FSTGameplayTags::Get().Widget_LoadScreen);
 			playerController->GetUIComponent()->ClientRPCRemoveFromParent(FSTGameplayTags::Get().Widget_Lobby_Loadout);
+			playerController->GetUIComponent()->ClientRPCAddToViewport(FSTGameplayTags::Get().Widget_LoadScreen);
 		}
 		playerController->SetInputMode(FInputModeGameOnly());
 		playerController->SetShowMouseCursor(false);

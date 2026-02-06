@@ -25,7 +25,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	void TeleportPlayersToPlayerStarts(const TArray<APlayerStart*>& inPlayerStarts);
+	void TeleportPlayersToPlayerStarts(const TArray<class APlayerStart*>& inPlayerStarts);
 	bool TeleportToNextSection();
 	bool ActivateNextSection();
 

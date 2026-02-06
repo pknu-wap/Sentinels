@@ -283,11 +283,13 @@ void ASTPlayerController::ShowSystemUI_Pressed()
 	if (!systemWidget->IsInViewport())
 	{
 		systemWidget->AddToViewport();
+		SetShowMouseCursor(true);
 	}
 	else
 	{
 		SetInputMode(FInputModeGameOnly());
 		systemWidget->RemoveFromParent();
+		SetShowMouseCursor(false);
 	}
 }
 

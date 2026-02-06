@@ -64,7 +64,7 @@ public:
 
 	void DetermineMissionOrBoss();
 
-	void TeleportPlayersToPlayerStarts(const TArray<APlayerStart*>& inPlayerStarts);
+	void TeleportPlayersToPlayerStarts(const TArray<class APlayerStart*>& inPlayerStarts);
 
 protected:
 	UPROPERTY()
